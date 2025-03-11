@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 559 539" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Sigma Logo</title>
+    <defs>
+        <filter x="-8.7%" y="-10.4%" width="117.4%" height="120.7%" filterUnits="objectBoundingBox" id="filter-1">
+            <feGaussianBlur stdDeviation="14.4" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <path d="M557.430428,60.8235297 C559.503369,78.3601989 553.824053,95.2453471 540.392482,111.478974 C526.96091,127.712601 508.877733,135.829414 486.142943,135.829414 L442.910067,136.078453 C469.952833,172.248559 484.083836,218.759395 479.708291,269.500001 C469.769966,384.748833 368.12062,478.176471 252.66812,478.176471 C137.215619,478.176471 51.6794783,384.748833 61.6178015,269.500001 C71.5561243,154.251168 173.205471,60.8235297 288.657971,60.8235297 L557.430428,60.8235297 Z M282.088395,137.007003 C208.78522,137.007003 144.245953,196.326139 137.935906,269.500001 C131.62586,342.673863 185.934521,401.992998 259.237696,401.992998 C332.540871,401.992998 397.080138,342.673863 403.390184,269.500001 C409.700232,196.326139 355.39157,137.007003 282.088395,137.007003 Z" id="path-2"></path>
+        <filter x="-1.8%" y="-2.2%" width="103.6%" height="104.3%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="9" operator="erode" in="SourceAlpha" result="shadowSpreadInner1"></feMorphology>
+            <feGaussianBlur stdDeviation="4.5" in="shadowSpreadInner1" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.23   0 0 0 0 0.935833333   0 0 0 0 1  0 0 0 0.308484484 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Studio-/-SIEM-Logos" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Sigma-Logo" transform="translate(0.7692, 0)" fill-rule="nonzero">
+            <g id="Combined-Shape" fill="#000000" fill-opacity="0" opacity="0.242722284">
+                <path d="M557.430428,62.5184983 C559.503369,80.0551675 553.824053,96.9403157 540.392482,113.173942 C526.96091,129.40757 508.877733,137.524383 486.142943,137.524383 L442.910067,137.773422 C469.952833,173.943528 484.083836,220.454364 479.708291,271.194969 C469.769966,386.443801 368.12062,479.871439 252.66812,479.871439 C137.215619,479.871439 51.6794783,386.443801 61.6178015,271.194969 C71.5561243,155.946137 173.205471,62.5184983 288.657971,62.5184983 L557.430428,62.5184983 Z M282.088395,138.701972 C208.78522,138.701972 144.245953,198.021107 137.935906,271.194969 C131.62586,344.368831 185.934521,403.687966 259.237696,403.687966 C332.540871,403.687966 397.080138,344.368831 403.390184,271.194969 C409.700232,198.021107 355.39157,138.701972 282.088395,138.701972 Z" filter="url(#filter-1)"></path>
+            </g>
+            <g id="Combined-Shape-Copy">
+                <use fill="#1FD1FF" xlink:href="#path-2"></use>
+                <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+            </g>
+        </g>
+    </g>
+</svg>
