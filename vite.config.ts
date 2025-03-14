@@ -162,6 +162,7 @@ async function indexRules(repoPath) {
                         tags: yamlContent.tags || [],
                         level: yamlContent.level || '',
                         path: relativePath,
+                        logsource: yamlContent.logsource || {},
                     };
                     
                     rules.push(rule);
