@@ -7,6 +7,9 @@ import { PiniaColada } from "@pinia/colada";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { PiniaUndo } from "pinia-undo";
 
+// Import stores
+import { useSigmaRulesStore } from './stores/SigmaRulesStore';
+
 import "@fontsource-variable/dm-sans/index.css";
 
 import * as Sentry from "@sentry/vue";
@@ -35,10 +38,13 @@ Sentry.init({
 });
 
 
-app.use(
-  createPinia()
-    .use(PiniaUndo)
-    .use(piniaPluginPersistedstate)
-)
+const pinia = createPinia()
+  .use(PiniaUndo)
+  .use(piniaPluginPersistedstate);
+
+app.use(pinia)
   .use(PiniaColada, {})
   .mount('#app')
+
+// Initialize stores
+useSigmaRulesStore(pinia);

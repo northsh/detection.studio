@@ -27,3 +27,6 @@ dist-ssr
 # Sentry Config File
 .env.sentry-build-plugin
 .env
+
+# Sigma Repo
+.sigma-repo/
