@@ -20,6 +20,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fs-extra": "^11.3.0",
+    "fuse.js": "^7.1.0",
     "isomorphic-git": "^1.29.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
@@ -41,7 +42,7 @@
     "vite-plugin-static-copy": "^2.3.0",
     "vite-svg-loader": "^5.1.0",
     "vue": "^3.5.13",
-    "vue-router": "4"
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.10",

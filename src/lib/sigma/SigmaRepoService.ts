@@ -1,3 +1,9 @@
+export interface SigmaLogsource {
+  category?: string;
+  product?: string;
+  service?: string;
+}
+
 export interface SigmaRule {
   id: string;
   title: string;
@@ -9,6 +15,7 @@ export interface SigmaRule {
   tags: string[];
   level: string;
   path: string;
+  logsource?: SigmaLogsource;
   rawContent?: string;
 }
 
@@ -62,7 +69,7 @@ export class SigmaRepoService {
    * Fetches the content of a specific rule from the jsdelivr CDN
    */
   public async getRule(path: string): Promise<string> {
-    const cdnPath = `https://cdn.jsdelivr.net/gh/SigmaHQ/sigma@main/${path}`;
+    const cdnPath = `https://cdn.jsdelivr.net/gh/SigmaHQ/sigma@master/${path}`;
     
     try {
       const response = await fetch(cdnPath);

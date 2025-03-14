@@ -4,7 +4,7 @@
       <p>Select a rule to view its details</p>
     </div>
     
-    <div v-else-if="isLoading" class="flex items-center justify-center h-full">
+    <div v-else-if="isLoadingIndividualRule" class="flex items-center justify-center h-full">
       <div class="flex flex-col items-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p class="mt-2">Loading rule content...</p>
@@ -95,7 +95,7 @@ const sigmaRulesStore = useSigmaRulesStore();
 
 const currentRule = computed(() => sigmaRulesStore.currentRule);
 const currentRuleContent = computed(() => sigmaRulesStore.currentRuleContent);
-const isLoading = computed(() => sigmaRulesStore.isLoading);
+const isLoadingIndividualRule = computed(() => sigmaRulesStore.isLoadingIndividualRule);
 
 // Format date if it exists
 function formatDate(dateString?: string): string {
