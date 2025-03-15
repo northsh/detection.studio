@@ -182,7 +182,7 @@ export default defineConfig({
 
     plugins: [
         vue(),
-        sigmaRepoPlugin(),
+        // sigmaRepoPlugin(),
         svgLoader(),
         viteStaticCopyPyodide(),
         sentryVitePlugin({
@@ -202,5 +202,5 @@ export default defineConfig({
     },
     worker: {
         format: 'es',
-    }
+    },
 })

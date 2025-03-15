@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.2.5",
@@ -34,7 +37,7 @@
     "promise-worker": "^2.0.1",
     "pyodide": "^0.27.3",
     "radix-vue": "^1.9.17",
-    "reka-ui": "^2.0.2",
+    "reka-ui": "^2.1.0",
     "tailwind-merge": "^3.0.2",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
@@ -45,11 +48,14 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@types/node": "^22.13.10",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
+    "playwright": "^1.51.0",
     "typescript": "~5.7.3",
-    "vite": "^6.2.1",
-    "vue-tsc": "^2.2.8"
+    "vite": "^6.2.2",
+    "vue-tsc": "^2.2.8",
+    "@types/bun": "latest"
   }
 }
