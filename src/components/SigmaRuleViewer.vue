@@ -228,16 +228,13 @@
 <script lang="ts" setup>
 import {computed, ref} from 'vue';
 import {useSigmaRulesStore} from '../stores/SigmaBrowserStore.ts';
-import {ScrollArea} from './ui/scroll-area';
 import {Badge} from './ui/badge';
 import {Button} from './ui/button';
 import {Skeleton} from './ui/skeleton';
 import PrismEditor from './PrismEditor.vue';
-import {Card} from "@/components/ui/card";
 import {toast} from 'vue-sonner';
 import router from "@/router";
 import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
-
 
 
 const sigmaRulesStore = useSigmaRulesStore();

@@ -254,21 +254,13 @@ import {
     ComboboxItemIndicator,
     ComboboxList
 } from '@/components/ui/combobox';
-import {
-    Collapsible,
-    CollapsibleContent,
-    CollapsibleTrigger
-} from '@/components/ui/collapsible';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '@/components/ui/collapsible';
 import {Toggle} from '@/components/ui/toggle';
 import {Skeleton} from '@/components/ui/skeleton';
-import {
-    Alert,
-    AlertTitle,
-    AlertDescription
-} from '@/components/ui/alert';
+import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {Check, Search, ChevronDown} from 'lucide-vue-next';
+import {Check, ChevronDown, Search} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
 
 // Accept initial rule ID from parent component

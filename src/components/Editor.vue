@@ -12,16 +12,10 @@ import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/component
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import FileList from "./FileList.vue";
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-import {computed, type ComputedRef, ref, onMounted, watch} from "vue";
+import {computed, type ComputedRef, ref} from "vue";
 import type {SplitterPanel} from "radix-vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {
-  breakpointsTailwind, 
-  useBreakpoints, 
-  useElementSize, 
-  useResizeObserver, 
-  useWindowSize
-} from '@vueuse/core'
+import {breakpointsTailwind, useBreakpoints, useElementSize, useWindowSize} from '@vueuse/core'
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
 const workspace = useWorkspaceStore();

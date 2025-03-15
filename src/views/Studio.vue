@@ -8,11 +8,10 @@ import "prism-code-editor/prism/languages/javascript";
 import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
 import PrismEditor from "../components/PrismEditor.vue";
-import {Progress} from "@/components/ui/progress";
 import Editor from "@/components/Editor.vue";
-import {Download} from "lucide-vue-next";
+import {Download, Github} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
-import {computed, ref, onMounted, onUnmounted} from "vue";
+import {computed} from "vue";
 import ShareButton from "@/components/ShareButton.vue";
 import DataView from "@/components/DataView.vue";
 import SIEMSelector from "@/components/SIEMSelector.vue";
@@ -22,30 +21,24 @@ import {useWindowSize} from '@vueuse/core';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
 import JSZip from 'jszip';
 import {supportedSiems} from "@/types/SIEMs.ts";
+import {ResizableHandle, ResizablePanel, ResizablePanelGroup} from "@/components/ui/resizable";
 import {
-  ResizableHandle,
-  ResizablePanel, 
-  ResizablePanelGroup
-} from "@/components/ui/resizable";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from '@/components/ui/sheet';
-
-import { Github } from 'lucide-vue-next';
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
 // Use VueUse's useWindowSize for responsive behavior
-const { width, height } = useWindowSize();
+const {width, height} = useWindowSize();
 const isCompactView = computed(() => width.value < 768 || height.value < 600);
 
 const exportFiles = () => {
@@ -198,7 +191,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         <!-- Header - Fixed height, no overflow -->
         <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2 border-b border-border">
             <div class="w-full flex items-center gap-1 md:gap-4 px-4">
-                <SidebarTrigger />
+                <SidebarTrigger/>
                 <Separator class="!h-4" orientation="vertical"/>
                 <Breadcrumb v-if="false">
                     <BreadcrumbList>
@@ -214,15 +207,17 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                 </div>
                 <div class="grow"></div>
                 <div class="flex items-center gap-1 md:gap-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
+                    <a
                         href="https://github.com/northsh/detection.studio/"
-                        target="_blank"
-                    >
-                        <Github class="h-4 w-4 text-primary"/>
-                        GitHub
-                    </Button>
+                        target="_blank">
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                        >
+                            <Github class="h-4 w-4 text-primary"/>
+                            GitHub
+                        </Button>
+                    </a>
 
                     <ShareButton/>
 
@@ -230,10 +225,10 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                         <Tooltip>
                             <TooltipTrigger>
                                 <Button
-                                    variant="secondary"
                                     :disabled="!fs?.files.length"
                                     class="hidden h-8 md:flex gap-1 md:gap-2"
                                     size="sm"
+                                    variant="secondary"
                                     @click="exportFiles"
                                 >
                                     <Download class="h-3.5 w-3.5"/>
@@ -250,9 +245,10 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         </header>
 
         <!-- Main Content - Flexbox layout with three sections -->
-        <div class="flex flex-col flex-1 h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] min-h-0 w-full overflow-hidden">
+        <div
+            class="flex flex-col flex-1 h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] min-h-0 w-full overflow-hidden">
             <!-- Use ResizablePanelGroup for vertical layout -->
-            <ResizablePanelGroup direction="vertical" class="h-full min-h-0 w-full">
+            <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
                 <!-- Editor Panel - Takes ~60% of the space -->
                 <ResizablePanel :default-size="70" :min-size="20" class="p-1 min-h-0 flex flex-col">
                     <div class="h-full w-full rounded-xl overflow-hidden border border-border flex flex-col">
@@ -261,19 +257,20 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                 </ResizablePanel>
 
                 <!-- Resize Handle -->
-                <ResizableHandle with-handle />
+                <ResizableHandle with-handle/>
 
                 <!-- Bottom Section - Takes ~40% of the space -->
                 <ResizablePanel :default-size="30" :min-size="10" class="p-1 min-h-0 flex flex-col">
                     <!-- Nested ResizablePanelGroup for the bottom section -->
-                    <ResizablePanelGroup direction="vertical" class="h-full min-h-0 w-full">
+                    <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
                         <!-- SIEM Query Output - Compact - Takes only 35% -->
-                        <ResizablePanel :default-size="35" :min-size="15" :max-size="50" class="min-h-0 flex flex-col">
+                        <ResizablePanel :default-size="35" :max-size="50" :min-size="15" class="min-h-0 flex flex-col">
                             <div class="h-full w-full rounded-xl bg-muted relative overflow-hidden flex flex-col">
-                                <div class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5 border-b border-border">
+                                <div
+                                    class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5 border-b border-border">
                                     <h3 class="text-xs font-medium">SIEM Query Output</h3>
                                 </div>
-                                
+
                                 <div
                                     v-if="sigma.siem_conversion_error"
                                     class="absolute inset-0 flex p-10 z-10 bg-red-950/50 backdrop-blur-sm"
@@ -295,11 +292,11 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                         </ResizablePanel>
 
                         <!-- Resize Handle -->
-                        <ResizableHandle with-handle v-if="false" />
+                        <ResizableHandle v-if="false" with-handle/>
 
                         <!-- SIEM Sample Data - Takes 65% -->
-                        <ResizablePanel :default-size="30" :min-size="10" class="min-h-0 flex flex-col" v-if="false">
-                            <DataView class="h-full w-full" />
+                        <ResizablePanel v-if="false" :default-size="30" :min-size="10" class="min-h-0 flex flex-col">
+                            <DataView class="h-full w-full"/>
                         </ResizablePanel>
                     </ResizablePanelGroup>
                 </ResizablePanel>
@@ -309,7 +306,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         <!-- Mobile View Sheet for small viewports -->
         <Sheet v-if="isCompactView && false" side="bottom">
             <SheetTrigger as-child>
-                <Button variant="outline" class="md:hidden fixed bottom-4 right-4 z-50">
+                <Button class="md:hidden fixed bottom-4 right-4 z-50" variant="outline">
                     View Sample Data
                 </Button>
             </SheetTrigger>
@@ -321,7 +318,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                     </SheetDescription>
                 </SheetHeader>
                 <div class="py-4">
-                    <DataView />
+                    <DataView/>
                 </div>
                 <SheetFooter>
                     <SheetClose as-child>
