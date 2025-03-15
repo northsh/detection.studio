@@ -5,7 +5,7 @@ import {computedAsync} from "@vueuse/core";
 import type {FileItem} from "@/types/types.ts";
 import type {SigmaStore} from "@/types/SigmaStore";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {type SigmaConverter, SigmaConverterFactory} from "@/lib/sigma";
+import {SigmaConverter} from "@/lib/sigma";
 
 export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore> {
     // @ts-ignore
@@ -35,9 +35,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         const siem_conversion_error = ref("");
         
         // Initialize the converter
-        let sigmaConverter = ref<SigmaConverter>(
-            SigmaConverterFactory.createConverter()
-        );
+        let sigmaConverter = ref<SigmaConverter>(new SigmaConverter());
 
         // Track selected pipelines
         const selected_pipelines = ref<string[]>([]);
