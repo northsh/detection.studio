@@ -23,7 +23,7 @@
     "isomorphic-git": "^1.29.0",
     "js-yaml": "^4.1.0",
     "jszip": "^3.10.1",
-    "lucide-vue-next": "^0.477.0",
+    "lucide-vue-next": "^0.482.0",
     "minimatch": "^10.0.1",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
