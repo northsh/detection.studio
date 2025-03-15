@@ -16,6 +16,8 @@ class SigmaPipeline {
         fields: Object,
         logsource: Object
     ) {
+        delete logsource['definition'];
+
         this.transformations.push({
             id: id || uuid(),
             type: type,
@@ -53,6 +55,8 @@ class SigmaPipeline {
         mapping: Object,
         logsource: Object
     ) {
+        delete logsource['definition'];
+
         this.transformations.push({
             id: id || uuid(),
             type: "field_name_mapping",
