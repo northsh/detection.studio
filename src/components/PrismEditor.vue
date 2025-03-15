@@ -9,6 +9,10 @@ import {matchTags} from "prism-code-editor/match-tags"
 import {highlightBracketPairs} from "prism-code-editor/highlight-brackets"
 import {indentGuides} from "prism-code-editor/guides";
 import {createEditor} from "prism-code-editor";
+import {autoComplete, fuzzyFilter} from "prism-code-editor/autocomplete";
+
+// Import Sigma autocomplete
+import {sigmaCompletion} from "../lib/sigma/autocomplete";
 
 import "prism-code-editor/search.css"
 import "prism-code-editor/languages/html"
@@ -23,6 +27,8 @@ import "prism-code-editor/layout.css"
 import "prism-code-editor/scrollbar.css"
 import "prism-code-editor/copy-button.css"
 import "prism-code-editor/themes/github-dark.css"
+import "prism-code-editor/autocomplete.css"
+import "prism-code-editor/autocomplete-icons.css"
 
 
 const props = withDefaults(
@@ -36,17 +42,19 @@ const props = withDefaults(
         readOnly?: boolean;
         wordWrap?: boolean;
         class?: string;
+        enableAutocompletion?: boolean;
     }>(),
     {
         modelValue: "",
         language: "javascript",
         theme: "github-dark",
-        tabSize: "4",
+        tabSize: "2",
         insertSpaces: false,
         lineNumbers: false,
         readOnly: false,
         wordWrap: false,
         class: "",
+        enableAutocompletion: true,
     },
 );
 
@@ -62,6 +70,43 @@ let editor: PrismEditor;
 onMounted(() => {
     if (!editorRef.value) return;
 
+    // Create extensions array with the default ones
+    const extensions = [
+        highlightSelectionMatches(),
+        searchWidget(),
+        defaultCommands(),
+        copyButton(),
+        matchTags(),
+        highlightBracketPairs(),
+        cursorPosition(),
+        indentGuides(),
+    ];
+
+    // Add autocomplete extension if enabled
+    if (props.enableAutocompletion) {
+        // Register completions for YAML (Sigma uses YAML format)
+        if (props.language === 'yaml') {
+            extensions.push(
+                autoComplete({
+                    filter: fuzzyFilter,
+                    closeOnBlur: true,
+                    explicitOnly: false,
+                    preferAbove: false,
+                }, sigmaCompletion)
+            );
+        } else {
+            // For other languages, just add basic autocomplete
+            extensions.push(
+                autoComplete({
+                    filter: fuzzyFilter,
+                    closeOnBlur: true,
+                    explicitOnly: false,
+                    preferAbove: false,
+                })
+            );
+        }
+    }
+
     editor = createEditor(
         editorRef.value,
         {
@@ -74,48 +119,23 @@ onMounted(() => {
             readOnly: props.readOnly,
             wordWrap: props.wordWrap,
         },
-        highlightSelectionMatches(),
-        searchWidget(),
-        defaultCommands(),
-        copyButton(),
-        matchTags(),
-        highlightBracketPairs(),
-        cursorPosition(),
-        indentGuides(),
-        // editHistory(),
-    )
-
-    // const test = copyButton()
-
-    // const addTooltip = (editor: PrismEditor, element: HTMLElement, fixedWidth?: boolean): [ShowTooltip, HideTooltip]
-
-    /**
-     * Tooltip
-     */
-    const tooltipRef = useTemplateRef("tooltip");
-
-    // const tooltip = document.createElement('div');
-    // tooltip.className = 'bg-card shadow border border-border rounded-md p-2 text-xs text-white';
-    // tooltip.textContent = 'Cannot edit read-only editor.';
-    //
-    // const [show, hide] = addTooltip(editor, tooltip, false)
-    // show()
+        ...extensions
+    );
 
     editor.textarea?.addEventListener('beforeinput', () => {
-        // debugger
-        // show();
+        // Placeholder for potential input handling logic
     }, true);
-    // editor.textarea.addEventListener('click', hide);
 
     editor.addListener("update", (e: string) => {
         emit("update:modelValue", e);
     });
 
     editor.addListener("selectionChange", (e: string) => {
-        // hide()
-        // show();
         emit("selectionChange", e);
     });
+
+    // Emit the ready event with the editor instance
+    emit("ready", editor);
 });
 
 // On prop change, notify the editor
@@ -126,6 +146,15 @@ watch(
 
         editor.setOptions({value: props.modelValue});
     },
+);
+
+watch(
+    () => props.language,
+    (newLanguage) => {
+        if (!editor) return;
+
+        editor.setOptions({language: newLanguage});
+    }
 );
 </script>
 

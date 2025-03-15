@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col h-full overflow-hidden">
+    <div class="flex flex-col h-full md:overflow-hidden">
         <div v-if="!currentRule" class="flex items-center justify-center h-full">
             <p>Select a rule to view its details</p>
         </div>
@@ -42,7 +42,7 @@
                 </div>
                 
                 <!-- Skeleton metadata section -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 border-t border-gray-100 pt-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 border-t border-muted pt-4">
                     <div class="flex flex-col">
                         <Skeleton class="h-3 w-16 mb-2" />
                         <Skeleton class="h-4 w-24" />
@@ -62,7 +62,7 @@
                 </div>
                 
                 <!-- Skeleton references section -->
-                <div class="mt-6 border-t border-gray-100 pt-4">
+                <div class="mt-6 border-t border-muted pt-4">
                     <Skeleton class="h-3 w-24 mb-3" />
                     <div class="flex flex-col gap-2">
                         <Skeleton class="h-4 w-64" />
@@ -441,102 +441,3 @@ function getBadgeVariant(level: string) {
     return 'outline';
 }
 </script>
-
-<style>
-/* Main container setup */
-.flex.flex-col.h-full.overflow-hidden {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-}
-
-/* Ensure proper flexbox behavior for the rule details sections */
-.border-b.p-6.bg-card.shadow-sm.h-full {
-    overflow-y: auto;
-    flex-shrink: 0;
-    max-height: 50%; /* Limit upper section to 50% of viewport */
-}
-
-/* Editor section styling - key fix for flexbox behavior */
-.flex-grow.flex.flex-col.h-full {
-    flex: 1;
-    min-height: 0; /* Critical for flexbox overflow to work */
-    display: flex;
-    flex-direction: column;
-}
-
-/* Inner editor styles */
-.flex-grow.bg-\[\#0D1116\].h-full.overflow-hidden {
-    flex: 1;
-    min-height: 0; /* Critical for nested flexbox to handle overflow properly */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* ScrollArea needs to fill its container */
-.flex-grow.bg-\[\#0D1116\].h-full.overflow-hidden .scrollarea {
-    flex: 1;
-    height: 100%;
-}
-
-/* Editor footer styling */
-.border-t.p-4.flex.justify-between.bg-card {
-    flex-shrink: 0; /* Prevent footer from shrinking */
-}
-
-/* PrismEditor specific styles */
-.prism-editor-ref {
-    width: 100%;
-    height: 100%;
-    min-height: 100px;
-}
-
-/* Add hover effect for logsource badges */
-.bg-muted\/30 .badge:hover {
-    transform: translateY(-1px);
-    transition: transform 0.2s ease;
-}
-
-/* Style for icons (ensure you have the right icon library) */
-.i-lucide-external-link,
-.i-lucide-clipboard,
-.i-lucide-download,
-.i-lucide-loader-2 {
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    background-size: cover;
-    vertical-align: middle;
-}
-
-.i-lucide-external-link {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-}
-
-.i-lucide-clipboard {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'/%3E%3Crect x='8' y='2' width='8' height='4' rx='1' ry='1'/%3E%3C/svg%3E");
-}
-
-.i-lucide-download {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' y1='15' x2='12' y2='3'/%3E%3C/svg%3E");
-}
-
-.i-lucide-loader-2 {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-6.219-8.56'/%3E%3C/svg%3E");
-}
-
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-</style>

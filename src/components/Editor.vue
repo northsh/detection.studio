@@ -17,6 +17,7 @@ import type {SplitterPanel} from "radix-vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {breakpointsTailwind, useBreakpoints, useElementSize, useWindowSize} from '@vueuse/core'
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import SigmaEditor from "@/components/SigmaEditor.vue";
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
@@ -121,11 +122,8 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
                 <TabsContent v-for="fileId in fs.openFiles" :key="fileId" :value="fileId"
                              as-child class="!mt-0 flex-1 min-h-0 bg-[#0D1116] overflow-auto"
                              :style="{ maxHeight: editorMaxHeight }">
-                    <PrismEditor v-model="fs.files.find(f => f.id === fileId)!.content"
-                                :insert-spaces="true"
-                                :line-numbers="true"
+                    <SigmaEditor v-model="fs.files.find(f => f.id === fileId)!.content"
                                 class="text-xs md:text-sm h-full w-full"
-                                language="yaml" @selectionChange="console.log"
                                 @update:modelValue="(content) => fs.updateFile(fileId, content)"/>
                 </TabsContent>
             </Tabs>
