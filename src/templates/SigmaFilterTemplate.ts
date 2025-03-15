@@ -14,7 +14,7 @@ export default function sigmaFilterTemplate(
 
     let sigma_file = file.content;
     // Yaml parse
-    debugger
+
     const sigmaYaml: Sigma[] = yaml.loadAll(sigma_file);
     let logsourceYaml = yaml.dump(sigmaYaml[0]?.logsource ?? '').trim();
     const rule_id = sigmaYaml[0]?.id || uuid();

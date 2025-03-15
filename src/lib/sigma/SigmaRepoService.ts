@@ -17,6 +17,7 @@ export interface SigmaRule {
   path: string;
   logsource?: SigmaLogsource;
   rawContent?: string;
+  references?: string[];
 }
 
 export class SigmaRepoService {

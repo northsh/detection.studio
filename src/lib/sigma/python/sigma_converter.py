@@ -23,7 +23,7 @@ def convert_rule(
     rule_yaml: str, 
     target: str, 
     pipeline_names: List[str] = None,
-    pipeline_yml: str = None,
+    pipeline_ymls: List[str] = None,
     filter_yml: str = None,
     format: str = "default",
     correlation_method: Optional[str] = None,
@@ -37,7 +37,7 @@ def convert_rule(
         rule_yaml: YAML string containing the Sigma rule
         target: Target backend identifier
         pipeline_names: Optional list of pipeline names to use (these must be provided as YAML)
-        pipeline_yml: Optional YAML containing custom pipeline definitions
+        pipeline_ymls: Optional list of YAML strings containing custom pipeline definitions
         filter_yml: Optional YAML containing filter definitions
         format: Output format for the backend
         correlation_method: Optional correlation method
@@ -64,22 +64,30 @@ def convert_rule(
     
     # Initialize processing pipeline if specified
     processing_pipeline = None
-    if pipeline_yml:
+    if pipeline_ymls and len(pipeline_ymls) > 0:
         try:
-            # Load custom pipeline definitions directly from YAML
-            custom_pipeline = ProcessingPipeline.from_yaml(pipeline_yml)
-            processing_pipeline = custom_pipeline
+            # Process each pipeline YAML separately and chain them
+            for i, pipeline_yml in enumerate(pipeline_ymls):
+                if pipeline_yml:
+                    # Load custom pipeline definitions directly from YAML
+                    custom_pipeline = ProcessingPipeline.from_yaml(pipeline_yml)
+                    
+                    if processing_pipeline is None:
+                        processing_pipeline = custom_pipeline
+                    else:
+                        # Chain the pipelines
+                        processing_pipeline = processing_pipeline + custom_pipeline
             
             if pipeline_names:
-                # If both pipeline_yml and pipeline_names are provided,
+                # If both pipeline_ymls and pipeline_names are provided,
                 # log a warning that we're only using the YAML content
-                print(f"Warning: Both pipeline_yml and pipeline_names provided. Using pipeline from YAML content.")
+                print(f"Warning: Both pipeline_ymls and pipeline_names provided. Using pipelines from YAML content.")
         except Exception as e:
             raise SigmaError(f"Error processing custom pipeline: {str(e)}")
     elif pipeline_names:
         # If only pipeline_names are provided but no YAML content, 
         # this is an error since we don't use pipeline_resolver anymore
-        raise SigmaError("Pipeline names provided without YAML content. Please provide pipeline_yml content.")
+        raise SigmaError("Pipeline names provided without YAML content. Please provide pipeline_ymls content.")
     
     # Initialize backend
     backend_class = backends[target]

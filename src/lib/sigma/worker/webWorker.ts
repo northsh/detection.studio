@@ -84,7 +84,7 @@ interface ConvertOptions {
     rule: string;
     target: string;
     pipelines?: string[];
-    pipelineYml?: string;
+    pipelineYmls?: string[];
     filterYml?: string;
     format?: string;
     correlationMethod?: string;
@@ -96,7 +96,7 @@ async function convertRule({
     rule,
     target,
     pipelines = [],
-    pipelineYml = '',
+    pipelineYmls = [],
     filterYml = '',
     format = "default",
     correlationMethod = '',
@@ -116,7 +116,7 @@ async function convertRule({
         rule,
         target,
         pipeline_names: pipelines || null,
-        pipeline_yml: pipelineYml || null,
+        pipeline_ymls: pipelineYmls || null,
         filter_yml: filterYml || null,
         format,
         correlation_method: correlationMethod || null,
@@ -136,7 +136,7 @@ async function convertRule({
       rule,
       target,
       pipeline_names=pipeline_names,
-      pipeline_yml=pipeline_yml,
+      pipeline_ymls=pipeline_ymls,
       filter_yml=filter_yml,
       correlation_method=correlation_method,
       backend_options=backend_options,
@@ -160,7 +160,7 @@ registerPromiseWorker(async (message) => {
                 rule: message.rule,
                 target: message.target,
                 pipelines: message.pipelines,
-                pipelineYml: message.pipelineYml,
+                pipelineYmls: message.pipelineYmls,
                 filterYml: message.filterYml,
                 format: message.format,
                 correlationMethod: message.correlationMethod,

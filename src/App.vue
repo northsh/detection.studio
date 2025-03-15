@@ -350,8 +350,8 @@ watch([Z, Y], ([undo, redo]) => {
                         </SidebarMenuItem>
                         
                         <SidebarMenuItem>
-                            <router-link to="/settings" custom v-slot="{ isActive, href, navigate }">
-                                <SidebarMenuButton :active="isActive" @click="navigate">
+                            <router-link to="/settings" custom v-slot="{ isActive, href, navigate }" disabled>
+                                <SidebarMenuButton :active="isActive" @click="navigate" disabled>
                                     <Settings2 />
                                     <span>Settings</span>
                                 </SidebarMenuButton>

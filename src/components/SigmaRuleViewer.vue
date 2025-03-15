@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col h-full overflow-hidden">
-        <div v-if="!currentRule" class="flex items-center justify-center h-full text-gray-500">
+        <div v-if="!currentRule" class="flex items-center justify-center h-full">
             <p>Select a rule to view its details</p>
         </div>
 
@@ -73,7 +73,7 @@
             
             <!-- Skeleton code editor -->
             <div class="flex-grow flex flex-col h-full">
-                <div class="px-6 py-3 bg-[#0D1116] text-gray-300 border-b border-gray-800">
+                <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
                     <Skeleton class="h-4 w-32 bg-gray-700/20" />
                 </div>
                 <div class="flex-grow bg-[#0D1116] h-full p-4">
@@ -169,18 +169,18 @@
 
                 <!-- References section - improved link styling -->
                 <div v-if="currentRule.references && currentRule.references.length > 0"
-                     class="mt-6 border-t border-gray-100 pt-4">
-                    <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-2 block">References</span>
+                     class="mt-3 border-t border-secondary pt-4">
+                    <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-1 block">References</span>
                     <div class="flex flex-col gap-2">
                         <a
                             v-for="ref in currentRule.references"
                             :key="ref"
                             :href="ref"
-                            class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 group"
+                            class="text-sm text-primary hover:text-primary-foreground transition-colors hover:underline flex items-center gap-1 group"
                             rel="noopener noreferrer"
                             target="_blank"
                         >
-                            <span class="i-lucide-external-link text-[10px] opacity-70 group-hover:opacity-100"></span>
+                            <ExternalLink class="h-3 w-3 mr-3 text-secondary-foreground opacity-70 group-hover:opacity-100" />
                             {{ formatReferenceLink(ref) }}
                         </a>
                     </div>
@@ -189,7 +189,7 @@
 
             <!-- Rule Definition with code editor - full height and clean styling -->
             <div class="flex-grow flex flex-col h-full">
-                <div class="px-6 py-3 bg-[#0D1116] text-gray-300 border-b border-gray-800">
+                <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
                     <span class="text-xs uppercase tracking-wider font-medium">YAML Definition</span>
                 </div>
                 <div class="flex-grow bg-[#0D1116] h-full overflow-auto">
@@ -207,7 +207,7 @@
 
             <div class="border-t p-4 flex justify-between bg-card">
                 <Button class="gap-1.5" variant="outline" @click="copyRule">
-                    <i class="i-lucide-clipboard text-base"></i>
+                    <Clipboard class="h-4 w-4" />
                     Copy Rule
                 </Button>
                 <Button 
@@ -216,8 +216,8 @@
                     @click="importRule"
                     :disabled="isImporting"
                 >
-                    <i v-if="!isImporting" class="i-lucide-download text-base"></i>
-                    <i v-else class="i-lucide-loader-2 text-base animate-spin"></i>
+                    <Download class="h-4 w-4" v-if="!isImporting" />
+                    <Loader2 class="h-4 w-4" v-else />
                     {{ isImporting ? 'Importing...' : 'Import to Studio' }}
                 </Button>
             </div>
@@ -236,6 +236,8 @@ import PrismEditor from './PrismEditor.vue';
 import {Card} from "@/components/ui/card";
 import {toast} from 'vue-sonner';
 import router from "@/router";
+import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
+
 
 
 const sigmaRulesStore = useSigmaRulesStore();

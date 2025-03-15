@@ -27,7 +27,7 @@ const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
 <template>
     <Select v-model="sigma.selected_siem">
-        <SelectTrigger class="h-8">
+        <SelectTrigger class="h-8 border-primary">
             <SelectValue placeholder="Select a SIEM"/>
         </SelectTrigger>
         <SelectContent>
