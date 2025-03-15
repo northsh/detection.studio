@@ -405,8 +405,8 @@ watch([Z, Y], ([undo, redo]) => {
             </SidebarFooter>
             <SidebarRail/>
         </Sidebar>
-        <SidebarInset class="bg-muted/30">
-            <router-view></router-view>
+        <SidebarInset class="bg-muted/30 h-screen max-h-screen overflow-hidden">
+            <router-view class="h-full w-full overflow-hidden"></router-view>
         </SidebarInset>
     </SidebarProvider>
 </template>

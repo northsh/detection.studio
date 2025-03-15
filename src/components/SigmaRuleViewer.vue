@@ -4,15 +4,91 @@
             <p>Select a rule to view its details</p>
         </div>
 
-        <div v-else-if="isLoadingIndividualRule" class="flex items-center justify-center h-full">
-            <div class="flex flex-col items-center">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                <p class="mt-2">Loading rule content...</p>
+        <div v-else-if="isLoadingIndividualRule" class="flex flex-col h-full">
+            <div class="border-b p-6 bg-card shadow-sm h-full">
+                <!-- Skeleton title section -->
+                <div class="flex items-start justify-between">
+                    <Skeleton class="h-8 w-64" />
+                    <div class="flex gap-2">
+                        <Skeleton class="h-5 w-20" />
+                    </div>
+                </div>
+                
+                <!-- Skeleton logsource section -->
+                <div class="mt-4 bg-muted/30 p-3 rounded-md border border-muted">
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <Skeleton class="h-4 w-24" />
+                        <div class="flex flex-wrap gap-2">
+                            <Skeleton class="h-6 w-32" />
+                            <Skeleton class="h-6 w-36" />
+                            <Skeleton class="h-6 w-28" />
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Skeleton description -->
+                <Skeleton class="h-4 w-full mt-4" />
+                <Skeleton class="h-4 w-5/6 mt-2" />
+                <Skeleton class="h-4 w-4/6 mt-2 mb-6" />
+                
+                <!-- Skeleton tags section -->
+                <div class="mb-6">
+                    <div class="flex flex-wrap gap-1.5">
+                        <Skeleton class="h-5 w-16" />
+                        <Skeleton class="h-5 w-24" />
+                        <Skeleton class="h-5 w-20" />
+                        <Skeleton class="h-5 w-18" />
+                    </div>
+                </div>
+                
+                <!-- Skeleton metadata section -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 border-t border-gray-100 pt-4">
+                    <div class="flex flex-col">
+                        <Skeleton class="h-3 w-16 mb-2" />
+                        <Skeleton class="h-4 w-24" />
+                    </div>
+                    <div class="flex flex-col">
+                        <Skeleton class="h-3 w-16 mb-2" />
+                        <Skeleton class="h-4 w-20" />
+                    </div>
+                    <div class="flex flex-col">
+                        <Skeleton class="h-3 w-16 mb-2" />
+                        <Skeleton class="h-4 w-24" />
+                    </div>
+                    <div class="flex flex-col">
+                        <Skeleton class="h-3 w-16 mb-2" />
+                        <Skeleton class="h-4 w-32" />
+                    </div>
+                </div>
+                
+                <!-- Skeleton references section -->
+                <div class="mt-6 border-t border-gray-100 pt-4">
+                    <Skeleton class="h-3 w-24 mb-3" />
+                    <div class="flex flex-col gap-2">
+                        <Skeleton class="h-4 w-64" />
+                        <Skeleton class="h-4 w-72" />
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skeleton code editor -->
+            <div class="flex-grow flex flex-col h-full">
+                <div class="px-6 py-3 bg-[#0D1116] text-gray-300 border-b border-gray-800">
+                    <Skeleton class="h-4 w-32 bg-gray-700/20" />
+                </div>
+                <div class="flex-grow bg-[#0D1116] h-full p-4">
+                    <Skeleton class="h-full w-full bg-gray-700/20" />
+                </div>
+            </div>
+            
+            <div class="border-t p-4 flex justify-between bg-card">
+                <Skeleton class="h-9 w-28" />
+                <Skeleton class="h-9 w-28" />
             </div>
         </div>
 
         <template v-else>
-            <div class="border-b p-6 bg-card shadow-sm h-full">
+            <div class="border-b p-6 bg-card shadow-sm">
                 <!-- Title section with level and status badges -->
                 <div class="flex items-start justify-between">
                     <h2 class="text-2xl font-bold">{{ currentRule.title }}</h2>
@@ -26,7 +102,7 @@
                         </Badge>
                         <Badge
                             v-if="currentRule.status"
-                            class="uppercase font-semibold text-[10px] tracking-wider bg-gray-200 text-gray-800 hover:bg-gray-200"
+                            class="uppercase font-semibold text-[10px] tracking-wider"
                         >
                             {{ currentRule.status }}
                         </Badge>
@@ -34,7 +110,7 @@
                 </div>
 
                 <!-- Logsource section - styled prominently below title -->
-                <div v-if="currentRule.logsource" class="mt-4 bg-muted/30 p-3 rounded-md border border-muted">
+                <div v-if="currentRule.logsource" class="py-2">
                     <div class="flex flex-wrap gap-3 items-center">
                         <span class="uppercase text-xs font-semibold text-gray-500 tracking-wider">Logsource</span>
                         <div class="flex flex-wrap gap-2">
@@ -52,7 +128,7 @@
                 </div>
 
                 <!-- Description - more space and better typography -->
-                <p class="text-gray-700 mt-4 mb-6 leading-relaxed">{{ currentRule.description }}</p>
+                <p class="text-muted-foreground mt-4 mb-6 leading-relaxed">{{ currentRule.description }}</p>
 
                 <!-- Tags section - improved styling with modern look -->
                 <div class="mb-6">
@@ -60,7 +136,7 @@
                         <Badge
                             v-for="tag in currentRule.tags"
                             :key="tag"
-                            class="text-xs px-2 py-0 border-gray-300 text-gray-700 hover:bg-gray-100"
+                            class=""
                             variant="outline"
                         >
                             {{ tag }}
@@ -72,29 +148,29 @@
                 </div>
 
                 <!-- Metadata section - redesigned with better visual hierarchy -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 border-t border-gray-100 pt-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="flex flex-col">
-                        <span class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Author</span>
-                        <span class="text-xs">{{ currentRule.author || 'Unknown' }}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-1">Author</span>
+                        <span class="text-sm">{{ currentRule.author || 'Unknown' }}</span>
                     </div>
                     <div v-if="currentRule.date" class="flex flex-col">
-                        <span class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Created</span>
-                        <span class="text-xs">{{ formatDate(currentRule.date) }}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-1">Created</span>
+                        <span class="text-sm">{{ formatDate(currentRule.date) }}</span>
                     </div>
                     <div v-if="currentRule.modified" class="flex flex-col">
-                        <span class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Modified</span>
-                        <span class="text-xs">{{ formatDate(currentRule.modified) }}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-1">Modified</span>
+                        <span class="text-sm">{{ formatDate(currentRule.modified) }}</span>
                     </div>
                     <div v-if="currentRule.id" class="flex flex-col">
-                        <span class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">ID</span>
-                        <span class="text-xs opacity-60 font-mono truncate">{{ currentRule.id }}</span>
+                        <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-1">ID</span>
+                        <span class="text-sm opacity-60 font-mono truncate">{{ currentRule.id }}</span>
                     </div>
                 </div>
 
                 <!-- References section - improved link styling -->
                 <div v-if="currentRule.references && currentRule.references.length > 0"
                      class="mt-6 border-t border-gray-100 pt-4">
-                    <span class="text-[10px] uppercase tracking-wider text-gray-400 mb-2 block">References</span>
+                    <span class="text-[10px] uppercase tracking-wider text-card-foreground mb-2 block">References</span>
                     <div class="flex flex-col gap-2">
                         <a
                             v-for="ref in currentRule.references"
@@ -116,18 +192,16 @@
                 <div class="px-6 py-3 bg-[#0D1116] text-gray-300 border-b border-gray-800">
                     <span class="text-xs uppercase tracking-wider font-medium">YAML Definition</span>
                 </div>
-                <div class="flex-grow bg-[#0D1116] h-full">
-                    <ScrollArea class=" pb-[400px] h-full w-full">
-                        <PrismEditor
-                            v-model="currentRuleContent"
-                            :insert-spaces="true"
-                            :line-numbers="true"
-                            :read-only="true"
-                            :word-wrap="true"
-                            class="text-xs md:text-sm h-full w-full"
-                            language="yaml"
-                        />
-                    </ScrollArea>
+                <div class="flex-grow bg-[#0D1116] h-full overflow-auto">
+                    <PrismEditor
+                        v-model="currentRuleContent"
+                        :insert-spaces="true"
+                        :line-numbers="true"
+                        :read-only="true"
+                        :word-wrap="true"
+                        class="text-xs md:text-sm h-full w-full overflow-auto"
+                        language="yaml"
+                    />
                 </div>
             </div>
 
@@ -136,9 +210,15 @@
                     <i class="i-lucide-clipboard text-base"></i>
                     Copy Rule
                 </Button>
-                <Button class="gap-1.5" variant="default" @click="importRule">
-                    <i class="i-lucide-download text-base"></i>
-                    Import
+                <Button 
+                    class="gap-1.5" 
+                    variant="default" 
+                    @click="importRule"
+                    :disabled="isImporting"
+                >
+                    <i v-if="!isImporting" class="i-lucide-download text-base"></i>
+                    <i v-else class="i-lucide-loader-2 text-base animate-spin"></i>
+                    {{ isImporting ? 'Importing...' : 'Import to Studio' }}
                 </Button>
             </div>
         </template>
@@ -146,14 +226,20 @@
 </template>
 
 <script lang="ts" setup>
-import {computed} from 'vue';
+import {computed, ref} from 'vue';
 import {useSigmaRulesStore} from '../stores/SigmaBrowserStore.ts';
 import {ScrollArea} from './ui/scroll-area';
 import {Badge} from './ui/badge';
 import {Button} from './ui/button';
+import {Skeleton} from './ui/skeleton';
 import PrismEditor from './PrismEditor.vue';
+import {Card} from "@/components/ui/card";
+import {toast} from 'vue-sonner';
+import router from "@/router";
+
 
 const sigmaRulesStore = useSigmaRulesStore();
+const isImporting = ref(false);
 
 const currentRule = computed(() => sigmaRulesStore.currentRule);
 const currentRuleContent = computed(() => sigmaRulesStore.currentRuleContent);
@@ -195,16 +281,126 @@ async function copyRule() {
 
     try {
         await navigator.clipboard.writeText(currentRuleContent.value);
+        toast('Rule copied to clipboard', {
+            description: currentRule.value?.title || 'Sigma rule',
+            duration: 3000,
+        });
     } catch (err) {
         console.error('Failed to copy rule to clipboard:', err);
+        toast.error('Failed to copy rule', {
+            description: 'Could not access clipboard',
+        });
     }
 }
 
 // Import the rule into the editor
-function importRule() {
-    // This functionality would need to be implemented based on
-    // how your application handles importing Sigma rules
-    console.log('Import rule:', currentRule.value);
+async function importRule() {
+    if (!currentRule.value || !currentRuleContent.value) {
+        toast.error('Import failed', {
+            description: 'No rule selected or rule content is empty',
+        });
+        return;
+    }
+    
+    isImporting.value = true;
+    
+    try {
+        // Import functionality using the router and workspace store
+        const { useWorkspaceStore } = await import('@/stores/WorkspaceStore');
+
+        
+        const workspaceStore = useWorkspaceStore();
+
+        
+        // Get the current workspace's file store
+        const fileStore = workspaceStore.currentWorkspace?.fileStore();
+        
+        if (!fileStore) {
+            console.error('File store not available');
+            toast.error('Import failed', {
+                description: 'File store not available',
+            });
+            return;
+        }
+        
+        // Check if we have a rule title or ID
+        if (!currentRule.value.title && !currentRule.value.id) {
+            console.warn('Rule missing title and ID');
+        }
+        
+        // Prepare file name - use rule title or ID, sanitize it for file system
+        let fileName = currentRule.value.title || currentRule.value.id || 'imported_rule';
+        fileName = fileName
+            .trim()
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '') // Remove special chars
+            .replace(/\s+/g, '_'); // Replace spaces with underscores
+            
+        // Make sure we have content to import
+        if (!currentRuleContent.value.trim()) {
+            throw new Error('Rule content is empty');
+        }
+        
+        // Check for duplicate rule based on ID if available
+        let duplicateFile = null;
+        if (currentRule.value.id) {
+            // Look for rules with the same ID in YAML content
+            duplicateFile = fileStore.files.find(file => 
+                file.type === 'sigma' && 
+                file.content.includes(`id: ${currentRule.value.id}`)
+            );
+        }
+        
+        // If we found a duplicate, ask before replacing or open the existing one
+        if (duplicateFile) {
+            // Open the existing file instead of importing a duplicate
+            fileStore.openFile(duplicateFile.id);
+            
+            // Show a notification that we found an existing rule
+            toast.info('Rule already exists', {
+                description: `"${currentRule.value.title || 'Sigma rule'}" is already in your workspace`,
+                action: {
+                    label: 'Viewing',
+                    onClick: () => {},
+                },
+            });
+            
+            // Navigate to the studio view
+            router.push({ path: '/' });
+            return;
+        }
+            
+        // Add the rule to the file store (if no duplicate was found)
+        const fileId = fileStore.addFile({
+            name: fileName,
+            content: currentRuleContent.value,
+            type: 'sigma',
+        });
+        
+        // Navigate to the studio view if we're not already there
+        router.push({ path: '/' });
+        
+        // Set this rule as the active file in the file store
+        fileStore.openFile(fileId);
+        
+        // Show success toast with rule details
+        toast.success('Rule imported to Studio', {
+            description: `"${currentRule.value.title || 'Sigma rule'}" is now available in your workspace`,
+            action: {
+                label: 'Dismiss',
+                onClick: () => {},
+            },
+        });
+        
+        console.log('Rule imported successfully:', fileName);
+    } catch (err) {
+        console.error('Failed to import rule:', err);
+        toast.error('Import failed', {
+            description: err instanceof Error ? err.message : 'An unknown error occurred',
+        });
+    } finally {
+        isImporting.value = false;
+    }
 }
 
 // Get level color class for the indicator dot
@@ -248,20 +444,54 @@ function getBadgeVariant(level: string) {
 </script>
 
 <style>
-.prism-editor-ref {
-    width: 100%;
+/* Main container setup */
+.flex.flex-col.h-full.overflow-hidden {
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    min-height: 300px;
+    overflow: hidden;
 }
 
-/* Ensure YAML content fills the available height */
-.flex-grow.bg-\[\#0D1116\] {
+/* Ensure proper flexbox behavior for the rule details sections */
+.border-b.p-6.bg-card.shadow-sm.h-full {
+    overflow-y: auto;
+    flex-shrink: 0;
+    max-height: 50%; /* Limit upper section to 50% of viewport */
+}
+
+/* Editor section styling - key fix for flexbox behavior */
+.flex-grow.flex.flex-col.h-full {
+    flex: 1;
+    min-height: 0; /* Critical for flexbox overflow to work */
     display: flex;
     flex-direction: column;
 }
 
-.flex-grow.bg-\[\#0D1116\] .prism-editor-ref {
+/* Inner editor styles */
+.flex-grow.bg-\[\#0D1116\].h-full.overflow-hidden {
     flex: 1;
+    min-height: 0; /* Critical for nested flexbox to handle overflow properly */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ScrollArea needs to fill its container */
+.flex-grow.bg-\[\#0D1116\].h-full.overflow-hidden .scrollarea {
+    flex: 1;
+    height: 100%;
+}
+
+/* Editor footer styling */
+.border-t.p-4.flex.justify-between.bg-card {
+    flex-shrink: 0; /* Prevent footer from shrinking */
+}
+
+/* PrismEditor specific styles */
+.prism-editor-ref {
+    width: 100%;
+    height: 100%;
+    min-height: 100px;
 }
 
 /* Add hover effect for logsource badges */
@@ -273,7 +503,8 @@ function getBadgeVariant(level: string) {
 /* Style for icons (ensure you have the right icon library) */
 .i-lucide-external-link,
 .i-lucide-clipboard,
-.i-lucide-download {
+.i-lucide-download,
+.i-lucide-loader-2 {
     display: inline-block;
     width: 1em;
     height: 1em;
@@ -291,5 +522,22 @@ function getBadgeVariant(level: string) {
 
 .i-lucide-download {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4'/%3E%3Cpolyline points='7 10 12 15 17 10'/%3E%3Cline x1='12' y1='15' x2='12' y2='3'/%3E%3C/svg%3E");
+}
+
+.i-lucide-loader-2 {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 1 1-6.219-8.56'/%3E%3C/svg%3E");
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 </style>

@@ -12,10 +12,16 @@ import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/component
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import FileList from "./FileList.vue";
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-import {computed, type ComputedRef, ref} from "vue";
+import {computed, type ComputedRef, ref, onMounted, watch} from "vue";
 import type {SplitterPanel} from "radix-vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {breakpointsTailwind, useBreakpoints} from '@vueuse/core'
+import {
+  breakpointsTailwind, 
+  useBreakpoints, 
+  useElementSize, 
+  useResizeObserver, 
+  useWindowSize
+} from '@vueuse/core'
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 
 const workspace = useWorkspaceStore();
@@ -26,14 +32,43 @@ const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
  * File Store Panel
  */
 const fileStorePanelRef = ref<InstanceType<typeof SplitterPanel>>();
+const editorContainerRef = ref(null);
+const tabsContainerRef = ref(null);
+const { width: containerWidth } = useElementSize(editorContainerRef);
+const { height: tabsHeight } = useElementSize(tabsContainerRef);
+const { height: windowHeight } = useWindowSize();
+
+// Compute max visible tabs based on container size
+const maxVisibleTabs = computed(() => {
+  // Calculate based on average tab width (approx 120px) and spacing
+  return Math.floor(containerWidth.value / 130);
+});
+
+// Compute if tabs should be multiline
+const shouldShowMultilineTabs = computed(() => {
+  return fs.value && fs.value.openFiles && fs.value.openFiles.length > maxVisibleTabs.value;
+});
+
+// Set max height for tabs container based on number of files
+const tabsMaxHeight = computed(() => {
+  if (!shouldShowMultilineTabs.value) return '2.5rem';
+  // Each row is ~2.5rem, allow up to 3 rows
+  return Math.min(3, Math.ceil(fs.value?.openFiles.length / maxVisibleTabs.value)) * 2.5 + 'rem';
+});
+
+// Calculate dynamic max height for editor content
+const editorMaxHeight = computed(() => {
+  // Calculate remaining height: window height - header (3.5rem) - tabs height - small buffer
+  return `calc(${windowHeight.value}px - 3.5rem - ${tabsHeight.value}px - 1rem)`;
+});
 
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
 </script>
 
 <template>
-    <ResizablePanelGroup auto-save-id="editor" class="min-h-[400px] max-h-[600px] flex-1 rounded-lg border"
-                         direction="horizontal">
+    <ResizablePanelGroup auto-save-id="editor" class="h-full w-full min-h-0 flex-1 rounded-lg border"
+                         direction="horizontal" ref="editorContainerRef">
         <ResizablePanel ref="fileStorePanelRef"
                         :default-size="20"
                         :max-size="isDesktop ? 30 : 90"
@@ -42,22 +77,22 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
             <FileList/>
         </ResizablePanel>
         <ResizableHandle with-handle/>
-        <ResizablePanel :default-size="80" as-child class="h-full">
+        <ResizablePanel :default-size="80" as-child class="h-full min-h-0 overflow-hidden">
             <Tabs v-model:model-value="fs.currentlyOpenFileId" class="">
 
                 <div class="flex items-center">
 
 
-                        <Button v-if="fileStorePanelRef?.isCollapsed"
-                                class="flex items-center gap-2 rounded-lg" size="icon"
-                                variant="secondary" @click="fileStorePanelRef?.expand()">
-                            <PanelRightClose class="h-4 w-4"/>
-                        </Button>
-                        <Button v-if="fileStorePanelRef?.isExpanded"
-                                class="flex items-center gap-2 rounded-lg" size="icon"
-                                variant="ghost" @click="fileStorePanelRef?.collapse()">
-                            <PanelRightOpen class="h-4 w-4"/>
-                        </Button>
+                    <Button v-if="fileStorePanelRef?.isCollapsed"
+                            class="flex items-center gap-2 rounded-lg" size="icon"
+                            variant="secondary" @click="fileStorePanelRef?.expand()">
+                        <PanelRightClose class="h-4 w-4"/>
+                    </Button>
+                    <Button v-if="fileStorePanelRef?.isExpanded"
+                            class="flex items-center gap-2 rounded-lg" size="icon"
+                            variant="ghost" @click="fileStorePanelRef?.collapse()">
+                        <PanelRightOpen class="h-4 w-4"/>
+                    </Button>
 
 
                     <ScrollArea class="w-full">
@@ -89,21 +124,15 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
                     </ScrollArea>
                 </div>
 
-
                 <TabsContent v-for="fileId in fs.openFiles" :key="fileId" :value="fileId"
-                             as-child class="!mt-0 pb-10 h-full bg-[#0D1116]">
-                    <ScrollArea class=" h-full w-full">
-
-                        <PrismEditor v-model="fs.files.find(f => f.id === fileId)!.content"
-                                     :insert-spaces="true"
-                                     :line-numbers="true"
-                                     class="text-xs md:text-sm"
-                                     language="yaml" @selectionChange="console.log"
-                                     @update:modelValue="(content) => fs.updateFile(fileId, content)"/>
-
-
-                        <ScrollBar orientation="vertical"/>
-                    </ScrollArea>
+                             as-child class="!mt-0 flex-1 min-h-0 bg-[#0D1116] overflow-auto"
+                             :style="{ maxHeight: editorMaxHeight }">
+                    <PrismEditor v-model="fs.files.find(f => f.id === fileId)!.content"
+                                :insert-spaces="true"
+                                :line-numbers="true"
+                                class="text-xs md:text-sm h-full w-full"
+                                language="yaml" @selectionChange="console.log"
+                                @update:modelValue="(content) => fs.updateFile(fileId, content)"/>
                 </TabsContent>
             </Tabs>
         </ResizablePanel>
@@ -111,7 +140,78 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
 </template>
 
 <style>
+/* PrismEditor styles */
 .prism-editor .prism-code-editor {
     height: 100%;
+    max-width: 100%;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* Layout container styles */
+.ResizablePanelGroup {
+    max-width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+}
+
+.ResizablePanel {
+    max-width: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* Tabs container styles */
+.Tabs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.Tabs > :nth-child(2) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Tabs list styles */
+.TabsList {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background-color: transparent;
+    border: none;
+}
+
+/* Tab item styles */
+.TabsTrigger {
+    height: 2rem;
+    border-radius: 0.25rem;
+    padding: 0 0.5rem;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    flex-shrink: 0;
+}
+
+/* Tab content styles */
+.TabsContent {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
 }
 </style>

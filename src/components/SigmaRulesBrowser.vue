@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
     <div class="p-6 border-b bg-card shadow-sm">
-      <h2 class="text-xl font-bold mb-4">Sigma Rules Browser</h2>
+      <h2 class="text-lg font-bold mb-2">Sigma Rules Browser</h2>
       
       <!-- Search input -->
       <Input
@@ -12,106 +12,145 @@
       />
       
       <!-- Filter controls -->
-      <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Status filter -->
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium">Status</h3>
-            <Badge variant="outline" class="text-xs">{{ enabledStatusFilters.length }} selected</Badge>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <div v-for="status in statusOptions" :key="status" class="flex items-center space-x-2">
-              <Checkbox 
-                :id="`status-${status}`" 
-                v-model:checked="statusFilters[status]"
-                @update:checked="applyFilters"
-              />
-              <label 
-                :for="`status-${status}`" 
-                class="text-xs leading-none cursor-pointer"
-              >
-                {{ status }}
-              </label>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Logsource filter with combobox for search -->
-        <div class="space-y-2">
-          <h3 class="text-sm font-medium">Filter by Logsource</h3>
-          <Combobox v-model="selectedProduct" @update:modelValue="applyFilters">
-            <ComboboxAnchor>
-              <div class="relative w-full items-center">
-                <ComboboxInput 
-                  class="pl-9 w-full"
-                  placeholder="Search product/category/service..." 
-                  @input="onProductSearch"
-                  :display-value="(val) => val"
-                />
-                <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
-                  <Search class="size-4 text-muted-foreground" />
-                </span>
+      <div class="mt-4 space-y-4">
+        <!-- Collapsible filters section -->
+        <Collapsible>
+          <CollapsibleTrigger asChild>
+            <div class="flex items-center justify-between cursor-pointer">
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-medium">Filters</h3>
+                <Badge variant="outline" class="text-xs">{{ getActiveFiltersCount() }}</Badge>
               </div>
-            </ComboboxAnchor>
+              <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180" />
+            </div>
+          </CollapsibleTrigger>
+          
+          <CollapsibleContent class="pt-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Status filter -->
+              <div class="space-y-2">
+                <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
+                <div class="flex flex-wrap gap-1.5">
+                  <Badge 
+                    v-for="status in statusOptions" 
+                    :key="status"
+                    variant="outline"
+                    :class="[
+                      statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' : 
+                      'bg-muted/50 text-muted-foreground hover:bg-muted',
+                      'cursor-pointer transition-colors'
+                    ]"
+                    @click="toggleStatusFilter(status)"
+                  >
+                    {{ status }}
+                  </Badge>
+                </div>
+              </div>
+
+              <!-- Logsource filter with combobox for search -->
+              <div class="space-y-2">
+                <h3 class="text-xs font-medium text-muted-foreground">Filter by Logsource</h3>
+                <Combobox v-model="selectedProduct" @update:modelValue="applyFilters">
+                  <ComboboxAnchor>
+                    <div class="relative w-full items-center">
+                      <ComboboxInput 
+                        class="pl-9 w-full"
+                        placeholder="Search product/category/service..." 
+                        @input="onProductSearch"
+                        :display-value="(val) => val"
+                      />
+                      <span class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
+                        <Search class="size-4 text-muted-foreground" />
+                      </span>
+                    </div>
+                  </ComboboxAnchor>
+                  
+                  <ComboboxList class="w-full">
+                    <ComboboxEmpty>
+                      No matches found
+                    </ComboboxEmpty>
+
+                    <ComboboxGroup>
+                      <ComboboxItem 
+                        v-for="option in filteredProductOptions" 
+                        :key="option" 
+                        :value="option"
+                        class="flex items-center justify-between"
+                      >
+                        <div class="flex items-center gap-2">
+                          <span>{{ option }}</span>
+                          <Badge v-if="getOptionType(option)" variant="outline" class="text-[10px]">
+                            {{ getOptionType(option) }}
+                          </Badge>
+                        </div>
+
+                        <ComboboxItemIndicator>
+                          <Check :class="cn('ml-auto h-4 w-4')" />
+                        </ComboboxItemIndicator>
+                      </ComboboxItem>
+                    </ComboboxGroup>
+                  </ComboboxList>
+                </Combobox>
+              </div>
+            </div>
             
-            <ComboboxList class="w-full">
-              <ComboboxEmpty>
-                No matches found
-              </ComboboxEmpty>
-
-              <ComboboxGroup>
-                <ComboboxItem 
-                  v-for="option in filteredProductOptions" 
-                  :key="option" 
-                  :value="option"
-                >
-                  {{ option }}
-
-                  <ComboboxItemIndicator>
-                    <Check :class="cn('ml-auto h-4 w-4')" />
-                  </ComboboxItemIndicator>
-                </ComboboxItem>
-              </ComboboxGroup>
-            </ComboboxList>
-          </Combobox>
-        </div>
-      </div>
-      
-      <!-- Logsource sorting toggle -->
-      <div class="mt-4">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-medium">Group By</h3>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="text-xs text-gray-500">Product</span>
-          <Toggle 
-            :pressed="logsourceSortingStyle === 'category-product-service'" 
-            @update:pressed="toggleLogSourceSorting"
-          />
-          <span class="text-xs text-gray-500">Category</span>
-        </div>
+            <!-- Logsource sorting toggle -->
+            <div class="mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
+              </div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xs text-muted-foreground">Product</span>
+                <Toggle 
+                  :pressed="logsourceSortingStyle === 'category-product-service'" 
+                  @update:pressed="toggleLogSourceSorting"
+                  size="sm"
+                />
+                <span class="text-xs text-muted-foreground">Category</span>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
     
     <!-- Error state -->
     <div v-if="error" class="p-4 flex flex-col justify-center items-center flex-grow text-red-500">
-      <div class="bg-red-100 border border-red-300 rounded-md p-4 mb-4 max-w-md">
-        <p class="font-semibold">Error loading rules</p>
-        <p class="text-sm">{{ error }}</p>
-      </div>
-      <button 
+      <Alert variant="destructive" class="max-w-md">
+        <AlertTitle>Error loading rules</AlertTitle>
+        <AlertDescription>{{ error }}</AlertDescription>
+      </Alert>
+      <Button 
         @click="retryLoadRules" 
-        class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+        variant="default"
+        class="mt-4"
       >
         Retry
-      </button>
+      </Button>
     </div>
     
-    <!-- Loading state -->
-    <div v-else-if="isLoading" class="p-4 flex justify-center items-center flex-grow">
-      <div class="flex flex-col items-center">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <p class="mt-2">Loading rules...</p>
+    <!-- Loading state with skeleton -->
+    <div v-else-if="isLoading" class="p-4 flex-grow">
+      <div class="space-y-4">
+        <div v-for="i in 3" :key="`skeleton-group-${i}`" class="space-y-3">
+          <div class="flex items-center justify-between">
+            <Skeleton class="h-4 w-32" />
+            <Skeleton class="h-4 w-12" />
+          </div>
+          <div v-for="j in 3" :key="`skeleton-item-${i}-${j}`" class="p-3 border rounded-md">
+            <Skeleton class="h-5 w-2/3 mb-2" />
+            <div class="flex gap-1.5 mb-2">
+              <Skeleton class="h-4 w-16" />
+              <Skeleton class="h-4 w-16" />
+            </div>
+            <Skeleton class="h-4 w-full mb-2" />
+            <Skeleton class="h-4 w-3/4" />
+            <div class="flex gap-1.5 mt-2">
+              <Skeleton class="h-4 w-20" />
+              <Skeleton class="h-4 w-20" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -120,18 +159,18 @@
       <div v-if="allRules.length === 0" class="text-center py-16 flex flex-col items-center justify-center h-full">
         <div class="bg-muted/30 rounded-lg p-6 max-w-md">
           <h3 class="text-lg font-medium mb-2">No Sigma Rules Found</h3>
-          <p class="text-gray-500 mb-4">
+          <p class="text-muted-foreground mb-4">
             The rules index file may be missing or empty. Please ensure the "sigma-rules-index.json" file exists in the public directory.
           </p>
-          <button 
+          <Button 
             @click="retryLoadRules" 
-            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+            variant="default"
           >
             Retry Loading Rules
-          </button>
+          </Button>
         </div>
       </div>
-      <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-gray-500">
+      <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
         No rules found matching your criteria.
       </div>
       <div v-else ref="containerRef" class="h-full overflow-auto">
@@ -142,17 +181,17 @@
             class="mb-6 px-4"
             :style="{ transform: `translateY(${group.offsetTop}px)`, position: 'absolute', width: 'calc(100% - 16px)', left: 0, right: 0 }"
           >
-            <div class="flex items-center justify-between sticky top-0 bg-background py-2 border-b mb-2">
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500">
+            <div class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2">
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                 {{ group.label }}
               </h3>
               <Badge variant="outline" class="text-xs">{{ group.items.length }} rules</Badge>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-2">
               <div 
                 v-for="itemInfo in group.items" 
                 :key="itemInfo.rule.id || itemInfo.rule.path"
-                class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-colors"
+                class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm"
                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
                 @click="selectRule(itemInfo.rule)"
               >
@@ -160,7 +199,7 @@
                   <h3 class="font-medium">{{ itemInfo.rule.title }}</h3>
                 </div>
 
-                  <div class="flex items-start justify-between">
+                <div class="flex items-start justify-between mt-1">
                   <div class="flex gap-1.5">
                     <Badge 
                       v-if="itemInfo.rule.level" 
@@ -171,13 +210,14 @@
                     </Badge>
                     <Badge 
                       v-if="itemInfo.rule.status" 
-                      class="uppercase font-semibold text-[10px] tracking-wider bg-gray-200 text-gray-800 hover:bg-gray-200"
+                      variant="outline"
+                      class="uppercase font-semibold text-[10px] tracking-wider"
                     >
                       {{ itemInfo.rule.status }}
                     </Badge>
                   </div>
                 </div>
-                <p class="text-sm text-gray-500 line-clamp-2 mt-1">{{ itemInfo.rule.description }}</p>
+                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">{{ itemInfo.rule.description }}</p>
                 <div class="flex flex-wrap gap-1.5 mt-2">
                   <Badge v-if="itemInfo.rule.logsource?.product" variant="secondary" class="px-2 py-0 text-xs">
                     {{ itemInfo.rule.logsource.product }}
@@ -203,7 +243,7 @@ import {computed, onMounted, onUnmounted, reactive, ref} from 'vue';
 import {useSigmaRulesStore} from '../stores/SigmaBrowserStore.ts';
 import {Input} from '@/components/ui/input';
 import {Badge} from '@/components/ui/badge';
-import {Checkbox} from '@/components/ui/checkbox';
+import {Button} from '@/components/ui/button';
 import {
     Combobox,
     ComboboxAnchor,
@@ -213,11 +253,22 @@ import {
     ComboboxItem,
     ComboboxItemIndicator,
     ComboboxList
-} from '@/components/ui/combobox'
+} from '@/components/ui/combobox';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger
+} from '@/components/ui/collapsible';
 import {Toggle} from '@/components/ui/toggle';
+import {Skeleton} from '@/components/ui/skeleton';
+import {
+    Alert,
+    AlertTitle,
+    AlertDescription
+} from '@/components/ui/alert';
 import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {Check, Search} from 'lucide-vue-next';
+import {Check, Search, ChevronDown} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
 
 // Accept initial rule ID from parent component
@@ -249,12 +300,61 @@ const selectedProduct = ref('');
 const logsourceSortingStyle = ref('product-category-service');
 const productSearchQuery = ref('');
 
+// Track product-category-service mappings for better UX
+const logsourceMapping = computed(() => {
+  const mapping: Record<string, { type: string, items: Set<string> }> = {};
+  
+  allRules.value.forEach(rule => {
+    if (rule.logsource?.product) {
+      if (!mapping[rule.logsource.product]) {
+        mapping[rule.logsource.product] = { type: 'product', items: new Set() };
+      }
+      
+      if (rule.logsource.category) {
+        mapping[rule.logsource.product].items.add(rule.logsource.category);
+        
+        if (!mapping[rule.logsource.category]) {
+          mapping[rule.logsource.category] = { type: 'category', items: new Set() };
+        }
+      }
+      
+      if (rule.logsource.service) {
+        mapping[rule.logsource.product].items.add(rule.logsource.service);
+        
+        if (!mapping[rule.logsource.service]) {
+          mapping[rule.logsource.service] = { type: 'service', items: new Set() };
+        }
+      }
+    }
+  });
+  
+  return mapping;
+});
+
+// Helper to determine option type
+function getOptionType(option: string): string | null {
+  return logsourceMapping.value[option]?.type || null;
+}
+
 // Computed status filters that are enabled
 const enabledStatusFilters = computed(() => {
   return Object.entries(statusFilters)
     .filter(([_, enabled]) => enabled)
     .map(([status]) => status);
 });
+
+// Get active filters count for badge
+function getActiveFiltersCount(): string {
+  let count = enabledStatusFilters.value.length;
+  if (selectedProduct.value) count++;
+  return count.toString();
+}
+
+// Toggle status filter
+function toggleStatusFilter(status: string) {
+  statusFilters[status] = !statusFilters[status];
+  applyFilters();
+}
 
 // Get unique logsource options (products, categories, services) from rules
 const productOptions = computed(() => {
@@ -354,9 +454,9 @@ const groupedRules = computed(() => {
 });
 
 // Virtual scroll implementation
-const ITEM_HEIGHT = 140; // Estimated height of each item (increased to prevent overlap)
+const ITEM_HEIGHT = 150; // Estimated height of each item (increased to prevent overlap)
 const GROUP_HEADER_HEIGHT = 50; // Estimated height of group headers (increased for better spacing)
-const BUFFER_SIZE = 10; // Increased buffer size to prevent rendering gaps
+const BUFFER_SIZE = 12; // Increased buffer size to prevent rendering gaps
 
 const containerRef = ref<HTMLElement | null>(null);
 const scrollTop = ref(0);
@@ -388,7 +488,7 @@ const allGroupPositions = computed(() => {
       height: groupHeight
     });
     
-    currentOffset += groupHeight + 20; // Add margin between groups
+    currentOffset += groupHeight + 24; // Add margin between groups
   });
   
   return positions;
@@ -405,8 +505,8 @@ const totalHeight = computed(() => {
 const visibleGroups = computed(() => {
   if (!containerRef.value) return [];
   
-  const startOffset = Math.max(0, scrollTop.value - 200);
-  const endOffset = scrollTop.value + viewportHeight.value + 200;
+  const startOffset = Math.max(0, scrollTop.value - BUFFER_SIZE * ITEM_HEIGHT);
+  const endOffset = scrollTop.value + viewportHeight.value + BUFFER_SIZE * ITEM_HEIGHT;
   
   return allGroupPositions.value.filter(group => {
     const groupEnd = group.offsetTop + group.height;
@@ -485,7 +585,6 @@ function toggleLogSourceSorting(pressed: boolean) {
 // Retry loading rules if there was an error
 async function retryLoadRules() {
   error.value = null;
-  isLoading.value = true;
   
   try {
     console.log('SigmaRulesBrowser: Retrying fetch rules...');
@@ -500,8 +599,6 @@ async function retryLoadRules() {
   } catch (err) {
     console.error('SigmaRulesBrowser: Error during retry:', err);
     error.value = err instanceof Error ? err.message : 'Failed to load rules';
-  } finally {
-    isLoading.value = false;
   }
 }
 
@@ -542,13 +639,13 @@ async function selectRuleById(ruleId: string) {
 function getLevelBadgeClass(level: string): string {
   const lowerLevel = level.toLowerCase();
   
-  if (lowerLevel === 'critical') return 'bg-red-600 hover:bg-red-700';
-  if (lowerLevel === 'high') return 'bg-red-500 hover:bg-red-600';
-  if (lowerLevel === 'medium') return 'bg-amber-500 hover:bg-amber-600'; 
-  if (lowerLevel === 'low') return 'bg-blue-500 hover:bg-blue-600';
-  if (lowerLevel === 'informational') return 'bg-green-500 hover:bg-green-600';
+  if (lowerLevel === 'critical') return 'bg-red-600 hover:bg-red-600';
+  if (lowerLevel === 'high') return 'bg-red-500 hover:bg-red-500';
+  if (lowerLevel === 'medium') return 'bg-amber-500 hover:bg-amber-500'; 
+  if (lowerLevel === 'low') return 'bg-blue-500 hover:bg-blue-500';
+  if (lowerLevel === 'informational') return 'bg-green-500 hover:bg-green-500';
   
-  return 'bg-gray-500 hover:bg-gray-600';
+  return 'bg-gray-500 hover:bg-gray-500';
 }
 </script>
 
@@ -562,25 +659,42 @@ function getLevelBadgeClass(level: string): string {
 /* Fix for virtual scroll overlapping */
 .h-full.overflow-auto {
   position: relative;
+  max-width: 100%;
+  overflow-x: hidden; /* Prevent horizontal overflow */
 }
 
-/* Ensure enough padding between groups */
-.mb-6 {
-  margin-bottom: 1.5rem;
+/* Main container setup */
+.flex.flex-col.h-full.overflow-hidden {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+/* Ensure smooth transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
 
 /* Fix for sticky group headers */
 .sticky {
   z-index: 10;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  max-width: 100%;
 }
 
-/* Better hover effect for rule items */
-.rounded-md.hover\:bg-muted {
-  transition: all 0.2s ease;
+/* Ensure result list stays in bounds */
+.flex-grow.overflow-hidden {
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.rounded-md.hover\:bg-muted:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+/* Fix for absolutely positioned items */
+.relative > [style*="position: absolute"] {
+  max-width: calc(100% - 16px); /* Match the width style set in the vue component */
 }
 </style>
