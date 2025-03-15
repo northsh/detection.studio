@@ -26,17 +26,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import {ref} from 'vue';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
 } from './ui/dialog';
-import { Button } from './ui/button';
+import {Button} from './ui/button';
 import SigmaRulesBrowser from './SigmaRulesBrowser.vue';
 import SigmaRuleViewer from './SigmaRuleViewer.vue';
 

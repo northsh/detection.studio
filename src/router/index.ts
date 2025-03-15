@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import {createRouter, createWebHistory} from 'vue-router'
 import Main from '@/components/Main.vue'
 
 const router = createRouter({
@@ -12,7 +12,11 @@ const router = createRouter({
     {
       path: '/browser',
       name: 'browser',
-      component: () => import('@/views/RulesBrowser.vue')
+      component: () => import('@/views/RulesBrowser.vue'),
+      // Add query parameters to allow sharing specific rules
+      props: (route) => ({
+        ruleId: route.query.ruleId || null
+      })
     },
     {
       path: '/settings',

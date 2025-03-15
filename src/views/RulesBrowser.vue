@@ -1,11 +1,12 @@
 <template>
-  <div class="px-8 py-10">
+  <div class="px-6 py-6">
     <div class="mx-auto">
-      <h1 class="text-3xl font-bold mb-6">Sigma Rules Browser</h1>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-180px)]">
-        <SigmaRulesBrowser class="h-full border rounded-lg overflow-hidden" />
-        <div class="md:col-span-2 h-full border rounded-lg overflow-hidden">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
+        <SigmaRulesBrowser 
+          class="h-full border rounded-lg overflow-hidden shadow-sm" 
+          :initialRuleId="ruleId"
+        />
+        <div class="md:col-span-2 h-full border rounded-lg overflow-hidden shadow-sm">
           <SigmaRuleViewer class="h-full" />
         </div>
       </div>
@@ -16,4 +17,9 @@
 <script setup lang="ts">
 import SigmaRulesBrowser from '@/components/SigmaRulesBrowser.vue';
 import SigmaRuleViewer from '@/components/SigmaRuleViewer.vue';
+
+// Accept route props
+defineProps<{
+  ruleId?: string | null
+}>();
 </script>

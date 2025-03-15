@@ -1,30 +1,7 @@
-import { defineStore } from 'pinia';
-import { ref, computed, shallowRef } from 'vue';
-import type { SigmaRule, SigmaLogsource } from '../lib/sigma/SigmaRepoService';
-import { SigmaRepoService } from '../lib/sigma/SigmaRepoService';
-
-// Simple fuzzy search utility for when Fuse.js is not loaded
-function simpleFuzzySearch(items: SigmaRule[], query: string): SigmaRule[] {
-  const words = query.toLowerCase().split(/\s+/).filter(word => word.length > 0);
-  
-  if (words.length === 0) return items;
-  
-  return items.filter(item => {
-    const itemText = [
-      item.title,
-      item.description,
-      item.author,
-      ...(item.tags || []),
-      item.level,
-      item.status,
-      item.logsource?.category,
-      item.logsource?.product,
-      item.logsource?.service
-    ].filter(Boolean).join(' ').toLowerCase();
-    
-    return words.every(word => itemText.includes(word));
-  });
-}
+import {defineStore} from 'pinia';
+import {computed, ref, shallowRef} from 'vue';
+import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
+import {SigmaRepoService} from '../lib/sigma/SigmaRepoService';
 
 export const useSigmaRulesStore = defineStore('sigmaRules', () => {
   const rules = ref<SigmaRule[]>([]);
@@ -41,20 +18,8 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
 
   const filteredRules = computed(() => {
     if (!searchQuery.value) return rules.value;
-    
-    // If Fuse.js is loaded and properly initialized, use it for search
-    if (isFuseLoaded.value && fuseInstance.value) {
-      try {
-        return fuseInstance.value.search(searchQuery.value).map((result: any) => result.item);
-      } catch (error) {
-        console.error('Error searching with Fuse.js:', error);
-        // Fallback to simple search if Fuse.js fails
-        return simpleFuzzySearch(rules.value, searchQuery.value);
-      }
-    }
-    
-    // Fallback to simple fuzzy search
-    return simpleFuzzySearch(rules.value, searchQuery.value);
+
+    return fuseInstance.value.search(searchQuery.value).map((result: any) => result.item);
   });
 
   async function initFuse() {
@@ -87,12 +52,21 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     }
   }
 
-  async function fetchRules() {
+  async function fetchRules(forceReload: boolean = false) {
     isLoading.value = true;
     error.value = null;
     
     try {
+      // Reset the SigmaRepoService if force reload is requested
+      if (forceReload) {
+        // Use a private method to force reload from the service
+        // @ts-ignore - Accessing private member
+        sigmaRepoService['isLoaded'] = false;
+      }
+      
       rules.value = await sigmaRepoService.getRules();
+      console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
+      
       // Initialize search after rules are loaded
       await initFuse();
     } catch (err) {

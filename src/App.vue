@@ -6,7 +6,6 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -51,7 +50,6 @@ import "prism-code-editor/prism/languages/yaml";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {useMagicKeys} from '@vueuse/core'
 import {supportedSiems} from "@/types/SIEMs";
-import Main from "@/components/Main.vue";
 
 // This is sample data.
 const data = {
