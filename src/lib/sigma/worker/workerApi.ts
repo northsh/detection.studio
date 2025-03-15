@@ -11,18 +11,19 @@ export function convertSigmaRuleAsync(
   rule: string, 
   target: string, 
   pipelines: string[] = [],
-  pipelineYml: string,
+  pipelineYmls: string[] = [],
   filterYml: string,
   format: string,
   correlationMethod: string,
   backendOptions: Record<string, any> = {}
 ) {
+
   return promiseWorker.postMessage({
     type: 'convert',
     rule,
     target,
     pipelines,
-    pipelineYml,
+    pipelineYmls,
     filterYml,
     format,
     correlationMethod,

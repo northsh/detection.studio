@@ -38,6 +38,8 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 
+import { Github } from 'lucide-vue-next';
+
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
@@ -212,12 +214,23 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                 </div>
                 <div class="grow"></div>
                 <div class="flex items-center gap-1 md:gap-2">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        href="https://github.com/northsh/detection.studio/"
+                        target="_blank"
+                    >
+                        <Github class="h-4 w-4 text-primary"/>
+                        GitHub
+                    </Button>
+
                     <ShareButton/>
 
                     <TooltipProvider>
                         <Tooltip>
                             <TooltipTrigger>
                                 <Button
+                                    variant="secondary"
                                     :disabled="!fs?.files.length"
                                     class="hidden h-8 md:flex gap-1 md:gap-2"
                                     size="sm"
@@ -241,7 +254,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
             <!-- Use ResizablePanelGroup for vertical layout -->
             <ResizablePanelGroup direction="vertical" class="h-full min-h-0 w-full">
                 <!-- Editor Panel - Takes ~60% of the space -->
-                <ResizablePanel :default-size="60" :min-size="30" class="p-1 min-h-0 flex flex-col">
+                <ResizablePanel :default-size="70" :min-size="20" class="p-1 min-h-0 flex flex-col">
                     <div class="h-full w-full rounded-xl overflow-hidden border border-border flex flex-col">
                         <Editor/>
                     </div>
@@ -251,7 +264,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                 <ResizableHandle with-handle />
 
                 <!-- Bottom Section - Takes ~40% of the space -->
-                <ResizablePanel :default-size="40" :min-size="20" class="p-1 min-h-0 flex flex-col">
+                <ResizablePanel :default-size="30" :min-size="10" class="p-1 min-h-0 flex flex-col">
                     <!-- Nested ResizablePanelGroup for the bottom section -->
                     <ResizablePanelGroup direction="vertical" class="h-full min-h-0 w-full">
                         <!-- SIEM Query Output - Compact - Takes only 35% -->
@@ -275,17 +288,17 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                                     v-model:model-value="sigma.siem_query"
                                     :read-only="true"
                                     :word-wrap="true"
-                                    class="h-full w-full border-border text-xs md:text-sm overflow-y-auto overflow-x-hidden"
+                                    class="h-full w-full border-border text-xs md:text-sm overflow-y-auto overflow-x-hidden bg-[#0D1118]"
                                     language="splunk-spl"
                                 />
                             </div>
                         </ResizablePanel>
 
                         <!-- Resize Handle -->
-                        <ResizableHandle with-handle />
+                        <ResizableHandle with-handle v-if="false" />
 
                         <!-- SIEM Sample Data - Takes 65% -->
-                        <ResizablePanel :default-size="65" :min-size="30" class="min-h-0 flex flex-col">
+                        <ResizablePanel :default-size="30" :min-size="10" class="min-h-0 flex flex-col" v-if="false">
                             <DataView class="h-full w-full" />
                         </ResizablePanel>
                     </ResizablePanelGroup>
@@ -294,7 +307,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         </div>
 
         <!-- Mobile View Sheet for small viewports -->
-        <Sheet v-if="isCompactView" side="bottom">
+        <Sheet v-if="isCompactView && false" side="bottom">
             <SheetTrigger as-child>
                 <Button variant="outline" class="md:hidden fixed bottom-4 right-4 z-50">
                     View Sample Data

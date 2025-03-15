@@ -52,10 +52,9 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             }
 
             // Get pipeline and filter YAML content from files
-            const pipelineYml = fs.value?.files
+            const pipelineYmls = fs.value?.files
                 .filter((f: FileItem) => f.type === "pipeline")
-                .map((f) => f.content)
-                .join("\n---\n");
+                .map((f) => f.content) || [];
                 
             const filterYml = fs.value?.files
                 .filter((f: FileItem) => f.type === "filter")
@@ -65,8 +64,8 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             return await convert(
                 file_content.value || "",
                 selected_siem.value,
-                [],
-                pipelineYml,
+                selected_pipelines.value,
+                pipelineYmls,
                 filterYml,
             ) ?? "";
         }, '');
@@ -76,7 +75,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             rule: string,
             target: string,
             pipeline: string[],
-            pipelineYml: string,
+            pipelineYmls: string[],
             filterYml: string,
         ): Promise<string | undefined> {
             try {
@@ -84,7 +83,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                     rule,
                     target,
                     pipeline,
-                    pipelineYml,
+                    pipelineYmls,
                     filterYml
                 );
 
