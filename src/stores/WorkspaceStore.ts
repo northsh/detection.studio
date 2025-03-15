@@ -40,7 +40,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         }
     }
 
-    function removeHash () {
+    function removeHash() {
         var scrollV, scrollH, loc = window.location;
         if ("pushState" in history)
             history.pushState("", document.title, loc.pathname + loc.search);
@@ -74,10 +74,12 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         setCurrentWorkspace(availableWorkspaces.value[0]);
     }
 
-    // Initialize on store creation if empty
-    if (availableWorkspaces.value.length === 0) {
-        initializeDefaultWorkspaces();
-    }
+    onMounted(() => {
+        // Initialize on store creation if empty
+        if (availableWorkspaces.value.length === 0) {
+            initializeDefaultWorkspaces();
+        }
+    })
 
     function setCurrentWorkspace(workspace: Workspace) {
         currentWorkspaceID.value = workspace.id;
@@ -86,7 +88,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     function newWorkspace(
         name: string,
         plan: string,
-    ) : Workspace {
+    ): Workspace {
         const id = Math.random().toString(36).substring(7);
         const newWorkspace: Workspace = {
             id,
@@ -105,8 +107,8 @@ export const useWorkspaceStore = defineStore('workspace', () => {
 
     const currentWorkspace: ComputedRef<Workspace> = computed(() =>
         availableWorkspaces.value.find(w => w.id === currentWorkspaceID.value)
-            ?? availableWorkspaces.value[0]
-            ?? newWorkspace('Default', 'free')
+        ?? availableWorkspaces.value[0]
+        ?? newWorkspace('Default', 'free')
     );
 
     function deleteWorkspace(workspaceId: string) {
@@ -114,15 +116,15 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         if (availableWorkspaces.value.length <= 1) {
             return false;
         }
-        
+
         // Filter out the workspace with the given ID
         availableWorkspaces.value = availableWorkspaces.value.filter(w => w.id !== workspaceId);
-        
+
         // If current workspace is deleted, set to another available workspace
         if (currentWorkspaceID.value === workspaceId && availableWorkspaces.value.length > 0) {
             setCurrentWorkspace(availableWorkspaces.value[0]);
         }
-        
+
         return true;
     }
 
