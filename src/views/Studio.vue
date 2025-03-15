@@ -189,7 +189,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 <template>
     <div class="flex flex-col h-screen w-full max-w-full overflow-hidden">
         <!-- Header - Fixed height, no overflow -->
-        <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2 border-b border-border">
+        <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
             <div class="w-full flex items-center gap-1 md:gap-4 px-4">
                 <SidebarTrigger/>
                 <Separator class="!h-4" orientation="vertical"/>
@@ -250,8 +250,8 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
             <!-- Use ResizablePanelGroup for vertical layout -->
             <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
                 <!-- Editor Panel - Takes ~60% of the space -->
-                <ResizablePanel :default-size="70" :min-size="20" class="p-1 min-h-0 flex flex-col">
-                    <div class="h-full w-full rounded-xl overflow-hidden border border-border flex flex-col">
+                <ResizablePanel :default-size="70" :min-size="20" class="p-3 min-h-0 flex flex-col">
+                    <div class="h-full w-full rounded-xl overflow-hidden flex flex-col">
                         <Editor/>
                     </div>
                 </ResizablePanel>
@@ -267,7 +267,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                         <ResizablePanel :default-size="35" :max-size="50" :min-size="15" class="min-h-0 flex flex-col">
                             <div class="h-full w-full rounded-xl bg-muted relative overflow-hidden flex flex-col">
                                 <div
-                                    class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5 border-b border-border">
+                                    class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5">
                                     <h3 class="text-xs font-medium">SIEM Query Output</h3>
                                 </div>
 
