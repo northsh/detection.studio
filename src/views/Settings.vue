@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supportedSiems } from '@/types/SIEMs';
-import { useSettingsStore } from '@/stores/SettingsStore';
+import {ref} from 'vue';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {Button} from '@/components/ui/button';
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {supportedSiems} from '@/types/SIEMs';
+import {useSettingsStore} from '@/stores/SettingsStore';
 
 // Access the Settings store
 const settingsStore = useSettingsStore();

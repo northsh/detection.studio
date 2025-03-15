@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { SelectGroupProps } from 'radix-vue'
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
-import { SelectGroup } from 'radix-vue'
-import { computed } from 'vue'
+import type {SelectGroupProps} from 'radix-vue'
+import {SelectGroup} from 'radix-vue'
+import type {HTMLAttributes} from 'vue'
+import {computed} from 'vue'
+import {cn} from '@/lib/utils'
 
 const props = defineProps<SelectGroupProps & { class?: HTMLAttributes['class'] }>()
 

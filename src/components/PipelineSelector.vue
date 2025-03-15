@@ -1,7 +1,7 @@
 <script lang="ts" setup>
-import { computed, ref } from "vue";
-import { useWorkspaceStore } from "@/stores/WorkspaceStore";
-import { 
+import {computed, ref} from "vue";
+import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {
     Select,
     SelectContent,
     SelectGroup,
@@ -10,10 +10,10 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, X } from "lucide-vue-next";
-import { Button } from "@/components/ui/button";
-import type { FileItem } from "@/types/types";
+import {Badge} from "@/components/ui/badge";
+import {Plus, X} from "lucide-vue-next";
+import {Button} from "@/components/ui/button";
+import type {FileItem} from "@/types/types";
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());

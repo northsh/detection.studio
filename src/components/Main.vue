@@ -1,32 +1,26 @@
 <script lang="ts" setup>
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/components/ui/breadcrumb";
+import {Separator} from "@/components/ui/separator";
+import {SidebarTrigger} from "@/components/ui/sidebar";
 // Importing Prism grammars
 import "prism-code-editor/prism/languages/markup";
 import "prism-code-editor/prism/languages/javascript";
 import "prism-code-editor/prism/languages/yaml";
-import { Button } from "@/components/ui/button";
+import {Button} from "@/components/ui/button";
 import PrismEditor from "./PrismEditor.vue";
-import { Progress } from "@/components/ui/progress";
+import {Progress} from "@/components/ui/progress";
 import Editor from "@/components/Editor.vue";
-import { Download } from "lucide-vue-next";
-import { useWorkspaceStore } from "@/stores/WorkspaceStore";
-import { computed } from "vue";
+import {Download} from "lucide-vue-next";
+import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {computed} from "vue";
 import ShareButton from "@/components/ShareButton.vue";
 import DataView from "@/components/DataView.vue";
 import SIEMSelector from "@/components/SIEMSelector.vue";
 import PipelineSelector from "@/components/PipelineSelector.vue";
-import ConversionStrategyToggle from "@/components/ConversionStrategyToggle.vue";
 
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
 import JSZip from 'jszip';
-import { supportedSiems } from "@/types/SIEMs";
+import {supportedSiems} from "@/types/SIEMs";
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
@@ -194,8 +188,6 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 
       <div class="flex items-center gap-3">
         <SIEMSelector />
-        <ConversionStrategyToggle />
-        <Separator orientation="vertical" class="!h-6" />
         <PipelineSelector v-if="false"/>
       </div>
       <div class="grow"></div>

@@ -1,6 +1,5 @@
 import type {FileItem, Sigma} from "@/types/types";
 import yaml from 'js-yaml';
-import {dedentString, indentString} from "@/templates/template_utils.ts";
 
 import {v4 as uuid} from 'uuid';
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";

@@ -1,4 +1,4 @@
-import type { SigmaConversionResult } from './types';
+import type {SigmaConversionResult} from './types';
 
 /**
  * Interface for Sigma rule conversion implementations

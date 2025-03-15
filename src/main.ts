@@ -1,16 +1,16 @@
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import './assets/index.css'
 import App from './App.vue'
 import router from './router'
 
-import { createPinia } from "pinia";
-import { PiniaColada } from "@pinia/colada";
+import {createPinia} from "pinia";
+import {PiniaColada} from "@pinia/colada";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { PiniaUndo } from "pinia-undo";
+import {PiniaUndo} from "pinia-undo";
 
 // Import stores
-import { useSigmaRulesStore } from './stores/SigmaRulesStore';
-import { useSettingsStore } from './stores/SettingsStore';
+import {useSigmaRulesStore} from './stores/SigmaBrowserStore.ts';
+import {useSettingsStore} from './stores/SettingsStore';
 
 import "@fontsource-variable/dm-sans/index.css";
 

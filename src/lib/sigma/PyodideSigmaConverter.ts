@@ -1,7 +1,7 @@
-import type { SigmaConverter } from './SigmaConverter';
-import type { SigmaConverterConfig, SigmaConversionResult } from './types';
-import { SIGMA_TARGETS } from '@/types/SIEMs';
-import { convertSigmaRuleAsync, installBackendAsync, isPyodideReadyAsync } from './worker/workerApi';
+import type {SigmaConverter} from './SigmaConverter';
+import type {SigmaConversionResult} from './types';
+import {SIGMA_TARGETS} from '@/types/SIEMs';
+import {convertSigmaRuleAsync, installBackendAsync, isPyodideReadyAsync} from './worker/workerApi';
 
 /**
  * Implementation of SigmaConverter that uses Pyodide for local conversion
@@ -13,10 +13,9 @@ export class PyodideSigmaConverter implements SigmaConverter {
 
   /**
    * Create a new PyodideSigmaConverter
-   * 
-   * @param config - Configuration options
+   *
    */
-  constructor(config: SigmaConverterConfig = {}) {
+  constructor() {
     // Initialize Pyodide in the background
     this.initPromise = this.initPyodide();
   }
