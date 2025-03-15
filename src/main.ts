@@ -1,14 +1,16 @@
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import './assets/index.css'
 import App from './App.vue'
+import router from './router'
 
-import { createPinia } from "pinia";
-import { PiniaColada } from "@pinia/colada";
+import {createPinia} from "pinia";
+import {PiniaColada} from "@pinia/colada";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { PiniaUndo } from "pinia-undo";
+import {PiniaUndo} from "pinia-undo";
 
 // Import stores
-import { useSigmaRulesStore } from './stores/SigmaRulesStore';
+import {useSigmaRulesStore} from './stores/SigmaBrowserStore.ts';
+import {useSettingsStore} from './stores/SettingsStore';
 
 import "@fontsource-variable/dm-sans/index.css";
 
@@ -20,7 +22,9 @@ Sentry.init({
   app,
   dsn: import.meta.env.VITE_SENTRY_DSN,
   integrations: [
-    Sentry.browserTracingIntegration(),
+    Sentry.browserTracingIntegration({
+      router
+    }),
     Sentry.replayIntegration({
       maskAllText: false,
       blockAllMedia: false,
@@ -44,7 +48,9 @@ const pinia = createPinia()
 
 app.use(pinia)
   .use(PiniaColada, {})
+  .use(router)
   .mount('#app')
 
 // Initialize stores
 useSigmaRulesStore(pinia);
+useSettingsStore(pinia);

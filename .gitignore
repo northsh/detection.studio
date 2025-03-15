@@ -30,3 +30,6 @@ dist-ssr
 
 # Sigma Repo
 .sigma-repo/
+/test-results/
+/playwright-report/
+public/sigma-rules-index.json

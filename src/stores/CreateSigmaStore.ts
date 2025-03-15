@@ -1,11 +1,11 @@
-import { defineStore, type StoreDefinition } from "pinia";
+import {defineStore, type StoreDefinition} from "pinia";
 import {computed, type Ref, ref, watch} from "vue";
-import { computedAsync } from "@vueuse/core";
+import {computedAsync} from "@vueuse/core";
 
-import type { FileItem } from "@/types/types.ts";
-import type { SigmaStore } from "@/types/SigmaStore";
-import { useWorkspaceStore } from "@/stores/WorkspaceStore";
-import { SigmaConverterFactory, type SigmaConverter, SigmaConversionStrategy } from "@/lib/sigma";
+import type {FileItem} from "@/types/types.ts";
+import type {SigmaStore} from "@/types/SigmaStore";
+import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {SigmaConverter} from "@/lib/sigma";
 
 export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore> {
     // @ts-ignore
@@ -33,28 +33,9 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         // SIEM conversion settings
         const selected_siem = ref("splunk");
         const siem_conversion_error = ref("");
-        const conversion_strategy = ref<SigmaConversionStrategy>(SigmaConversionStrategy.LOCAL_PYODIDE);
         
         // Initialize the converter
-        let sigmaConverter = ref<SigmaConverter>(
-            SigmaConverterFactory.createConverter(conversion_strategy.value, {
-                baseUrl: import.meta.env.VITE_STUDIO_BASE_URL,
-            })
-        );
-
-        // Update the converter when the strategy changes
-        watch(conversion_strategy, (newStrategy) => {
-            sigmaConverter.value = SigmaConverterFactory.createConverter(newStrategy, {
-                baseUrl: import.meta.env.VITE_STUDIO_BASE_URL,
-            });
-        });
-
-        // Function to toggle between conversion strategies
-        function toggleConversionStrategy() {
-            conversion_strategy.value = conversion_strategy.value === SigmaConversionStrategy.REMOTE 
-                ? SigmaConversionStrategy.LOCAL_PYODIDE 
-                : SigmaConversionStrategy.REMOTE;
-        }
+        let sigmaConverter = ref<SigmaConverter>(new SigmaConverter());
 
         // Track selected pipelines
         const selected_pipelines = ref<string[]>([]);
@@ -71,10 +52,9 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             }
 
             // Get pipeline and filter YAML content from files
-            const pipelineYml = fs.value?.files
+            const pipelineYmls = fs.value?.files
                 .filter((f: FileItem) => f.type === "pipeline")
-                .map((f) => f.content)
-                .join("\n---\n");
+                .map((f) => f.content) || [];
                 
             const filterYml = fs.value?.files
                 .filter((f: FileItem) => f.type === "filter")
@@ -84,8 +64,8 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             return await convert(
                 file_content.value || "",
                 selected_siem.value,
-                [],
-                pipelineYml,
+                selected_pipelines.value,
+                pipelineYmls,
                 filterYml,
             ) ?? "";
         }, '');
@@ -95,7 +75,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             rule: string,
             target: string,
             pipeline: string[],
-            pipelineYml: string,
+            pipelineYmls: string[],
             filterYml: string,
         ): Promise<string | undefined> {
             try {
@@ -103,7 +83,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                     rule,
                     target,
                     pipeline,
-                    pipelineYml,
+                    pipelineYmls,
                     filterYml
                 );
 
@@ -121,7 +101,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             }
         }
 
-        const isReady: Ref<boolean> = computedAsync(async () => await sigmaConverter.value.isReady());
+        const isReady: Ref<boolean | undefined, boolean | undefined> = computedAsync(async () => await sigmaConverter.value.isReady());
 
         return {
             convert,
@@ -129,8 +109,6 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             siem_conversion_error,
             selected_siem,
             active_sigma_rule_file_id,
-            conversion_strategy,
-            toggleConversionStrategy,
             selected_pipelines,
             updateSelectedPipelines,
             isReady

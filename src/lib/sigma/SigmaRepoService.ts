@@ -1,3 +1,9 @@
+export interface SigmaLogsource {
+  category?: string;
+  product?: string;
+  service?: string;
+}
+
 export interface SigmaRule {
   id: string;
   title: string;
@@ -9,7 +15,9 @@ export interface SigmaRule {
   tags: string[];
   level: string;
   path: string;
+  logsource?: SigmaLogsource;
   rawContent?: string;
+  references?: string[];
 }
 
 export class SigmaRepoService {
@@ -33,17 +41,30 @@ export class SigmaRepoService {
     if (this.isLoaded) return;
 
     try {
+      console.log('SigmaRepoService: Loading rules index...');
+      
       // Fetch the pre-generated index file
       const response = await fetch('/sigma-rules-index.json');
       
       if (!response.ok) {
+        console.error(`Failed to load rules index: ${response.status} ${response.statusText}`);
         throw new Error(`Failed to load rules index: ${response.status} ${response.statusText}`);
       }
       
-      this.rules = await response.json();
+      const data = await response.json();
+      
+      if (!Array.isArray(data)) {
+        console.error('Rules index is not an array:', data);
+        throw new Error('Invalid rules index format');
+      }
+      
+      this.rules = data;
       this.isLoaded = true;
+      console.log(`SigmaRepoService: Successfully loaded ${this.rules.length} rules`);
     } catch (error) {
       console.error('Error loading rules index:', error);
+      // Try to provide a fallback empty array to prevent fatal errors
+      this.rules = [];
       throw error;
     }
   }
@@ -62,7 +83,7 @@ export class SigmaRepoService {
    * Fetches the content of a specific rule from the jsdelivr CDN
    */
   public async getRule(path: string): Promise<string> {
-    const cdnPath = `https://cdn.jsdelivr.net/gh/SigmaHQ/sigma@main/${path}`;
+    const cdnPath = `https://cdn.jsdelivr.net/gh/SigmaHQ/sigma@master/${path}`;
     
     try {
       const response = await fetch(cdnPath);
@@ -74,25 +95,5 @@ export class SigmaRepoService {
       console.error(`Error fetching rule from CDN: ${path}`, error);
       throw error;
     }
-  }
-
-  /**
-   * Searches rules by query matching title, description, tags, or author
-   */
-  public async searchRules(query: string): Promise<SigmaRule[]> {
-    if (!this.isLoaded) {
-      await this.loadRulesIndex();
-    }
-    
-    const lowerQuery = query.toLowerCase();
-    
-    return this.rules.filter(rule => {
-      return (
-        rule.title.toLowerCase().includes(lowerQuery) ||
-        rule.description.toLowerCase().includes(lowerQuery) ||
-        rule.tags.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
-        rule.author.toLowerCase().includes(lowerQuery)
-      );
-    });
   }
 }

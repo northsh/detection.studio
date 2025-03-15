@@ -6,7 +6,6 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -51,7 +50,6 @@ import "prism-code-editor/prism/languages/yaml";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {useMagicKeys} from '@vueuse/core'
 import {supportedSiems} from "@/types/SIEMs";
-import Main from "@/components/Main.vue";
 
 // This is sample data.
 const data = {
@@ -221,7 +219,6 @@ watch([Z, Y], ([undo, redo]) => {
 </script>
 
 <template>
-
     <SidebarProvider v-model:open="workStore.sidebarOpen" class="">
         <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
@@ -332,34 +329,37 @@ watch([Z, Y], ([undo, redo]) => {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupLabel class="text-muted-foreground">Platform</SidebarGroupLabel>
+                    <SidebarGroupLabel class="text-muted-foreground">Navigation</SidebarGroupLabel>
                     <SidebarMenu>
-                        <Collapsible v-for="item in data.navMain" :key="item.title" :default-open="false"
-                                     as-child class="group/collapsible">
-                            <SidebarMenuItem disabled>
-                                <CollapsibleTrigger as-child>
-                                    <SidebarMenuButton :tooltip="item.title" disabled>
-                                        <component :is="item.icon"/>
-                                        <span>{{ item.title }}</span>
-                                        <ChevronRight
-                                            class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
-                                    </SidebarMenuButton>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                    <SidebarMenuSub>
-                                        <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
-                                            <SidebarMenuSubButton as-child>
-                                                <a :href="subItem.url">
-                                                    <span>{{ subItem.title }}</span>
-                                                </a>
-                                            </SidebarMenuSubButton>
-                                        </SidebarMenuSubItem>
-                                    </SidebarMenuSub>
-                                </CollapsibleContent>
-                            </SidebarMenuItem>
-                        </Collapsible>
+                        <SidebarMenuItem>
+                            <router-link to="/" custom v-slot="{ isActive, href, navigate }">
+                                <SidebarMenuButton :active="isActive" @click="navigate">
+                                    <PaletteIcon />
+                                    <span>Studio</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
+                        
+                        <SidebarMenuItem>
+                            <router-link to="/browser" custom v-slot="{ isActive, href, navigate }">
+                                <SidebarMenuButton :active="isActive" @click="navigate">
+                                    <GlobeIcon />
+                                    <span>Sigma Rules</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
+                        
+                        <SidebarMenuItem>
+                            <router-link to="/settings" custom v-slot="{ isActive, href, navigate }" disabled>
+                                <SidebarMenuButton :active="isActive" @click="navigate" disabled>
+                                    <Settings2 />
+                                    <span>Settings</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
+                
                 <SidebarGroup class="group-data-[collapsible=icon]:hidden">
                     <SidebarGroupLabel class="text-muted-foreground">Documentation</SidebarGroupLabel>
                     <SidebarMenu>
@@ -405,8 +405,8 @@ watch([Z, Y], ([undo, redo]) => {
             </SidebarFooter>
             <SidebarRail/>
         </Sidebar>
-        <SidebarInset class="bg-muted/30">
-            <Main />
+        <SidebarInset class="bg-muted/30 h-screen max-h-screen overflow-hidden">
+            <router-view class="h-full w-full overflow-hidden"></router-view>
         </SidebarInset>
     </SidebarProvider>
 </template>

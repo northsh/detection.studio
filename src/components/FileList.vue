@@ -76,7 +76,7 @@ const groupedFiles = computed(function () {
                         <DropdownMenuTrigger>
                             <Tooltip>
                                 <TooltipTrigger>
-                                    <Button class="h-6 w-6" size="icon">
+                                    <Button class="h-6 w-6" size="icon" data-test-id="new-sigma-rule">
                                         <Plus class="h-4 w-4"/>
                                     </Button>
                                 </TooltipTrigger>
