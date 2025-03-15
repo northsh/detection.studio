@@ -5,7 +5,7 @@ test.describe('Conversion', () => {
     await page.goto('/', {
       waitUntil: 'networkidle',
     });
-    await page.locator('#radix-vue-dropdown-menu-trigger-v-9').getByRole('button').nth(1).click();
+    await page.locator('data-test-id=new-sigma-rule').click();
     await page.getByRole('menuitem', { name: 'Sigma Rule' }).click();
     await page.getByRole('tabpanel', { name: 'new_sigma_rule Close' }).getByRole('textbox').click();
     await page.getByRole('tabpanel', { name: 'new_sigma_rule Close' }).getByRole('textbox').press('ControlOrMeta+a');
