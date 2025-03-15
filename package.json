@@ -54,7 +54,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "playwright": "^1.51.0",
-    "typescript": "~5.7.3",
+    "typescript": "~5.8.2",
     "vite": "^6.2.2",
     "vue-tsc": "^2.2.8",
     "@types/bun": "latest"
