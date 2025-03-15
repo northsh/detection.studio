@@ -33,7 +33,4 @@ dist-ssr
 /test-results/
 /playwright-report/
 public/sigma-rules-index.json
-/.vite-ssg-temp/
-/.playwright-mcp/
-/pyodide-packages/
-/tests/*.spec.js
+/prism-code-editor/

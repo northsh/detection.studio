@@ -1,6 +1,6 @@
 // Sigma autocomplete data for Prism Code Editor
 
-import type { AttributeConfig } from "./types.ts";
+import type { AttributeConfig } from "./types.ts"
 
 // Define Sigma modifiers
 export const sigmaModifiers = [
@@ -9,7 +9,7 @@ export const sigmaModifiers = [
     "startswith",
     "all",
     "base64",
-    "base64offset",
+    "base64offset", 
     "cidr",
     "contains",
     "endswith",
@@ -25,14 +25,14 @@ export const sigmaModifiers = [
     "utf16le",
     "utf16be",
     "utf16",
-    "wide",
-];
+    "wide"
+]
 
 // Level values
-export const levelValues = ["informational", "low", "medium", "high", "critical"];
+export const levelValues = ["informational", "low", "medium", "high", "critical"]
 
 // Status values
-export const statusValues = ["stable", "test", "experimental", "deprecated", "unsupported"];
+export const statusValues = ["stable", "test", "experimental", "deprecated", "unsupported"]
 
 // Common logsource categories
 export const categoryValues = [
@@ -53,8 +53,8 @@ export const categoryValues = [
     "authentication",
     "create_remote_thread",
     "create_stream_hash",
-    "pipe_created",
-];
+    "pipe_created"
+]
 
 // Common product values
 export const productValues = [
@@ -69,8 +69,8 @@ export const productValues = [
     "apache",
     "nginx",
     "office365",
-    "firewalls",
-];
+    "firewalls"
+]
 
 // Common service values
 export const serviceValues = [
@@ -88,8 +88,8 @@ export const serviceValues = [
     "apache",
     "nginx",
     "winevent",
-    "windefend",
-];
+    "windefend"
+]
 
 // Common condition patterns
 export const conditionPatterns = [
@@ -101,8 +101,8 @@ export const conditionPatterns = [
     "selection1 and selection2",
     "selection1 and not selection2",
     "1 of them",
-    "all of them",
-];
+    "all of them"
+]
 
 // Define top-level Sigma field structure
 export const sigmaFields: AttributeConfig = {
@@ -124,21 +124,21 @@ export const sigmaFields: AttributeConfig = {
     falsepositives: null,
     level: levelValues,
     tags: null,
-    scope: null,
-};
+    scope: null
+}
 
 // Define nested Sigma field structures
 export const logsourceFields: AttributeConfig = {
     category: categoryValues,
     product: productValues,
     service: serviceValues,
-    definition: null,
-};
+    definition: null
+}
 
 export const detectionFields: AttributeConfig = {
     selection: null,
-    condition: conditionPatterns,
-};
+    condition: conditionPatterns
+}
 
 // Common MITRE ATT&CK tactics
 export const mitreTactics = [
@@ -155,8 +155,8 @@ export const mitreTactics = [
     "attack.collection",
     "attack.command_and_control",
     "attack.exfiltration",
-    "attack.impact",
-];
+    "attack.impact"
+]
 
 // Common Windows event IDs
 export const windowsEventIds = [
@@ -177,4 +177,4 @@ export const windowsEventIds = [
     "4732", // Member added to security-enabled local group
     "5156", // Windows Filtering Platform permitted connection
     "7045", // Service installation
-];
+]

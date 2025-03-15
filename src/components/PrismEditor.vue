@@ -7,6 +7,7 @@ import {cursorPosition} from "prism-code-editor/cursor"
 import {copyButton} from "prism-code-editor/copy-button"
 import {matchTags} from "prism-code-editor/match-tags"
 import {highlightBracketPairs} from "prism-code-editor/highlight-brackets"
+import {indentGuides} from "prism-code-editor/guides";
 import {createEditor} from "prism-code-editor";
 import {autoComplete, fuzzyFilter} from "prism-code-editor/autocomplete";
 
@@ -78,6 +79,7 @@ onMounted(() => {
         matchTags(),
         highlightBracketPairs(),
         cursorPosition(),
+        indentGuides(),
     ];
 
     // Add autocomplete extension if enabled
@@ -124,11 +126,11 @@ onMounted(() => {
         // Placeholder for potential input handling logic
     }, true);
 
-    editor.on("update", (e: string) => {
+    editor.addListener("update", (e: string) => {
         emit("update:modelValue", e);
     });
 
-    editor.on("selectionChange", (e: string) => {
+    editor.addListener("selectionChange", (e: string) => {
         emit("selectionChange", e);
     });
 
@@ -160,4 +162,5 @@ watch(
     <div ref="prism-editor-ref" :class="props.class" class="prism-editor-ref"></div>
 </template>
 
-<style></style>
+<style>
+</style>
