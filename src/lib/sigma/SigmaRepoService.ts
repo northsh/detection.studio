@@ -95,24 +95,4 @@ export class SigmaRepoService {
       throw error;
     }
   }
-
-  /**
-   * Searches rules by query matching title, description, tags, or author
-   */
-  public async searchRules(query: string): Promise<SigmaRule[]> {
-    if (!this.isLoaded) {
-      await this.loadRulesIndex();
-    }
-    
-    const lowerQuery = query.toLowerCase();
-    
-    return this.rules.filter(rule => {
-      return (
-        rule.title.toLowerCase().includes(lowerQuery) ||
-        rule.description.toLowerCase().includes(lowerQuery) ||
-        rule.tags.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
-        rule.author.toLowerCase().includes(lowerQuery)
-      );
-    });
-  }
 }

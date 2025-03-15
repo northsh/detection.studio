@@ -102,7 +102,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             }
         }
 
-        const isReady: Ref<boolean> = computedAsync(async () => await sigmaConverter.value.isReady());
+        const isReady: Ref<boolean | undefined, boolean | undefined> = computedAsync(async () => await sigmaConverter.value.isReady());
 
         return {
             convert,

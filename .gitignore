@@ -30,3 +30,4 @@ dist-ssr
 
 # Sigma Repo
 .sigma-repo/
+/test-results/
