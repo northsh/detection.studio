@@ -1,5 +1,5 @@
 import {createRouter, createWebHistory} from 'vue-router'
-import Main from '@/components/Main.vue'
+import Studio from '@/views/Studio.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'studio',
-      component: Main
+      component: Studio
     },
     {
       path: '/browser',

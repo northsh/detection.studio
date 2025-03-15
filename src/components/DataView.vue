@@ -24,28 +24,29 @@ onChange(async (files: FileList) => {
 </script>
 
 <template>
-    <div class="min-h-[400px] max-h-[900px] rounded-xl bg-muted/50 flex flex-col items-center justify-center gap-2 p-3">
-
-
-        <div v-if="!data?.current_data_frame" class="flex gap-2">
-            <h2 class="text-lg font-semibold">Data</h2>
+    <div class="h-full w-full rounded-xl bg-muted/50 flex flex-col gap-2 p-3 overflow-hidden">
+        <div v-if="!data?.current_data_frame" class="flex flex-col items-center justify-center h-full gap-2">
+            <h2 class="text-lg font-semibold">SIEM Sample Data</h2>
+            <p class="text-sm text-muted-foreground mb-2">Upload sample data to test your SIEM queries</p>
             <Button class="h-8 flex gap-2" size="sm" @click="open">
                 <PlusIcon class="h-3.5 w-3.5"/>
-                Add
+                Upload JSON File
             </Button>
         </div>
         <template v-else>
-            <Button class="h-8 flex gap-2 w-full" size="sm" variant="outline" @click="data.clearCurrentDataFrame()">
-                <PlusIcon class="h-3.5 w-3.5"/>
-                Clear
-            </Button>
-            <ScrollArea class=" h-full w-full overflow-auto">
-                <div class="h-full text-muted text-xs text-slate-300 rounded-md text-wrap w-full">
-                    <pre><code>{{ data?.current_data_frame }}</code></pre>
+            <div class="flex items-center justify-between">
+                <h2 class="text-sm font-semibold">SIEM Sample Data</h2>
+                <Button class="h-7 flex gap-1" size="sm" variant="outline" @click="data.clearCurrentDataFrame()">
+                    <PlusIcon class="h-3 w-3"/>
+                    Clear
+                </Button>
+            </div>
+            <ScrollArea class="flex-1 min-h-0 w-full">
+                <div class="text-xs text-slate-300 rounded-md text-wrap w-full">
+                    <pre class="p-2"><code>{{ data?.current_data_frame }}</code></pre>
                 </div>
                 <ScrollBar orientation="horizontal"/>
             </ScrollArea>
         </template>
-
     </div>
 </template>
