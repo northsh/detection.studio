@@ -19,6 +19,7 @@
     "@radix-icons/vue": "^1.0.0",
     "@sentry/vite-plugin": "^3.2.2",
     "@sentry/vue": "^9.5.0",
+    "@tanstack/vue-virtual": "^3.13.4",
     "@types/js-yaml": "^4.0.9",
     "@vueuse/core": "^12.8.2",
     "@vueuse/integrations": "^13.0.0",

@@ -36,6 +36,8 @@ class SigmaPipeline {
         source: string,
         logsource: object
     ) {
+        delete logsource['definition'];
+
         this.transformations.push({
             id: id || uuid(),
             type: "add_condition",
