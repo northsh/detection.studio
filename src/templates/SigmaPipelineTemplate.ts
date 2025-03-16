@@ -13,8 +13,8 @@ class SigmaPipeline {
     addTransformation(
         id: string,
         type: string,
-        fields: Object,
-        logsource: Object
+        fields: object,
+        logsource: object
     ) {
         delete logsource['definition'];
 
@@ -34,7 +34,7 @@ class SigmaPipeline {
         id: string,
         index: string,
         source: string,
-        logsource: Object
+        logsource: object
     ) {
         this.transformations.push({
             id: id || uuid(),
@@ -52,8 +52,8 @@ class SigmaPipeline {
 
     fieldMapping(
         id: string,
-        mapping: Object,
-        logsource: Object
+        mapping: object,
+        logsource: object
     ) {
         delete logsource['definition'];
 
@@ -80,7 +80,6 @@ export default function sigmaPipelineTemplate(
 
     const workStore = useWorkspaceStore();
     const sigma = computed(() => workStore.currentWorkspace?.sigmaStore());
-    const fs = computed(() => workStore.currentWorkspace?.fileStore());
 
     if (!kind) {
         kind = sigma.value?.selected_siem || "splunk";
@@ -89,7 +88,7 @@ export default function sigmaPipelineTemplate(
     /**
      * Parse Sigma Rule
      */
-    const rule: Sigma|Object = yaml.loadAll(file.content)[0] ?? {};
+    const rule: Sigma|object = yaml.loadAll(file.content)[0] ?? {};
     const logsource: any = rule?.logsource || {};
 
     const pipeline = new SigmaPipeline();

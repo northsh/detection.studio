@@ -13,6 +13,8 @@ import {
     SIDEBAR_WIDTH_ICON
 } from './utils'
 
+import { useCookies } from '@vueuse/integrations/useCookies'
+
 const props = withDefaults(defineProps<{
   defaultOpen?: boolean
   open?: boolean
@@ -29,6 +31,8 @@ const emits = defineEmits<{
 const isMobile = useMediaQuery('(max-width: 768px)')
 const openMobile = ref(false)
 
+const cookies = useCookies([SIDEBAR_COOKIE_NAME])
+
 const open = useVModel(props, 'open', emits, {
   defaultValue: props.defaultOpen ?? false,
   passive: (props.open === undefined) as false,
@@ -38,7 +42,8 @@ function setOpen(value: boolean) {
   open.value = value // emits('update:open', value)
 
   // This sets the cookie to keep the sidebar state.
-  document.cookie = `${SIDEBAR_COOKIE_NAME}=${open.value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+  // document.cookie = `${SIDEBAR_COOKIE_NAME}=${open.value}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+    cookies.set(SIDEBAR_COOKIE_NAME, open.value, { maxAge: SIDEBAR_COOKIE_MAX_AGE })
 }
 
 function setOpenMobile(value: boolean) {
