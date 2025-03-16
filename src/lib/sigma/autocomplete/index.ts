@@ -3,7 +3,6 @@
 import { registerCompletions } from "prism-code-editor/autocomplete"
 import type {
     Completion,
-    CompletionDefinition,
     CompletionSource,
 } from "./types.ts"
 import { optionsFromKeys } from "./utils.ts"
@@ -390,7 +389,7 @@ export const sigmaCompletion = {
 }
 
 // Register sigma completions for YAML files
-debugger
+
 registerCompletions(['yaml'], sigmaCompletion)
 
 // Export main entry point for the Sigma autocomplete feature
