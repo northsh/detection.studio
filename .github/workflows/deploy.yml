@@ -1,4 +1,4 @@
-name: Deploy to BunnyCDN
+name: Build & Deploy
 
 on:
     push:
