@@ -1,7 +1,8 @@
 import {defineStore} from 'pinia';
-import {computed, ref, shallowRef} from 'vue';
+import {computed, ref, shallowRef, watch} from 'vue';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
 import {SigmaRepoService} from '../lib/sigma/SigmaRepoService';
+import { DEFAULT_STATUS_FILTERS } from '@/components/sigma/utils';
 
 export const useSigmaRulesStore = defineStore('sigmaRules', () => {
   const rules = ref<SigmaRule[]>([]);
@@ -13,10 +14,40 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
   const error = ref<string | null>(null);
   const fuseInstance = shallowRef<any>(null);
   const isFuseLoaded = ref(false);
+  
+  // Filter state persistence
+  const statusFilters = ref(loadFromStorage('statusFilters', DEFAULT_STATUS_FILTERS));
+  const selectedProduct = ref(loadFromStorage('selectedProduct', ''));
+  const logsourceSortingStyle = ref(loadFromStorage('logsourceSortingStyle', 'product-category-service'));
 
   const sigmaRepoService = SigmaRepoService.getInstance();
+  
+  // Helper function to load values from localStorage
+  function loadFromStorage<T>(key: string, defaultValue: T): T {
+    try {
+      const storedValue = localStorage.getItem(`sigma_${key}`);
+      return storedValue ? JSON.parse(storedValue) : defaultValue;
+    } catch (error) {
+      console.error(`Error loading ${key} from localStorage:`, error);
+      return defaultValue;
+    }
+  }
+  
+  // Save values to localStorage when they change
+  watch(statusFilters, (newValue) => {
+    localStorage.setItem('sigma_statusFilters', JSON.stringify(newValue));
+  }, { deep: true });
+  
+  watch(selectedProduct, (newValue) => {
+    localStorage.setItem('sigma_selectedProduct', JSON.stringify(newValue));
+  });
+  
+  watch(logsourceSortingStyle, (newValue) => {
+    localStorage.setItem('sigma_logsourceSortingStyle', JSON.stringify(newValue));
+  });
 
-  const filteredRules = computed(() => {
+  // Search-filtered rules (without applying status and product filters)
+  const searchFilteredRules = computed(() => {
     if (!searchQuery.value) return rules.value;
 
     if (fuseInstance.value) {
@@ -39,6 +70,36 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
         rule.logsource?.service?.toLowerCase().includes(query)
       );
     });
+  });
+
+  // Apply all filters (search, status, and product) to get final filtered rules
+  const filteredRules = computed(() => {
+    // Start with search results
+    let results = searchFilteredRules.value;
+    
+    // Apply status filters
+    results = results.filter(rule => {
+      // If rule has no status, include it only if at least one filter is enabled
+      if (!rule.status) return Object.values(statusFilters.value).some(value => value);
+      
+      // Otherwise, check if the rule's status is in the enabled filters
+      return statusFilters.value[rule.status.toLowerCase()] === true;
+    });
+    
+    // Apply product filter if selected
+    if (selectedProduct.value) {
+      results = results.filter(rule => {
+        const logsource = rule.logsource || {};
+        const product = logsource.product?.toLowerCase();
+        const category = logsource.category?.toLowerCase();
+        const service = logsource.service?.toLowerCase();
+        const selected = selectedProduct.value.toLowerCase();
+        
+        return product === selected || category === selected || service === selected;
+      });
+    }
+    
+    return results;
   });
 
   async function initFuse() {
@@ -121,6 +182,19 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
   async function searchRules(query: string) {
     searchQuery.value = query;
   }
+  
+  // Methods to update filter state
+  function updateStatusFilters(filters: Record<string, boolean>) {
+    statusFilters.value = filters;
+  }
+  
+  function updateSelectedProduct(product: string) {
+    selectedProduct.value = product;
+  }
+  
+  function updateLogsourceSorting(style: string) {
+    logsourceSortingStyle.value = style;
+  }
 
   return {
     rules,
@@ -131,9 +205,15 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     searchQuery,
     error,
     filteredRules,
+    statusFilters,
+    selectedProduct,
+    logsourceSortingStyle,
     fetchRules,
     fetchRuleContent,
     setCurrentRule,
-    searchRules
+    searchRules,
+    updateStatusFilters,
+    updateSelectedProduct,
+    updateLogsourceSorting
   };
 });
