@@ -1,70 +1,81 @@
-import type { FileItem, Sigma } from "@/types/types";
-import yaml from "js-yaml";
+import type {FileItem, Sigma} from "@/types/types";
+import yaml from 'js-yaml';
 
-import { v4 as uuid } from "uuid";
-import { useWorkspaceStore } from "@/stores/WorkspaceStore.ts";
-import { computed } from "vue";
+import {v4 as uuid} from 'uuid';
+import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
+import {computed} from "vue";
 
 class SigmaPipeline {
     name: string = "Example Sigma Pipeline Config";
     priority: number = 100;
     transformations: any[] = [];
 
-    addTransformation(id: string, type: string, fields: object, logsource: object) {
-        delete (logsource as any)["definition"];
+    addTransformation(
+        id: string,
+        type: string,
+        fields: object,
+        logsource: object
+    ) {
+        delete logsource['definition'];
 
         this.transformations.push({
             id: id || uuid(),
             type: type,
             ...fields,
-            rule_conditions: [
-                {
-                    type: "logsource",
-                    ...logsource,
-                },
-            ],
+            rule_conditions: [{
+                type: "logsource",
+                ...logsource,
+            }]
         });
     }
 
-    addCondition(id: string, index: string, source: string, logsource: object) {
-        delete (logsource as any)["definition"];
 
+    addCondition(
+        id: string,
+        index: string,
+        source: string,
+        logsource: object
+    ) {
         this.transformations.push({
             id: id || uuid(),
             type: "add_condition",
             conditions: {
                 index: index,
-                source: source,
+                source: source
             },
-            rule_conditions: [
-                {
-                    type: "logsource",
-                    ...logsource,
-                },
-            ],
+            rule_conditions: [{
+                type: "logsource",
+                ...logsource,
+            }]
         });
     }
 
-    fieldMapping(id: string, mapping: object, logsource: object) {
-        delete (logsource as any)["definition"];
+    fieldMapping(
+        id: string,
+        mapping: object,
+        logsource: object
+    ) {
+        delete logsource['definition'];
 
         this.transformations.push({
             id: id || uuid(),
             type: "field_name_mapping",
             mapping: mapping,
-            rule_conditions: [
-                {
-                    type: "logsource",
-                    ...logsource,
-                },
-            ],
+            rule_conditions: [{
+                type: "logsource",
+                ...logsource,
+            }]
         });
     }
 }
 
-export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
+
+export default function sigmaPipelineTemplate(
+    file: FileItem,
+    kind: string
+) {
     if (!file?.content) {
-        return "";
+        return '';
     }
 
     const workStore = useWorkspaceStore();
@@ -77,12 +88,13 @@ export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
     /**
      * Parse Sigma Rule
      */
-    const rule: Sigma | object = yaml.loadAll(file.content)[0] ?? {};
-    const logsource: any = (rule as any)?.logsource || {};
+    const rule: Sigma|object = yaml.loadAll(file.content)[0] ?? {};
+    const logsource: any = rule?.logsource || {};
 
     const pipeline = new SigmaPipeline();
 
     if (logsource) {
+
         /**
          * Adding Conditions for Splunk SPL queries
          */
@@ -91,8 +103,8 @@ export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
                 "prefix_source_and_index",
                 "index_name",
                 "Source/Type",
-                logsource,
-            );
+                logsource
+            )
         }
 
         /**
@@ -104,10 +116,10 @@ export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
                 "set_state",
                 {
                     key: "index",
-                    val: "logs-test-*",
+                    val: "logs-test-*"
                 },
-                logsource,
-            );
+                logsource
+            )
         }
 
         /**
@@ -119,12 +131,12 @@ export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
                 "set_custom_log_source",
                 {
                     selection: {
-                        job: "job-name",
-                        app: "loki",
-                    },
+                        index: "logs-test-*",
+                        source: "logs-test-*"
+                    }
                 },
-                logsource,
-            );
+                logsource
+            )
         }
 
         /**
@@ -134,10 +146,10 @@ export default function sigmaPipelineTemplate(file: FileItem, kind: string) {
             "map_fields",
             {
                 // TODO Map to Sigma Fields that exist
-                status: "status",
+                status: "status"
             },
-            logsource,
-        );
+            logsource
+        )
     }
 
     return yaml.dump(pipeline);
