@@ -1,4 +1,3 @@
-import {createApp} from 'vue'
 import './assets/index.css'
 import App from './App.vue'
 import routes from './router'
@@ -23,7 +22,7 @@ export const app = ViteSSG(
     // vue-router options
     {routes},
     // function to have custom setups
-    ({app, router, routes, isClient, initialState}) => {
+    ({app, router, _routes, _isClient, _initialState}) => {
 
 
         Sentry.init({

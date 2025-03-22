@@ -35,18 +35,18 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         // SIEM conversion settings
         const selected_siem = ref("sqlite");  // Default to SQLite for local matching
         const siem_conversion_error = ref("");
-        
+
         // Initialize the converter
         let sigmaConverter = ref<SigmaConverter>(new SigmaConverter());
 
         // Track selected pipelines
         const selected_pipelines = ref<string[]>([]);
-        
+
         // Function to update selected pipelines
         function updateSelectedPipelines(pipelines: string[]) {
             selected_pipelines.value = pipelines;
         }
-        
+
         // SQLite search state
         const is_searching = ref(false);
         const search_error = ref("");
@@ -56,12 +56,12 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 totalMatches: number;
                 totalRecords: number;
             };
-        }>({ matches: [], stats: { totalMatches: 0, totalRecords: 0 } });
-        
+        }>({matches: [], stats: {totalMatches: 0, totalRecords: 0}});
+
         // Track data loading state
         const is_data_loaded = ref(false);
         const data_loading_error = ref("");
-        
+
         // Watch for changes in data and load into SQLite
         watch(
             () => dataStore.value?.current_data_frame,
@@ -71,26 +71,26 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 } else {
                     is_data_loaded.value = false;
                     data_loading_error.value = "";
-                    search_results.value = { matches: [], stats: { totalMatches: 0, totalRecords: 0 } };
+                    search_results.value = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
                 }
             }
         );
-        
+
         // Function to load data into SQLite
         async function loadData(jsonData: string) {
             try {
                 console.log('Store: Starting data load operation...');
                 is_data_loaded.value = false;
                 data_loading_error.value = "";
-                
+
                 if (!jsonData) {
                     console.error('Store: No JSON data provided');
                     data_loading_error.value = "No data provided";
                     return;
                 }
-                
+
                 console.log(`Store: Sending ${jsonData.length} bytes of data to worker`);
-                
+
                 // Start a timeout to detect if the operation is taking too long
                 const timeout = setTimeout(() => {
                     if (!is_data_loaded.value && !data_loading_error.value) {
@@ -98,16 +98,16 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                         // Don't set error yet, just log warning
                     }
                 }, 5000);
-                
+
                 const result = await loadLogDataAsync(jsonData);
                 clearTimeout(timeout);
-                
+
                 console.log('Store: Received result from worker:', result);
-                
+
                 if (result && result.success) {
                     console.log(`Store: Successfully loaded ${result.count} records`);
                     is_data_loaded.value = true;
-                    
+
                     // If we have a query already, run the search
                     if (siem_query.value && selected_siem.value === "sqlite") {
                         console.log('Store: Running search with existing query');
@@ -124,26 +124,26 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 is_data_loaded.value = false;
             }
         }
-        
+
         // Function to search logs with current query
         async function searchLogs() {
             if (!is_data_loaded.value || !siem_query.value) {
                 console.log('Store: Search skipped - data not loaded or no query');
-                search_results.value = { matches: [], stats: { totalMatches: 0, totalRecords: 0 } };
+                search_results.value = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
                 return;
             }
-            
+
             try {
                 console.log('Store: Starting search operation with query:', siem_query.value);
                 is_searching.value = true;
                 search_error.value = "";
-                
+
                 const result = await searchLogsAsync(siem_query.value);
                 console.log('Store: Search result received:', result);
-                
+
                 if (result) {
                     search_results.value = result;
-                    
+
                     if (result.error) {
                         console.error('Store: Search returned error:', result.error);
                         search_error.value = result.error;
@@ -153,17 +153,17 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 } else {
                     console.error('Store: Received null or undefined result from search operation');
                     search_error.value = "Invalid search result";
-                    search_results.value = { matches: [], stats: { totalMatches: 0, totalRecords: 0 } };
+                    search_results.value = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
                 }
             } catch (e) {
                 console.error('Store: Error during search operation:', e);
                 search_error.value = e instanceof Error ? e.message : String(e);
-                search_results.value = { matches: [], stats: { totalMatches: 0, totalRecords: 0 } };
+                search_results.value = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
             } finally {
                 is_searching.value = false;
             }
         }
-        
+
         // Async computed property for SIEM query
         const siem_query = computedAsync(async () => {
             if (!file_content.value) {
@@ -174,7 +174,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             const pipelineYmls = fs.value?.files
                 .filter((f: FileItem) => f.type === "pipeline")
                 .map((f) => f.content) || [];
-                
+
             const filterYml = fs.value?.files
                 .filter((f: FileItem) => f.type === "filter")
                 .map((f) => f.content)
@@ -187,12 +187,12 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 pipelineYmls,
                 filterYml,
             ) ?? "";
-            
+
             // If we have data loaded and we're using SQLite, run the search
             if (is_data_loaded.value && selected_siem.value === "sqlite" && query) {
                 await searchLogs();
             }
-            
+
             return query;
         }, '');
 

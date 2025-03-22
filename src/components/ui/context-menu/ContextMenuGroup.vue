@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {ContextMenuGroupProps} from 'radix-vue'
 import {ContextMenuGroup} from 'radix-vue'
 
@@ -6,7 +6,7 @@ const props = defineProps<ContextMenuGroupProps>()
 </script>
 
 <template>
-  <ContextMenuGroup v-bind="props">
-    <slot />
-  </ContextMenuGroup>
+    <ContextMenuGroup v-bind="props">
+        <slot/>
+    </ContextMenuGroup>
 </template>

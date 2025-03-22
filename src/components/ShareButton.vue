@@ -52,15 +52,15 @@ function share() {
                     Share your detection.studio workspace with others by sending them the link below.
                 </DialogDescription>
             </DialogHeader>
-            <div class="flex flex-col gap-2" >
+            <div class="flex flex-col gap-2">
                 <Label class="" for="name">
                     Shareable URL
                 </Label>
                 <Input id="name" :model-value="shareUrl" class="col-span-3" disabled/>
-                <Button type="submit" variant="outline" @click="share" class="w-full" v-if="isSupported">
+                <Button v-if="isSupported" class="w-full" type="submit" variant="outline" @click="share">
                     Copy
                 </Button>
-                <div class="flex flex-col gap-2" v-else>
+                <div v-else class="flex flex-col gap-2">
                     <DialogDescription>
                         Your browser does not support copying to clipboard.
                     </DialogDescription>

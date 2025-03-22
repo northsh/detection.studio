@@ -3,7 +3,9 @@ import {type Ref, ref} from "vue";
 
 export interface DataStoreInterface {
     current_data_frame: Ref<string | null>;
+
     setCurrentDataFrame(data_frame: string): void;
+
     clearCurrentDataFrame(): void;
 }
 

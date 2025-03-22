@@ -18,19 +18,7 @@ import {
     SidebarRail,
     SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {
-    BookOpen,
-    ChevronRight,
-    ChevronsUpDown,
-    Edit2,
-    GlobeIcon,
-    Layers2,
-    PaletteIcon,
-    Plus,
-    Settings2,
-    Sparkles,
-    Trash2,
-} from "lucide-vue-next";
+import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles,} from "lucide-vue-next";
 import {computed, ref, watch} from "vue";
 import {Card} from "@/components/ui/card";
 // Importing Prism grammars
@@ -41,7 +29,6 @@ import "prism-code-editor/prism/languages/yaml";
 
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {useMagicKeys} from '@vueuse/core'
-import {supportedSiems} from "@/types/SIEMs";
 import WorkspaceSelection from "@/WorkspaceSelection.vue";
 
 // This is sample data.
@@ -216,12 +203,14 @@ watch([Z, Y], ([undo, redo]) => {
         <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
-                    <SidebarMenuItem class="flex items-center gap-2" :class="{'mx-2': workStore.sidebarOpen}">
-                        <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap">Detection Studio</div>
+                    <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2">
+                        <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap">Detection
+                            Studio
+                        </div>
                         <div v-else class="pl-1 w-full font-semibold">D.S</div>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarSeparator class="w-full !bg-border mx-0" :class="{'mx-2': workStore.sidebarOpen}" />
+                <SidebarSeparator :class="{'mx-2': workStore.sidebarOpen}" class="w-full !bg-border mx-0"/>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <WorkspaceSelection/>
@@ -233,38 +222,39 @@ watch([Z, Y], ([undo, redo]) => {
                     <SidebarGroupLabel class="text-muted-foreground">Navigation</SidebarGroupLabel>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <router-link to="/" custom v-slot="{ isActive, href, navigate }">
-                                <SidebarMenuButton :active="isActive" @click="navigate" class="[active=true]/text-white">
-                                    <PaletteIcon />
+                            <router-link v-slot="{ isActive, href, navigate }" custom to="/">
+                                <SidebarMenuButton :active="isActive" class="[active=true]/text-white"
+                                                   @click="navigate">
+                                    <PaletteIcon/>
                                     <span>Studio</span>
                                 </SidebarMenuButton>
                             </router-link>
                         </SidebarMenuItem>
-                        
+
                         <SidebarMenuItem>
-                            <router-link to="/browser" custom v-slot="{ isActive, href, navigate }">
+                            <router-link v-slot="{ isActive, href, navigate }" custom to="/browser">
                                 <SidebarMenuButton :active="isActive" @click="navigate">
-                                    <GlobeIcon />
+                                    <GlobeIcon/>
                                     <span>Sigma Rules</span>
                                 </SidebarMenuButton>
                             </router-link>
                         </SidebarMenuItem>
-                        
+
                         <SidebarMenuItem>
-                            <router-link to="/settings" custom v-slot="{ isActive, href, navigate }" disabled>
-                                <SidebarMenuButton :active="isActive" @click="navigate" disabled>
-                                    <Settings2 />
+                            <router-link v-slot="{ isActive, href, navigate }" custom disabled to="/settings">
+                                <SidebarMenuButton :active="isActive" disabled @click="navigate">
+                                    <Settings2/>
                                     <span>Settings</span>
                                 </SidebarMenuButton>
                             </router-link>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
-                
+
                 <SidebarGroup class="group-data-[collapsible=icon]:hidden">
                     <SidebarGroupLabel class="text-muted-foreground">Documentation</SidebarGroupLabel>
                     <SidebarMenu>
-                        <Collapsible v-for="item in data.documentation" :key="item.title" as-child :default-open="true"
+                        <Collapsible v-for="item in data.documentation" :key="item.title" :default-open="true" as-child
                                      class="group/collapsible">
                             <SidebarMenuItem>
                                 <CollapsibleTrigger as-child>
@@ -295,7 +285,8 @@ watch([Z, Y], ([undo, redo]) => {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <Transition>
-                            <Card v-if="workStore.sidebarOpen" class="text-xs text-muted-foreground p-2 flex items-center gap-2">
+                            <Card v-if="workStore.sidebarOpen"
+                                  class="text-xs text-muted-foreground p-2 flex items-center gap-2">
                                 Powered by
                                 <Sparkles class="text-primary h-4 w-4"/>
                                 <span class="text-primary font-semibold">north.sh</span>

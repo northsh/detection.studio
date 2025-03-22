@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {DialogRootEmits, DialogRootProps} from 'radix-vue'
 import {DialogRoot, useForwardPropsEmits} from 'radix-vue'
 
@@ -9,7 +9,7 @@ const forwarded = useForwardPropsEmits(props, emits)
 </script>
 
 <template>
-  <DialogRoot v-bind="forwarded">
-    <slot />
-  </DialogRoot>
+    <DialogRoot v-bind="forwarded">
+        <slot/>
+    </DialogRoot>
 </template>

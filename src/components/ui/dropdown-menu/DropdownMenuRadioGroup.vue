@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {DropdownMenuRadioGroupEmits, DropdownMenuRadioGroupProps} from 'radix-vue'
 import {DropdownMenuRadioGroup, useForwardPropsEmits,} from 'radix-vue'
 
@@ -9,7 +9,7 @@ const forwarded = useForwardPropsEmits(props, emits)
 </script>
 
 <template>
-  <DropdownMenuRadioGroup v-bind="forwarded">
-    <slot />
-  </DropdownMenuRadioGroup>
+    <DropdownMenuRadioGroup v-bind="forwarded">
+        <slot/>
+    </DropdownMenuRadioGroup>
 </template>

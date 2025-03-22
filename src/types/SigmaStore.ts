@@ -18,7 +18,7 @@ export interface SigmaStore {
     active_sigma_rule_file_id: Ref<string>;
     updateSelectedPipelines: (pipelines: string[]) => void;
     isReady: Ref<boolean>;
-    
+
     // SQLite search functionality
     search_results: Ref<SearchResult>;
     search_error: Ref<string>;

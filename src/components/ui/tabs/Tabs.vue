@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {TabsRootEmits, TabsRootProps} from 'radix-vue'
 import {TabsRoot, useForwardPropsEmits} from 'radix-vue'
 
@@ -9,7 +9,7 @@ const forwarded = useForwardPropsEmits(props, emits)
 </script>
 
 <template>
-  <TabsRoot v-bind="forwarded">
-    <slot />
-  </TabsRoot>
+    <TabsRoot v-bind="forwarded">
+        <slot/>
+    </TabsRoot>
 </template>

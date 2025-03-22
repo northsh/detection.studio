@@ -42,8 +42,6 @@
 <script lang="ts" setup>
 import SigmaRulesBrowser from '@/components/SigmaRuleList.vue';
 import SigmaRuleViewer from '@/components/SigmaRuleViewer.vue';
-
-import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/components/ui/breadcrumb";
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 // Importing Prism grammars
@@ -51,15 +49,8 @@ import "prism-code-editor/prism/languages/markup";
 import "prism-code-editor/prism/languages/javascript";
 import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
-import {Download} from "lucide-vue-next";
+import {Github} from "lucide-vue-next";
 import ShareButton from "@/components/ShareButton.vue";
-import SIEMSelector from "@/components/SIEMSelector.vue";
-import PipelineSelector from "@/components/PipelineSelector.vue";
-
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
-
-import { Github } from 'lucide-vue-next';
-
 
 
 // Accept route props

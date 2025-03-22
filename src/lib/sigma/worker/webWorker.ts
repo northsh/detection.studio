@@ -3,7 +3,7 @@ import {loadPyodide, PyodideInterface} from 'pyodide';
 import {SIGMA_TARGETS} from '@/types/SIEMs';
 import registerPromiseWorker from "promise-worker/register";
 // Import SQLite separately for better compatibility in worker environments
-import {SQLiteWorker, init as initSQLite} from 'sqlite-worker';
+import {init as initSQLite, SQLiteWorker} from 'sqlite-worker';
 
 // Runtime state
 let pyodide: PyodideInterface | null = null;
@@ -12,7 +12,7 @@ let pythonModuleLoaded = false;
 let sigmaNamespace = null;
 let sqliteDB: any = null;
 let logData: any[] = [];
-let searchResults: { matches: any[], stats: any } = { matches: [], stats: { totalMatches: 0, totalRecords: 0 } };
+let searchResults: { matches: any[], stats: any } = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
 
 // Initialize Pyodide in the background
 const pyodideReadyPromise = (async () => {
@@ -42,9 +42,9 @@ const initSQLiteDB = async () => {
     // Return existing instance if available
     if (sqliteDB) return sqliteDB;
 
-    
+
     console.log('Initializing SQLite database...');
-    
+
     try {
         // Try direct initialization for web workers
         console.log('Using direct initialization...');
@@ -53,25 +53,30 @@ const initSQLiteDB = async () => {
             database: new Uint8Array(0),
             timeout: 5000  // Longer timeout for reliability
         });
-        
+
         console.log('SQLite database initialized successfully!');
-        
+
         // Create logs table - simpler schema to avoid issues
         try {
-            await sqliteDB.query`CREATE TABLE IF NOT EXISTS logs (
-                id INTEGER PRIMARY KEY, 
-                data TEXT
-            )`;
+            await sqliteDB.query`CREATE TABLE IF NOT EXISTS logs
+                                 (
+                                     id
+                                     INTEGER
+                                     PRIMARY
+                                     KEY,
+                                     data
+                                     TEXT
+                                 )`;
             console.log('Logs table created successfully!');
         } catch (tableError) {
             console.error('Error creating table:', tableError);
         }
-        
+
         return sqliteDB;
     } catch (error) {
         console.error('Error initializing SQLite database:', error);
         console.error('Error details:', String(error));
-        
+
         // Fallback to worker mode as last resort
         try {
             console.log('Trying worker-based initialization as fallback...');
@@ -80,15 +85,20 @@ const initSQLiteDB = async () => {
                 database: new Uint8Array(0),
                 timeout: 5000
             });
-            
+
             console.log('Fallback SQLite database initialized successfully!');
-            
+
             // Create logs table
-            await sqliteDB.query`CREATE TABLE IF NOT EXISTS logs (
-                id INTEGER PRIMARY KEY, 
-                data TEXT
-            )`;
-            
+            await sqliteDB.query`CREATE TABLE IF NOT EXISTS logs
+                                 (
+                                     id
+                                     INTEGER
+                                     PRIMARY
+                                     KEY,
+                                     data
+                                     TEXT
+                                 )`;
+
             return sqliteDB;
         } catch (fallbackError) {
             console.error('Even fallback initialization failed:', fallbackError);
@@ -160,16 +170,16 @@ interface ConvertOptions {
 }
 
 async function convertRule({
-    rule,
-    target,
-    pipelines = [],
-    pipelineYmls = [],
-    filterYml = '',
-    format = "default",
-    correlationMethod = '',
-    backendOptions = {},
-    skipUnsupported = false
-}: ConvertOptions) {
+                               rule,
+                               target,
+                               pipelines = [],
+                               pipelineYmls = [],
+                               filterYml = '',
+                               format = "default",
+                               correlationMethod = '',
+                               backendOptions = {},
+                               skipUnsupported = false
+                           }: ConvertOptions) {
     if (!installedBackends.has(target)) {
         await installBackend(target);
     }
@@ -222,15 +232,16 @@ async function convertRule({
 async function loadLogData(jsonData: string) {
     try {
         console.log('Starting to load log data...');
-        
+
         // Initialize SQLite DB if needed
         console.log('Initializing SQLite DB...');
         await initSQLiteDB();
-        
+
         // Clear existing data
         console.log('Clearing existing data...');
-        await sqliteDB.query`DELETE FROM logs`;
-        
+        await sqliteDB.query`DELETE
+                             FROM logs`;
+
         // Parse the JSON data
         console.log('Parsing JSON data...');
         let logs: any[];
@@ -248,40 +259,41 @@ async function loadLogData(jsonData: string) {
             console.log(`Successfully parsed JSON data: ${logs.length} records`);
         } catch (e) {
             console.error('Failed to parse JSON:', e);
-            return { success: false, error: 'Failed to parse JSON data' };
+            return {success: false, error: 'Failed to parse JSON data'};
         }
-        
+
         // Store the parsed data for reference
         logData = logs;
-        
+
         // Insert records in smaller batches to avoid potential issues
         console.log('Inserting data into SQLite...');
         const BATCH_SIZE = 100;
         const totalBatches = Math.ceil(logs.length / BATCH_SIZE);
-        
+
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
             const batchStart = batchIndex * BATCH_SIZE;
             const batchEnd = Math.min((batchIndex + 1) * BATCH_SIZE, logs.length);
             const batchItems = logs.slice(batchStart, batchEnd);
-            
+
             console.log(`Processing batch ${batchIndex + 1}/${totalBatches}, items ${batchStart}-${batchEnd - 1}`);
-            
+
             // Use individual inserts instead of transaction for better error handling
             for (let i = 0; i < batchItems.length; i++) {
                 const log = batchItems[i];
                 try {
                     // Store as JSON string
                     const jsonStr = JSON.stringify(log);
-                    await sqliteDB.query`INSERT INTO logs (data) VALUES (${jsonStr})`;
+                    await sqliteDB.query`INSERT INTO logs (data)
+                                         VALUES (${jsonStr})`;
                 } catch (insertError) {
                     console.error(`Error inserting item ${batchStart + i}:`, insertError);
                     // Continue with next item
                 }
             }
         }
-        
+
         console.log(`Successfully loaded ${logs.length} records into SQLite`);
-        return { success: true, count: logs.length };
+        return {success: true, count: logs.length};
     } catch (error) {
         console.error('Error loading log data:', error);
         // More detailed error information
@@ -290,7 +302,7 @@ async function loadLogData(jsonData: string) {
             console.error('Error message:', error.message);
             console.error('Error stack:', error.stack);
         }
-        return { success: false, error: String(error) };
+        return {success: false, error: String(error)};
     }
 }
 
@@ -300,43 +312,45 @@ async function loadLogData(jsonData: string) {
 async function searchLogs(sqlQuery: string) {
     try {
         console.log('Starting search operation...');
-        
+
         // Initialize SQLite DB if needed
         console.log('Ensuring SQLite DB is ready...');
         await initSQLiteDB();
-        
+
         // Replace <TABLE_NAME> with logs
         console.log('Original SQL query:', sqlQuery);
         const finalQuery = sqlQuery.replace(/<TABLE_NAME>/g, 'logs');
         console.log('Modified SQL query:', finalQuery);
-        
+
         // Check if the logs table exists and has data
         const tableCheck = await sqliteDB.get`
-            SELECT count(*) as count FROM sqlite_master 
-            WHERE type='table' AND name='logs'
+            SELECT count(*) as count
+            FROM sqlite_master
+            WHERE type ='table' AND name ='logs'
         `;
-        
+
         if (!tableCheck || tableCheck.count === 0) {
             console.error('Logs table does not exist');
             return {
                 matches: [],
-                stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+                stats: {totalMatches: 0, totalRecords: logData.length || 0},
                 error: 'Logs table does not exist'
             };
         }
-        
-        const countCheck = await sqliteDB.get`SELECT count(*) as count FROM logs`;
+
+        const countCheck = await sqliteDB.get`SELECT count(*) as count
+                                              FROM logs`;
         console.log(`Logs table contains ${countCheck.count} records`);
-        
+
         if (countCheck.count === 0) {
             console.log('No records in logs table to search');
             return {
                 matches: [],
-                stats: { totalMatches: 0, totalRecords: 0 },
+                stats: {totalMatches: 0, totalRecords: 0},
                 error: null
             };
         }
-        
+
         // Execute the query
         console.log('Executing SQL query...');
         let results;
@@ -347,23 +361,24 @@ async function searchLogs(sqlQuery: string) {
             console.error('Error executing query:', queryError);
             // Try a simpler query to test if SQLite is working
             try {
-                const testResults = await sqliteDB.all`SELECT * FROM logs LIMIT 1`;
+                const testResults = await sqliteDB.all`SELECT *
+                                                       FROM logs LIMIT 1`;
                 console.log('Test query executed successfully:', testResults);
                 return {
                     matches: [],
-                    stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+                    stats: {totalMatches: 0, totalRecords: logData.length || 0},
                     error: `Query error: ${queryError}. SQLite is working but the query syntax may be incorrect.`
                 };
             } catch (testError) {
                 console.error('Even test query failed:', testError);
                 return {
                     matches: [],
-                    stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+                    stats: {totalMatches: 0, totalRecords: logData.length || 0},
                     error: `SQLite database access error: ${testError}`
                 };
             }
         }
-        
+
         // Format results and calculate stats
         console.log('Formatting results...');
         const matches = results.map((row: any) => {
@@ -378,7 +393,7 @@ async function searchLogs(sqlQuery: string) {
             }
             return data;
         });
-        
+
         searchResults = {
             matches,
             stats: {
@@ -386,7 +401,7 @@ async function searchLogs(sqlQuery: string) {
                 totalRecords: logData.length || 0
             }
         };
-        
+
         console.log(`Search completed with ${matches.length} matches from ${logData.length} total records`);
         return searchResults;
     } catch (error) {
@@ -397,9 +412,9 @@ async function searchLogs(sqlQuery: string) {
             console.error('Error message:', error.message);
             console.error('Error stack:', error.stack);
         }
-        return { 
-            matches: [], 
-            stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+        return {
+            matches: [],
+            stats: {totalMatches: 0, totalRecords: logData.length || 0},
             error: String(error)
         };
     }
@@ -411,7 +426,7 @@ registerPromiseWorker(async (message) => {
         await pyodideReadyPromise;
         console.log(`Worker: Processing message of type '${message.type}'`);
 
-        const { type } = message;
+        const {type} = message;
 
         switch (type) {
             case 'convert':
@@ -444,7 +459,7 @@ registerPromiseWorker(async (message) => {
                         error: 'No data provided'
                     };
                 }
-                
+
                 // Ensure SQLite is initialized before loading data
                 if (!sqliteDB) {
                     try {
@@ -456,17 +471,17 @@ registerPromiseWorker(async (message) => {
                         };
                     }
                 }
-                
+
                 return await loadLogData(message.data);
             case 'search':
                 if (!message.query) {
                     return {
                         matches: [],
-                        stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+                        stats: {totalMatches: 0, totalRecords: logData.length || 0},
                         error: 'No query provided'
                     };
                 }
-                
+
                 // Ensure SQLite is initialized before searching
                 if (!sqliteDB) {
                     try {
@@ -474,12 +489,12 @@ registerPromiseWorker(async (message) => {
                     } catch (initError) {
                         return {
                             matches: [],
-                            stats: { totalMatches: 0, totalRecords: logData.length || 0 },
+                            stats: {totalMatches: 0, totalRecords: logData.length || 0},
                             error: `Failed to initialize SQLite database: ${initError}`
                         };
                     }
                 }
-                
+
                 return await searchLogs(message.query);
             default:
                 throw new Error(`Unknown message type: ${type}`);

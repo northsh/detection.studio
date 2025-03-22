@@ -1,6 +1,4 @@
-
 <script lang="ts" setup>
-import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,23 +8,10 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import {
-    SidebarMenuButton,
-} from "@/components/ui/sidebar";
-import {
-    BookOpen,
-    ChevronsUpDown,
-    Edit2,
-    GlobeIcon,
-    Layers2,
-    PaletteIcon,
-    Plus,
-    Settings2,
-    Trash2,
-} from "lucide-vue-next";
-import {computed, ref, watch} from "vue";
+import {SidebarMenuButton,} from "@/components/ui/sidebar";
+import {ChevronsUpDown, Edit2, Layers2, Plus, Trash2,} from "lucide-vue-next";
+import {computed, ref} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {useMagicKeys} from '@vueuse/core'
 import {supportedSiems} from "@/types/SIEMs";
 
 import splunk_svg from '@/images/splunk.svg?component';
@@ -89,26 +74,28 @@ function deleteWorkspace(workspaceId) {
                     class="flex aspect-square size-8 items-center justify-center rounded-lg bg-secondary text-sidebar-primary-foreground">
 
                     <component
+                        :is="splunk_svg"
                         v-if="workStore.currentWorkspace.sigmaStore().selected_siem === 'splunk'"
-                        class="w-4 h-4 shrink-0"
-                        :is="splunk_svg" />
+                        class="w-4 h-4 shrink-0"/>
                     <component
+                        :is="elasticsearch_svg"
                         v-else-if="
                                     workStore.currentWorkspace.sigmaStore().selected_siem === 'es|ql'
                                     || workStore.currentWorkspace.sigmaStore().selected_siem === 'eql'
                                     || workStore.currentWorkspace.sigmaStore().selected_siem === 'lucene'
                                 "
-                        class="w-4 h-4 shrink-0"
-                        :is="elasticsearch_svg" />
+                        class="w-4 h-4 shrink-0"/>
                     <component
+                        :is="loki_svg"
                         v-else-if="workStore.currentWorkspace.sigmaStore().selected_siem === 'loki'"
-                        class="w-4 h-4 shrink-0"
-                        :is="loki_svg" />
-                    <Layers2 class="h-4 shrink-0" v-else />
+                        class="w-4 h-4 shrink-0"/>
+                    <Layers2 v-else class="h-4 shrink-0"/>
                 </div>
                 <div class="grid text-left text-sm leading-tight">
                     <span class="truncate font-semibold">{{ workStore.currentWorkspace?.name }}</span>
-                    <span class="truncate text-xs">{{ supportedSiems.find((s) => s.id === sigma.selected_siem)?.name ?? '' }}</span>
+                    <span class="truncate text-xs">{{
+                            supportedSiems.find((s) => s.id === sigma.selected_siem)?.name ?? ''
+                        }}</span>
                 </div>
                 <ChevronsUpDown class="ml-auto"/>
             </SidebarMenuButton>
@@ -128,22 +115,22 @@ function deleteWorkspace(workspaceId) {
                     <div class="flex items-center gap-2 cursor-pointer">
                         <div class="flex size-6 items-center justify-center rounded-sm border">
                             <component
+                                :is="splunk_svg"
                                 v-if="workspace.sigmaStore().selected_siem === 'splunk'"
-                                class="w-4 h-4 shrink-0"
-                                :is="splunk_svg" />
+                                class="w-4 h-4 shrink-0"/>
                             <component
+                                :is="elasticsearch_svg"
                                 v-else-if="
                                     workspace.sigmaStore().selected_siem === 'es|ql'
                                     || workspace.sigmaStore().selected_siem === 'eql'
                                     || workspace.sigmaStore().selected_siem === 'lucene'
                                 "
-                                class="w-4 h-4 shrink-0"
-                                :is="elasticsearch_svg" />
+                                class="w-4 h-4 shrink-0"/>
                             <component
+                                :is="loki_svg"
                                 v-else-if="workspace.sigmaStore().selected_siem === 'loki'"
-                                class="w-4 h-4 shrink-0"
-                                :is="loki_svg" />
-                            <Layers2 class="h-4 shrink-0" v-else />
+                                class="w-4 h-4 shrink-0"/>
+                            <Layers2 v-else class="h-4 shrink-0"/>
                         </div>
                         <span>{{ workspace.name }}</span>
                     </div>
@@ -158,10 +145,10 @@ function deleteWorkspace(workspaceId) {
                         </button>
 
                         <!-- Delete button (disabled if it's the only workspace) -->
-                        <button class="rounded p-1 hover:bg-muted"
-                                @click.stop="deleteWorkspace(workspace.id)"
+                        <button :class="{'opacity-40': workStore.availableWorkspaces.length <= 1}"
                                 :disabled="workStore.availableWorkspaces.length <= 1"
-                                :class="{'opacity-40': workStore.availableWorkspaces.length <= 1}">
+                                class="rounded p-1 hover:bg-muted"
+                                @click.stop="deleteWorkspace(workspace.id)">
                             <Trash2 class="h-4 w-4 text-destructive"/>
                         </button>
                     </div>
@@ -173,14 +160,14 @@ function deleteWorkspace(workspaceId) {
                         <Layers2 class="h-4 shrink-0"/>
                     </div>
                     <input
+                        ref="renameInput"
                         v-model="newWorkspaceName"
+                        autofocus
                         class="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         placeholder="Workspace name"
                         @keydown.enter="confirmRename"
                         @keydown.escape="cancelRename"
                         @click.stop
-                        ref="renameInput"
-                        autofocus
                     />
                     <div class="flex items-center gap-1">
                         <button class="rounded p-1 hover:bg-muted"
