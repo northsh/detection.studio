@@ -22,42 +22,42 @@ export type SigmaTarget = {
  */
 export const supportedSiems: Array<Siem> = [
     {
-        id: "splunk", 
-        name: "Splunk SPL", 
-        icon: splunk_svg, 
-        company: 'Splunk', 
+        id: "splunk",
+        name: "Splunk SPL",
+        icon: splunk_svg,
+        company: 'Splunk',
         colorClass: '!text-[#74B036]',
         backend: 'pysigma-backend-splunk'
     },
     {
-        id: "esql", 
-        name: "ES | QL", 
-        icon: elasticsearch_svg, 
-        company: 'Elasticsearch', 
+        id: "esql",
+        name: "ES | QL",
+        icon: elasticsearch_svg,
+        company: 'Elasticsearch',
         colorClass: "!text-[#23BBB1]",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
-        id: "lucene", 
-        name: "Lucene", 
-        icon: elasticsearch_svg, 
-        company: 'Elasticsearch', 
+        id: "lucene",
+        name: "Lucene",
+        icon: elasticsearch_svg,
+        company: 'Elasticsearch',
         colorClass: "!text-[#23BBB1]",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
-        id: "eql", 
-        name: "EQL", 
-        icon: elasticsearch_svg, 
-        company: 'Elasticsearch', 
+        id: "eql",
+        name: "EQL",
+        icon: elasticsearch_svg,
+        company: 'Elasticsearch',
         colorClass: "!text-[#23BBB1]",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
-        id: "loki", 
-        name: "Loki", 
-        icon: loki_svg, 
-        company: 'Grafana', 
+        id: "loki",
+        name: "Loki",
+        icon: loki_svg,
+        company: 'Grafana',
         colorClass: '!text-[#F49D2A]',
         backend: 'pysigma-backend-loki'
     },

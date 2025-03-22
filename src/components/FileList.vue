@@ -76,7 +76,7 @@ const groupedFiles = computed(function () {
                         <DropdownMenuTrigger>
                             <Tooltip>
                                 <TooltipTrigger>
-                                    <Button class="h-6 w-6" size="icon" data-test-id="new-sigma-rule">
+                                    <Button class="h-6 w-6" data-test-id="new-sigma-rule" size="icon">
                                         <Plus class="h-4 w-4"/>
                                     </Button>
                                 </TooltipTrigger>
@@ -89,21 +89,21 @@ const groupedFiles = computed(function () {
                             <DropdownMenuGroup>
                                 <DropdownMenuLabel>Rule Type</DropdownMenuLabel>
                             </DropdownMenuGroup>
-                            <DropdownMenuItem @click="newFile('sigma')" class="flex gap-2 items-center">
+                            <DropdownMenuItem class="flex gap-2 items-center" @click="newFile('sigma')">
                                 <SigmaLogo class="h-4 w-4"/>
                                 Sigma Rule
                             </DropdownMenuItem>
-<!--                            <DropdownMenuSub>-->
-<!--                                <DropdownMenuSubTrigger class="flex gap-2 items-center">-->
-<!--                                    <SigmaLogo class="h-4 w-4"/>-->
-<!--                                    <span>Sigma Rule</span>-->
-<!--                                </DropdownMenuSubTrigger>-->
-<!--                                <DropdownMenuPortal>-->
-<!--                                    <DropdownMenuSubContent>-->
-<!--                                        <DropdownMenuItem @click="newFile('sigma')">Sigma</DropdownMenuItem>-->
-<!--                                    </DropdownMenuSubContent>-->
-<!--                                </DropdownMenuPortal>-->
-<!--                            </DropdownMenuSub>-->
+                            <!--                            <DropdownMenuSub>-->
+                            <!--                                <DropdownMenuSubTrigger class="flex gap-2 items-center">-->
+                            <!--                                    <SigmaLogo class="h-4 w-4"/>-->
+                            <!--                                    <span>Sigma Rule</span>-->
+                            <!--                                </DropdownMenuSubTrigger>-->
+                            <!--                                <DropdownMenuPortal>-->
+                            <!--                                    <DropdownMenuSubContent>-->
+                            <!--                                        <DropdownMenuItem @click="newFile('sigma')">Sigma</DropdownMenuItem>-->
+                            <!--                                    </DropdownMenuSubContent>-->
+                            <!--                                </DropdownMenuPortal>-->
+                            <!--                            </DropdownMenuSub>-->
                             <DropdownMenuSub>
                                 <DropdownMenuSubTrigger class="flex gap-2 items-center">
                                     <SigmaLogo class="h-4 w-4"/>
@@ -111,19 +111,22 @@ const groupedFiles = computed(function () {
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuPortal>
                                     <DropdownMenuSubContent>
-                                        <DropdownMenuItem @click="newFile('correlation')" class="flex flex-col items-start gap-1">
+                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
+                                                          @click="newFile('correlation')">
                                             Event Count
                                             <p class="text-muted-foreground">
                                                 Count the number of events in a time window
                                             </p>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem @click="newFile('correlation')" class="flex flex-col items-start gap-1">
+                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
+                                                          @click="newFile('correlation')">
                                             Value Count
                                             <p class="text-muted-foreground">
                                                 Count the number of individual values in a time window
                                             </p>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem @click="newFile('correlation')" class="flex flex-col items-start gap-1">
+                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
+                                                          @click="newFile('correlation')">
                                             Temporal
                                             <p class="text-muted-foreground">
                                                 Multiple different events close together in time
@@ -133,7 +136,7 @@ const groupedFiles = computed(function () {
                                     </DropdownMenuSubContent>
                                 </DropdownMenuPortal>
                             </DropdownMenuSub>
-                            <DropdownMenuSeparator />
+                            <DropdownMenuSeparator/>
                             <DropdownMenuItem @click="newFile('filter')">Sigma Filter</DropdownMenuItem>
                             <DropdownMenuItem @click="newFile('pipeline')">Sigma Pipeline</DropdownMenuItem>
                         </DropdownMenuContent>

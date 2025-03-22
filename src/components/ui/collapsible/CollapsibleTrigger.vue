@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {CollapsibleTriggerProps} from 'radix-vue'
 import {CollapsibleTrigger} from 'radix-vue'
 
@@ -6,7 +6,7 @@ const props = defineProps<CollapsibleTriggerProps>()
 </script>
 
 <template>
-  <CollapsibleTrigger v-bind="props">
-    <slot />
-  </CollapsibleTrigger>
+    <CollapsibleTrigger v-bind="props">
+        <slot/>
+    </CollapsibleTrigger>
 </template>

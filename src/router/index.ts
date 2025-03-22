@@ -1,4 +1,3 @@
-import {createRouter, createWebHistory} from 'vue-router'
 import Studio from '@/views/Studio.vue'
 
 const routes = [

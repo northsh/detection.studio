@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {SelectScrollUpButtonProps} from 'radix-vue'
 import {SelectScrollUpButton, useForwardProps} from 'radix-vue'
 import type {HTMLAttributes} from 'vue'
@@ -9,18 +9,19 @@ import {ChevronUpIcon} from '@radix-icons/vue'
 const props = defineProps<SelectScrollUpButtonProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+    const {class: _, ...delegated} = props
 
-  return delegated
+    return delegated
 })
 
 const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <SelectScrollUpButton v-bind="forwardedProps" :class="cn('flex cursor-default items-center justify-center py-1', props.class)">
-    <slot>
-      <ChevronUpIcon />
-    </slot>
-  </SelectScrollUpButton>
+    <SelectScrollUpButton :class="cn('flex cursor-default items-center justify-center py-1', props.class)"
+                          v-bind="forwardedProps">
+        <slot>
+            <ChevronUpIcon/>
+        </slot>
+    </SelectScrollUpButton>
 </template>

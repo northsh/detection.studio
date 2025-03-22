@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {DropdownMenuSubTriggerProps} from 'radix-vue'
 import {DropdownMenuSubTrigger, useForwardProps,} from 'radix-vue'
 import type {HTMLAttributes} from 'vue'
@@ -9,23 +9,23 @@ import {ChevronRightIcon} from '@radix-icons/vue'
 const props = defineProps<DropdownMenuSubTriggerProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+    const {class: _, ...delegated} = props
 
-  return delegated
+    return delegated
 })
 
 const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <DropdownMenuSubTrigger
-    v-bind="forwardedProps"
-    :class="cn(
+    <DropdownMenuSubTrigger
+        :class="cn(
       'flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent data-[state=open]:bg-accent',
       props.class,
     )"
-  >
-    <slot />
-    <ChevronRightIcon class="ml-auto h-4 w-4" />
-  </DropdownMenuSubTrigger>
+        v-bind="forwardedProps"
+    >
+        <slot/>
+        <ChevronRightIcon class="ml-auto h-4 w-4"/>
+    </DropdownMenuSubTrigger>
 </template>
