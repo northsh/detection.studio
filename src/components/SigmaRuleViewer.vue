@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col h-full md:overflow-hidden">
+    <ScrollArea class="flex flex-col h-full">
         <div v-if="!currentRule" class="flex items-center justify-center h-full">
             <p>Select a rule to view its details</p>
         </div>
@@ -188,18 +188,18 @@
             </div>
 
             <!-- Rule Definition with code editor - full height and clean styling -->
-            <div class="flex-grow flex flex-col h-full">
+            <div class="grow flex flex-col h-full">
                 <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
                     <span class="text-xs uppercase tracking-wider font-medium">YAML Definition</span>
                 </div>
-                <div class="flex-grow bg-[#0D1116] h-full overflow-auto">
+                <div class="grow bg-[#0D1116] h-full">
                     <PrismEditor
                         v-model="currentRuleContent"
                         :insert-spaces="true"
                         :line-numbers="true"
                         :read-only="true"
                         :word-wrap="true"
-                        class="text-xs md:text-sm h-full w-full overflow-auto"
+                        class="text-xs md:text-sm h-full w-full"
                         language="yaml"
                     />
                 </div>
@@ -222,7 +222,7 @@
                 </Button>
             </div>
         </template>
-    </div>
+    </ScrollArea>
 </template>
 
 <script lang="ts" setup>
@@ -235,6 +235,7 @@ import PrismEditor from './PrismEditor.vue';
 import {toast} from 'vue-sonner';
 import router from "@/router";
 import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 
 const sigmaRulesStore = useSigmaRulesStore();
