@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite-ssg build",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
