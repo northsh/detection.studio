@@ -23,19 +23,19 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/compo
 import JSZip from 'jszip';
 import {supportedSiems} from "@/types/SIEMs.ts";
 import {
-  ResizableHandle,
-  ResizablePanel, 
-  ResizablePanelGroup
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup
 } from "@/components/ui/resizable";
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
 } from '@/components/ui/sheet';
 
 import { Github } from 'lucide-vue-next';
@@ -123,7 +123,7 @@ To use these files with the Sigma CLI tool, you need to:
    \`\`\`bash
    sigma plugin install ${backendPlugin}
    \`\`\`
-   
+
    You can view all available backends with \`sigma plugin list\`.
 
 3. Convert the rules to your SIEM format:
@@ -273,7 +273,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                                 <div class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5 border-b border-border">
                                     <h3 class="text-xs font-medium">SIEM Query Output</h3>
                                 </div>
-                                
+
                                 <div
                                     v-if="sigma.siem_conversion_error"
                                     class="absolute inset-0 flex p-10 z-10 bg-red-950/50 backdrop-blur-sm"
@@ -295,10 +295,10 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
                         </ResizablePanel>
 
                         <!-- Resize Handle -->
-                        <ResizableHandle with-handle v-if="false" />
+                        <ResizableHandle with-handle />
 
                         <!-- SIEM Sample Data - Takes 65% -->
-                        <ResizablePanel :default-size="30" :min-size="10" class="min-h-0 flex flex-col" v-if="false">
+                        <ResizablePanel :default-size="30" :min-size="10" class="min-h-0 flex flex-col">
                             <DataView class="h-full w-full" />
                         </ResizablePanel>
                     </ResizablePanelGroup>
@@ -307,7 +307,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         </div>
 
         <!-- Mobile View Sheet for small viewports -->
-        <Sheet v-if="isCompactView && false" side="bottom">
+        <Sheet v-if="isCompactView" side="bottom">
             <SheetTrigger as-child>
                 <Button variant="outline" class="md:hidden fixed bottom-4 right-4 z-50">
                     View Sample Data
