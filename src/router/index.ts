@@ -1,29 +1,26 @@
 import {createRouter, createWebHistory} from 'vue-router'
 import Studio from '@/views/Studio.vue'
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes: [
+const routes = [
     {
-      path: '/',
-      name: 'studio',
-      component: Studio
+        path: '/',
+        name: 'studio',
+        component: Studio
     },
     {
-      path: '/browser',
-      name: 'browser',
-      component: () => import('@/views/RulesBrowser.vue'),
-      // Add query parameters to allow sharing specific rules
-      props: (route) => ({
-        ruleId: route.query.ruleId || null
-      })
+        path: '/browser',
+        name: 'browser',
+        component: () => import('@/views/RulesBrowser.vue'),
+        // Add query parameters to allow sharing specific rules
+        props: (route) => ({
+            ruleId: route.query.ruleId || null
+        })
     },
     {
-      path: '/settings',
-      name: 'settings',
-      component: () => import('@/views/Settings.vue')
+        path: '/settings',
+        name: 'settings',
+        component: () => import('@/views/Settings.vue')
     }
-  ]
-})
+]
 
-export default router
+export default routes
