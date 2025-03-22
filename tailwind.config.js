@@ -81,7 +81,7 @@ module.exports = {
   				'800': '#171726',
   				'900': '#090a1d'
   			},
-  			'north': {
+  			north: {
   				'50': 'color(display-p3 0.894 0.886 0.953 / <alpha-value>)',
   				'100': 'color(display-p3 0.827 0.82 0.922 / <alpha-value>)',
   				'200': 'color(display-p3 0.714 0.698 0.863 / <alpha-value>)',

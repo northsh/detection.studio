@@ -1,14 +1,6 @@
 <script lang="ts" setup>
 import {Collapsible, CollapsibleContent, CollapsibleTrigger,} from "@/components/ui/collapsible";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
@@ -50,6 +42,7 @@ import "prism-code-editor/prism/languages/yaml";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {useMagicKeys} from '@vueuse/core'
 import {supportedSiems} from "@/types/SIEMs";
+import WorkspaceSelection from "@/WorkspaceSelection.vue";
 
 // This is sample data.
 const data = {
@@ -231,99 +224,7 @@ watch([Z, Y], ([undo, redo]) => {
                 <SidebarSeparator class="w-full !bg-border mx-0" :class="{'mx-2': workStore.sidebarOpen}" />
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger as-child>
-                                <SidebarMenuButton
-                                    class="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                                    size="lg">
-                                    <div
-                                        class="flex aspect-square size-8 items-center justify-center rounded-lg bg-secondary text-sidebar-primary-foreground">
-                                        <Layers2 class="h-4 shrink-0"/>
-                                    </div>
-                                    <div class="grid text-left text-sm leading-tight">
-                                        <span class="truncate font-semibold">{{ workStore.currentWorkspace?.name }}</span>
-                                        <span class="truncate text-xs">{{ supportedSiems.find((s) => s.id === sigma.selected_siem)?.name ?? '' }}</span>
-                                    </div>
-                                    <ChevronsUpDown class="ml-auto"/>
-                                </SidebarMenuButton>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent :side-offset="4" align="start"
-                                                 class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-                                                 side="bottom">
-                                <DropdownMenuLabel class="text-xs text-muted-foreground">
-                                    Workspaces
-                                </DropdownMenuLabel>
-                                <DropdownMenuItem v-for="(workspace, index) in workStore.availableWorkspaces" :key="workspace.name"
-                                                  class="gap-2 p-2"
-                                                  @click.stop="isRenaming && workspaceToRename === workspace.id ? null : workStore.setCurrentWorkspace(workspace)">
-                                    <!-- When not renaming this workspace -->
-                                    <div v-if="!(isRenaming && workspaceToRename === workspace.id)" 
-                                         class="flex w-full items-center justify-between">
-                                        <div class="flex items-center gap-2 cursor-pointer">
-                                            <div class="flex size-6 items-center justify-center rounded-sm border">
-                                                <Layers2 class="h-4 shrink-0"/>
-                                            </div>
-                                            <span>{{ workspace.name }}</span>
-                                        </div>
-                                        
-                                        <!-- Actions only appear for the active workspace -->
-                                        <div v-if="workStore.currentWorkspaceID === workspace.id" 
-                                             class="flex items-center gap-1 ml-2">
-                                            <!-- Edit button -->
-                                            <button class="rounded p-1 hover:bg-muted"
-                                                    @click.stop="startRename(workspace)">
-                                                <Edit2 class="h-4 w-4 text-muted-foreground"/>
-                                            </button>
-                                            
-                                            <!-- Delete button (disabled if it's the only workspace) -->
-                                            <button class="rounded p-1 hover:bg-muted" 
-                                                    @click.stop="deleteWorkspace(workspace.id)"
-                                                    :disabled="workStore.availableWorkspaces.length <= 1"
-                                                    :class="{'opacity-40': workStore.availableWorkspaces.length <= 1}">
-                                                <Trash2 class="h-4 w-4 text-destructive"/>
-                                            </button>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Rename form -->
-                                    <div v-else class="flex w-full items-center gap-2" @click.stop>
-                                        <div class="flex size-6 items-center justify-center rounded-sm border">
-                                            <Layers2 class="h-4 shrink-0"/>
-                                        </div>
-                                        <input 
-                                            v-model="newWorkspaceName" 
-                                            class="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                            placeholder="Workspace name"
-                                            @keydown.enter="confirmRename"
-                                            @keydown.escape="cancelRename"
-                                            @click.stop
-                                            ref="renameInput"
-                                            autofocus
-                                        />
-                                        <div class="flex items-center gap-1">
-                                            <button class="rounded p-1 hover:bg-muted"
-                                                    @click.stop="confirmRename">
-                                                <div class="text-xs">✓</div>
-                                            </button>
-                                            <button class="rounded p-1 hover:bg-muted"
-                                                    @click.stop="cancelRename">
-                                                <div class="text-xs">✕</div>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator/>
-                                <DropdownMenuItem class="gap-2 p-2" @click="createWorkspace">
-                                    <div
-                                        class="flex size-6 items-center justify-center rounded-md border bg-background">
-                                        <Plus class="size-4"/>
-                                    </div>
-                                    <div class="font-medium text-muted-foreground">
-                                        New Workspace
-                                    </div>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <WorkspaceSelection/>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
@@ -333,7 +234,7 @@ watch([Z, Y], ([undo, redo]) => {
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <router-link to="/" custom v-slot="{ isActive, href, navigate }">
-                                <SidebarMenuButton :active="isActive" @click="navigate">
+                                <SidebarMenuButton :active="isActive" @click="navigate" class="[active=true]/text-white">
                                     <PaletteIcon />
                                     <span>Studio</span>
                                 </SidebarMenuButton>
