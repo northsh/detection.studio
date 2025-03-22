@@ -1,8 +1,7 @@
 <template>
   <div class="flex flex-col h-full overflow-hidden">
-    <div class="p-6 border-b bg-card shadow-sm">
-      <h2 class="text-lg font-bold mb-2">Sigma Rules Browser</h2>
-      
+    <div class="p-4 border-b bg-card shadow-sm">
+
       <!-- Search input -->
       <Input
         v-model="searchQuery"
@@ -10,9 +9,9 @@
         class="w-full"
         @input="onSearch"
       />
-      
+
       <!-- Filter controls -->
-      <div class="mt-4 space-y-4">
+      <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
         <!-- Collapsible filters section -->
         <Collapsible>
           <CollapsibleTrigger asChild>
@@ -24,19 +23,19 @@
               <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180" />
             </div>
           </CollapsibleTrigger>
-          
+
           <CollapsibleContent class="pt-2">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Status filter -->
               <div class="space-y-2">
                 <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
                 <div class="flex flex-wrap gap-1.5">
-                  <Badge 
-                    v-for="status in statusOptions" 
+                  <Badge
+                    v-for="status in statusOptions"
                     :key="status"
                     variant="outline"
                     :class="[
-                      statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' : 
+                      statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' :
                       'bg-muted/50 text-muted-foreground hover:bg-muted',
                       'cursor-pointer transition-colors'
                     ]"
@@ -53,9 +52,9 @@
                 <Combobox v-model="selectedProduct" @update:modelValue="applyFilters">
                   <ComboboxAnchor>
                     <div class="relative w-full items-center">
-                      <ComboboxInput 
-                        class="pl-9 w-full"
-                        placeholder="Search product/category/service..." 
+                      <ComboboxInput
+                        class="pl-9 w-full bg-background"
+                        placeholder="Search product/category/service..."
                         @input="onProductSearch"
                         :display-value="(val) => val"
                       />
@@ -64,16 +63,16 @@
                       </span>
                     </div>
                   </ComboboxAnchor>
-                  
+
                   <ComboboxList class="w-full">
                     <ComboboxEmpty>
                       No matches found
                     </ComboboxEmpty>
 
                     <ComboboxGroup>
-                      <ComboboxItem 
-                        v-for="option in filteredProductOptions" 
-                        :key="option" 
+                      <ComboboxItem
+                        v-for="option in filteredProductOptions"
+                        :key="option"
                         :value="option"
                         class="flex items-center justify-between"
                       >
@@ -93,7 +92,7 @@
                 </Combobox>
               </div>
             </div>
-            
+
             <!-- Logsource sorting toggle -->
             <div class="mt-4">
               <div class="flex items-center justify-between mb-2">
@@ -101,8 +100,8 @@
               </div>
               <div class="flex items-center space-x-2">
                 <span class="text-xs text-muted-foreground">Product</span>
-                <Toggle 
-                  :pressed="logsourceSortingStyle === 'category-product-service'" 
+                <Toggle
+                  :pressed="logsourceSortingStyle === 'category-product-service'"
                   @update:pressed="toggleLogSourceSorting"
                   size="sm"
                 />
@@ -113,22 +112,22 @@
         </Collapsible>
       </div>
     </div>
-    
+
     <!-- Error state -->
     <div v-if="error" class="p-4 flex flex-col justify-center items-center flex-grow text-red-500">
       <Alert variant="destructive" class="max-w-md">
         <AlertTitle>Error loading rules</AlertTitle>
         <AlertDescription>{{ error }}</AlertDescription>
       </Alert>
-      <Button 
-        @click="retryLoadRules" 
+      <Button
+        @click="retryLoadRules"
         variant="default"
         class="mt-4"
       >
         Retry
       </Button>
     </div>
-    
+
     <!-- Loading state with skeleton -->
     <div v-else-if="isLoading" class="p-4 flex-grow">
       <div class="space-y-4">
@@ -153,7 +152,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Results list -->
     <div v-else class="flex-grow overflow-hidden">
       <div v-if="allRules.length === 0" class="text-center py-16 flex flex-col items-center justify-center h-full">
@@ -162,8 +161,8 @@
           <p class="text-muted-foreground mb-4">
             The rules index file may be missing or empty. Please ensure the "sigma-rules-index.json" file exists in the public directory.
           </p>
-          <Button 
-            @click="retryLoadRules" 
+          <Button
+            @click="retryLoadRules"
             variant="default"
           >
             Retry Loading Rules
@@ -175,9 +174,9 @@
       </div>
       <div v-else ref="containerRef" class="h-full overflow-auto">
         <div class="relative" :style="{ height: `${totalHeight}px` }">
-          <div 
-            v-for="(group, groupIndex) in visibleGroups" 
-            :key="group.label" 
+          <div
+            v-for="(group, groupIndex) in visibleGroups"
+            :key="group.label"
             class="mb-6 px-4"
             :style="{ transform: `translateY(${group.offsetTop}px)`, position: 'absolute', width: 'calc(100% - 16px)', left: 0, right: 0 }"
           >
@@ -188,8 +187,8 @@
               <Badge variant="outline" class="text-xs">{{ group.items.length }} rules</Badge>
             </div>
             <div class="space-y-2">
-              <div 
-                v-for="itemInfo in group.items" 
+              <div
+                v-for="itemInfo in group.items"
                 :key="itemInfo.rule.id || itemInfo.rule.path"
                 class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm"
                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
@@ -201,15 +200,15 @@
 
                 <div class="flex items-start justify-between mt-1">
                   <div class="flex gap-1.5">
-                    <Badge 
-                      v-if="itemInfo.rule.level" 
+                    <Badge
+                      v-if="itemInfo.rule.level"
                       :class="getLevelBadgeClass(itemInfo.rule.level)"
                       class="uppercase font-semibold text-[10px] tracking-wider"
                     >
                       {{ itemInfo.rule.level }}
                     </Badge>
-                    <Badge 
-                      v-if="itemInfo.rule.status" 
+                    <Badge
+                      v-if="itemInfo.rule.status"
                       variant="outline"
                       class="uppercase font-semibold text-[10px] tracking-wider"
                     >
@@ -303,31 +302,31 @@ const productSearchQuery = ref('');
 // Track product-category-service mappings for better UX
 const logsourceMapping = computed(() => {
   const mapping: Record<string, { type: string, items: Set<string> }> = {};
-  
+
   allRules.value.forEach(rule => {
     if (rule.logsource?.product) {
       if (!mapping[rule.logsource.product]) {
         mapping[rule.logsource.product] = { type: 'product', items: new Set() };
       }
-      
+
       if (rule.logsource.category) {
         mapping[rule.logsource.product].items.add(rule.logsource.category);
-        
+
         if (!mapping[rule.logsource.category]) {
           mapping[rule.logsource.category] = { type: 'category', items: new Set() };
         }
       }
-      
+
       if (rule.logsource.service) {
         mapping[rule.logsource.product].items.add(rule.logsource.service);
-        
+
         if (!mapping[rule.logsource.service]) {
           mapping[rule.logsource.service] = { type: 'service', items: new Set() };
         }
       }
     }
   });
-  
+
   return mapping;
 });
 
@@ -359,7 +358,7 @@ function toggleStatusFilter(status: string) {
 // Get unique logsource options (products, categories, services) from rules
 const productOptions = computed(() => {
   const options = new Set<string>();
-  
+
   allRules.value.forEach(rule => {
     if (rule.logsource?.product) {
       options.add(rule.logsource.product);
@@ -371,16 +370,16 @@ const productOptions = computed(() => {
       options.add(rule.logsource.service);
     }
   });
-  
+
   return Array.from(options).sort();
 });
 
 // Filtered product options based on search query
 const filteredProductOptions = computed(() => {
   if (!productSearchQuery.value) return productOptions.value;
-  
+
   const query = productSearchQuery.value.toLowerCase();
-  return productOptions.value.filter(product => 
+  return productOptions.value.filter(product =>
     product.toLowerCase().includes(query)
   );
 });
@@ -394,16 +393,16 @@ function onProductSearch(event: Event) {
 const filteredRules = computed(() => {
   // First apply the text search
   let rules = sigmaRulesStore.filteredRules;
-  
+
   // Then apply status filters
   rules = rules.filter(rule => {
     // If rule has no status, include it only if at least one filter is enabled
     if (!rule.status) return Object.values(statusFilters).some(value => value);
-    
+
     // Otherwise, check if the rule's status is in the enabled filters
     return statusFilters[rule.status.toLowerCase()] === true;
   });
-  
+
   // Apply product filter if selected
   if (selectedProduct.value) {
     // Check if the selected product might actually be a category or service
@@ -413,11 +412,11 @@ const filteredRules = computed(() => {
       const category = logsource.category?.toLowerCase();
       const service = logsource.service?.toLowerCase();
       const selected = selectedProduct.value.toLowerCase();
-      
+
       return product === selected || category === selected || service === selected;
     });
   }
-  
+
   return rules;
 });
 
@@ -425,30 +424,30 @@ const filteredRules = computed(() => {
 const groupedRules = computed(() => {
   const rules = filteredRules.value;
   const groups: Record<string, SigmaRule[]> = {};
-  
+
   // Group by the selected sorting style
   rules.forEach(rule => {
     let groupKey = 'Other';
-    
+
     if (logsourceSortingStyle.value === 'product-category-service') {
       groupKey = rule.logsource?.product || 'Other';
     } else {
       groupKey = rule.logsource?.category || 'Other';
     }
-    
+
     if (!groups[groupKey]) {
       groups[groupKey] = [];
     }
-    
+
     groups[groupKey].push(rule);
   });
-  
+
   // Convert to array and sort
   return Object.entries(groups)
-    .map(([label, rules]) => ({ 
-      label, 
+    .map(([label, rules]) => ({
+      label,
       rules,
-      expanded: true 
+      expanded: true
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 });
@@ -476,21 +475,21 @@ interface GroupInfo {
 const allGroupPositions = computed(() => {
   const positions: GroupInfo[] = [];
   let currentOffset = 0;
-  
+
   groupedRules.value.forEach(group => {
     const itemCount = group.rules.length;
     const groupHeight = GROUP_HEADER_HEIGHT + (itemCount * ITEM_HEIGHT);
-    
+
     positions.push({
       label: group.label,
       items: group.rules.map((rule, index) => ({ rule, index })),
       offsetTop: currentOffset,
       height: groupHeight
     });
-    
+
     currentOffset += groupHeight + 24; // Add margin between groups
   });
-  
+
   return positions;
 });
 
@@ -504,10 +503,10 @@ const totalHeight = computed(() => {
 // Calculate which groups should be visible
 const visibleGroups = computed(() => {
   if (!containerRef.value) return [];
-  
+
   const startOffset = Math.max(0, scrollTop.value - BUFFER_SIZE * ITEM_HEIGHT);
   const endOffset = scrollTop.value + viewportHeight.value + BUFFER_SIZE * ITEM_HEIGHT;
-  
+
   return allGroupPositions.value.filter(group => {
     const groupEnd = group.offsetTop + group.height;
     return groupEnd > startOffset && group.offsetTop < endOffset;
@@ -517,14 +516,14 @@ const visibleGroups = computed(() => {
 // Update scroll position on scroll
 function updateScroll() {
   if (!containerRef.value) return;
-  
+
   scrollTop.value = containerRef.value.scrollTop;
   viewportHeight.value = containerRef.value.clientHeight;
 }
 
 // Check if a rule is currently selected
 function isSelected(rule: SigmaRule) {
-  return sigmaRulesStore.currentRule?.id === rule.id || 
+  return sigmaRulesStore.currentRule?.id === rule.id ||
          sigmaRulesStore.currentRule?.path === rule.path;
 }
 
@@ -534,21 +533,21 @@ onMounted(async () => {
     console.log('SigmaRulesBrowser: Mounted, fetching rules...');
     await sigmaRulesStore.fetchRules();
     console.log(`SigmaRulesBrowser: Fetched ${sigmaRulesStore.rules.length} rules`);
-    
+
     if (containerRef.value) {
       viewportHeight.value = containerRef.value.clientHeight;
       containerRef.value.addEventListener('scroll', updateScroll);
       console.log('SigmaRulesBrowser: Scroll listener attached');
     }
-    
+
     // Use either the prop or route query parameter to select a rule
     const ruleIdToSelect = props.initialRuleId || route.query.ruleId as string;
     console.log('SigmaRulesBrowser: Rule ID to select:', ruleIdToSelect);
-    
+
     if (ruleIdToSelect) {
       await selectRuleById(ruleIdToSelect);
     }
-    
+
     // Force an update of scroll position
     updateScroll();
   } catch (err) {
@@ -576,8 +575,8 @@ function applyFilters() {
 
 // Toggle between product and category grouping
 function toggleLogSourceSorting(pressed: boolean) {
-  logsourceSortingStyle.value = pressed 
-    ? 'category-product-service' 
+  logsourceSortingStyle.value = pressed
+    ? 'category-product-service'
     : 'product-category-service';
   applyFilters();
 }
@@ -585,12 +584,12 @@ function toggleLogSourceSorting(pressed: boolean) {
 // Retry loading rules if there was an error
 async function retryLoadRules() {
   error.value = null;
-  
+
   try {
     console.log('SigmaRulesBrowser: Retrying fetch rules...');
     await sigmaRulesStore.fetchRules(true); // Force reload
     console.log(`SigmaRulesBrowser: Fetched ${sigmaRulesStore.rules.length} rules on retry`);
-    
+
     // Force an update of scroll position
     if (containerRef.value) {
       viewportHeight.value = containerRef.value.clientHeight;
@@ -613,12 +612,12 @@ function resetScroll() {
 // Select a rule to view details
 function selectRule(rule: SigmaRule) {
   sigmaRulesStore.setCurrentRule(rule);
-  
+
   // Update URL with rule ID
-  router.replace({ 
-    query: { 
+  router.replace({
+    query: {
       ...route.query,
-      ruleId: rule.id || rule.path 
+      ruleId: rule.id || rule.path
     }
   });
 }
@@ -626,10 +625,10 @@ function selectRule(rule: SigmaRule) {
 // Select a rule by ID from URL
 async function selectRuleById(ruleId: string) {
   // Find the rule by ID or path
-  const rule = allRules.value.find(r => 
+  const rule = allRules.value.find(r =>
     r.id === ruleId || r.path === ruleId
   );
-  
+
   if (rule) {
     await sigmaRulesStore.setCurrentRule(rule);
   }
@@ -638,13 +637,13 @@ async function selectRuleById(ruleId: string) {
 // Get badge class based on rule level - match styling from SigmaRuleViewer
 function getLevelBadgeClass(level: string): string {
   const lowerLevel = level.toLowerCase();
-  
+
   if (lowerLevel === 'critical') return 'bg-red-600 hover:bg-red-600';
   if (lowerLevel === 'high') return 'bg-red-500 hover:bg-red-500';
-  if (lowerLevel === 'medium') return 'bg-amber-500 hover:bg-amber-500'; 
+  if (lowerLevel === 'medium') return 'bg-amber-500 hover:bg-amber-500';
   if (lowerLevel === 'low') return 'bg-blue-500 hover:bg-blue-500';
   if (lowerLevel === 'informational') return 'bg-green-500 hover:bg-green-500';
-  
+
   return 'bg-gray-500 hover:bg-gray-500';
 }
 </script>
