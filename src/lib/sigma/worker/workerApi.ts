@@ -49,3 +49,23 @@ export function isPyodideReadyAsync() {
     type: 'status',
   });
 }
+
+/**
+ * Load JSON log data into SQLite
+ */
+export function loadLogDataAsync(data: string) {
+  return promiseWorker.postMessage({
+    type: 'loadData',
+    data
+  });
+}
+
+/**
+ * Search logs with the SQL query
+ */
+export function searchLogsAsync(query: string) {
+  return promiseWorker.postMessage({
+    type: 'search',
+    query
+  });
+}
