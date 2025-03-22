@@ -255,7 +255,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
             <ResizablePanelGroup direction="vertical" class="h-full min-h-0 w-full">
                 <!-- Editor Panel - Takes ~60% of the space -->
                 <ResizablePanel :default-size="70" :min-size="20" class="p-1 min-h-0 flex flex-col">
-                    <div class="h-full w-full rounded-xl overflow-hidden flex flex-col">
+                    <div class="h-full w-full overflow-hidden flex flex-col">
                         <Editor/>
                     </div>
                 </ResizablePanel>

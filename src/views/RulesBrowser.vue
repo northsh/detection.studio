@@ -1,25 +1,69 @@
 <template>
-  <div class="px-6 py-6">
-    <div class="mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
-        <SigmaRulesBrowser 
-          class="h-full border rounded-lg overflow-hidden shadow-sm" 
-          :initialRuleId="ruleId"
-        />
-        <div class="md:col-span-2 h-full border rounded-lg overflow-hidden shadow-sm">
-          <SigmaRuleViewer class="h-full" />
+    <div class="flex flex-col h-screen w-full max-w-full overflow-hidden">
+        <!-- Header - Fixed height, no overflow -->
+        <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
+            <div class="w-full flex items-center gap-1 md:gap-4 px-4">
+                <SidebarTrigger/>
+                <Separator class="!h-4" orientation="vertical"/>
+                <div class="grow"></div>
+                <div class="flex items-center gap-1 md:gap-2">
+                    <Button
+                        href="https://github.com/northsh/detection.studio/"
+                        size="sm"
+                        target="_blank"
+                        variant="ghost"
+                    >
+                        <Github class="h-4 w-4 text-primary"/>
+                        GitHub
+                    </Button>
+
+                    <ShareButton/>
+
+                </div>
+            </div>
+        </header>
+
+        <div class="px-1 pb-6 mt-1">
+            <div class="mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
+                    <SigmaRulesBrowser
+                        :initialRuleId="ruleId"
+                        class="h-full border rounded-lg overflow-hidden shadow-sm"
+                    />
+                    <div class="md:col-span-2 h-full border rounded-lg overflow-hidden shadow-sm">
+                        <SigmaRuleViewer class="h-full"/>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </template>
 
-<script setup lang="ts">
-import SigmaRulesBrowser from '@/components/SigmaRulesBrowser.vue';
+<script lang="ts" setup>
+import SigmaRulesBrowser from '@/components/SigmaRuleList.vue';
 import SigmaRuleViewer from '@/components/SigmaRuleViewer.vue';
+
+import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/components/ui/breadcrumb";
+import {Separator} from "@/components/ui/separator";
+import {SidebarTrigger} from "@/components/ui/sidebar";
+// Importing Prism grammars
+import "prism-code-editor/prism/languages/markup";
+import "prism-code-editor/prism/languages/javascript";
+import "prism-code-editor/prism/languages/yaml";
+import {Button} from "@/components/ui/button";
+import {Download} from "lucide-vue-next";
+import ShareButton from "@/components/ShareButton.vue";
+import SIEMSelector from "@/components/SIEMSelector.vue";
+import PipelineSelector from "@/components/PipelineSelector.vue";
+
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
+
+import { Github } from 'lucide-vue-next';
+
+
 
 // Accept route props
 defineProps<{
-  ruleId?: string | null
+    ruleId?: string | null
 }>();
 </script>
