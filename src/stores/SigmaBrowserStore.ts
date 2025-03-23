@@ -1,7 +1,8 @@
 import {defineStore} from 'pinia';
-import {computed, ref, shallowRef} from 'vue';
+import {computed, ref, shallowRef, watch} from 'vue';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
 import {SigmaRepoService} from '../lib/sigma/SigmaRepoService';
+import { DEFAULT_STATUS_FILTERS } from '@/components/sigma/utils';
 
 export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     const rules = ref<SigmaRule[]>([]);

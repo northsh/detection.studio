@@ -12,6 +12,7 @@ import type {SplitterPanel} from "radix-vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {breakpointsTailwind, useBreakpoints, useElementSize, useWindowSize} from '@vueuse/core'
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import SigmaEditor from "@/components/SigmaEditor.vue";
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
