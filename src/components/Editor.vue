@@ -130,11 +130,15 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
 
 <style>
 /* PrismEditor styles */
-.prism-editor .prism-code-editor {
+.prism-code-editor {
     height: 100%;
     max-width: 100%;
     overflow-y: auto;
     overflow-x: auto;
+}
+
+.prism-code-editor > * {
+    padding-bottom: 2.5rem;
 }
 
 /* Layout container styles */

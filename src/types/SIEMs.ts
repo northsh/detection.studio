@@ -72,7 +72,7 @@ export const supportedSiems: Array<Siem> = [
     {id: "quickwit", name: "QuickWit", icon: null, backend: 'pysigma-backend-quickwit'},
     {id: "secops", name: "Google SecOps", icon: null, backend: 'pysigma-backend-secops'},
     {id: "sentinel_one", name: "Sentinel One", icon: null, backend: 'pysigma-backend-sentinelone'},
-    {id: "sentinel_one_pq", name: "Sentinel One - PowerQuery", icon: null, backend: 'pysigma-backend-sentinelone'},
+    // {id: "sentinel_one_pq", name: "Sentinel One - PowerQuery", icon: null, backend: 'pysigma-backend-sentinelone'}, // Disabled due to non-operational backaned
     {id: "sqlite", name: "SQLite", icon: null, backend: 'pysigma-backend-sqlite'},
     {id: "surreal_ql", name: "SurrealQL", icon: null, backend: 'pysigma-backend-surrealql'},
     {id: "tql", name: "Trellix TQL", icon: null, backend: 'pysigma-backend-trellix'},
