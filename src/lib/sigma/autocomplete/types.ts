@@ -1,4 +1,4 @@
-import { type PrismEditor } from "prism-code-editor";
+import {type PrismEditor} from "prism-code-editor";
 
 export interface Completion {
 	/**

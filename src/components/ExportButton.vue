@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import {Button} from "@/components/ui/button";
-import {Download, Github} from "lucide-vue-next";
+import {Download} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
 import {computed} from "vue";
 
