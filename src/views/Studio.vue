@@ -75,15 +75,18 @@ const isCompactView = computed(() => width.value < 768 || height.value < 600);
                 </div>
                 <div class="grow"></div>
                 <div class="flex items-center gap-1 md:gap-2">
-                    <Button
+                    <a
                         href="https://github.com/northsh/detection.studio/"
-                        size="sm"
                         target="_blank"
-                        variant="ghost"
                     >
-                        <Github class="h-4 w-4 text-primary"/>
-                        GitHub
-                    </Button>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                        >
+                            <Github class="h-4 w-4 text-primary"/>
+                            GitHub
+                        </Button>
+                    </a>
 
                     <ShareButton/>
 
