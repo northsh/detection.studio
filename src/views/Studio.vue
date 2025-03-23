@@ -8,7 +8,7 @@ import Editor from "@/components/Editor.vue";
 import {Github} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
 import {computed} from "vue";
-import ShareButton from "@/components/ShareButton.vue";
+import ShareButton from "@/components/ShareWorkspaceButton.vue";
 import DataView from "@/components/DataView.vue";
 import SIEMSelector from "@/components/SIEMSelector.vue";
 import PipelineSelector from "@/components/PipelineSelector.vue";

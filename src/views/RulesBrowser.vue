@@ -17,7 +17,7 @@
                         GitHub
                     </Button>
 
-                    <ShareButton/>
+                    <ShareSigmaRuleButton />
 
                 </div>
             </div>
@@ -46,8 +46,8 @@ import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {Button} from "@/components/ui/button";
 import {Github} from "lucide-vue-next";
-import ShareButton from "@/components/ShareButton.vue";
 import {useHead} from "@unhead/vue";
+import ShareSigmaRuleButton from "@/components/ShareSigmaRuleButton.vue";
 
 /**
  * Head

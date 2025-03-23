@@ -1,6 +1,6 @@
 // Sigma autocomplete data for Prism Code Editor
 
-import type { AttributeConfig } from "./types.ts"
+import type {AttributeConfig} from "./types.ts"
 
 // Define Sigma modifiers
 export const sigmaModifiers = [
