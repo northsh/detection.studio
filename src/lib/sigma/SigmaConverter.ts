@@ -32,6 +32,14 @@ export class SigmaConverter {
         correlationMethod: string = '',
         backendOptions: Record<string, any> = {}
     ): Promise<SigmaConversionResult> {
+        // Skip conversion in SSR/SSG environment
+        if (typeof Worker === 'undefined') {
+            return {
+                query: '',
+                error: 'Conversion not available during server-side rendering'
+            };
+        }
+        
         // Wait for Pyodide to be initialized
         await this.initPromise;
 
@@ -96,6 +104,11 @@ export class SigmaConverter {
      * Check if Pyodide is ready for conversions
      */
     async isReady(): Promise<boolean> {
+        // Return false in SSR/SSG environment
+        if (typeof Worker === 'undefined') {
+            return false;
+        }
+        
         if (this.pyodideReady) {
             return true;
         }
@@ -114,6 +127,13 @@ export class SigmaConverter {
      * Initialize Pyodide and required libraries
      */
     private async initPyodide(): Promise<void> {
+        // Skip initialization during SSR/SSG
+        if (typeof Worker === 'undefined') {
+            console.log('Skipping Pyodide initialization in SSR/SSG environment');
+            this.pyodideReady = false;
+            return;
+        }
+            
         try {
             const status = await isPyodideReadyAsync();
             this.pyodideReady = status.ready;
