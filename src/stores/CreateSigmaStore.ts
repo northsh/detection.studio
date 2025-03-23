@@ -78,6 +78,12 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
 
         // Function to load data into SQLite
         async function loadData(jsonData: string) {
+            // Skip in SSR/SSG environment
+            if (typeof Worker === 'undefined') {
+                console.log('Store: Skipping data load in SSR/SSG environment');
+                return;
+            }
+            
             try {
                 console.log('Store: Starting data load operation...');
                 is_data_loaded.value = false;
@@ -127,6 +133,12 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
 
         // Function to search logs with current query
         async function searchLogs() {
+            // Skip in SSR/SSG environment
+            if (typeof Worker === 'undefined') {
+                console.log('Store: Skipping search in SSR/SSG environment');
+                return;
+            }
+            
             if (!is_data_loaded.value || !siem_query.value) {
                 console.log('Store: Search skipped - data not loaded or no query');
                 search_results.value = {matches: [], stats: {totalMatches: 0, totalRecords: 0}};
@@ -166,6 +178,11 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
 
         // Async computed property for SIEM query
         const siem_query = computedAsync(async () => {
+            // Skip in SSR/SSG environment
+            if (typeof Worker === 'undefined') {
+                return "";
+            }
+            
             if (!file_content.value) {
                 return "";
             }

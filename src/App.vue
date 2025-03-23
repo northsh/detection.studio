@@ -235,7 +235,7 @@ watch([Z, Y], ([undo, redo]) => {
                             <router-link v-slot="{ isActive, href, navigate }" custom to="/browser">
                                 <SidebarMenuButton :active="isActive" @click="navigate">
                                     <GlobeIcon/>
-                                    <span>Sigma Rules</span>
+                                    <span>Browser</span>
                                 </SidebarMenuButton>
                             </router-link>
                         </SidebarMenuItem>
