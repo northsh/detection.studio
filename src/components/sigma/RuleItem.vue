@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
-import type { SigmaRule } from '@/lib/sigma/SigmaRepoService';
-import { useSigmaRulesStore } from '@/stores/SigmaBrowserStore';
-import { getLevelBadgeClass } from './utils';
+import {Badge} from '@/components/ui/badge';
+import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
+import {useSigmaRulesStore} from '@/stores/SigmaBrowserStore';
+import {getLevelBadgeClass} from './utils';
 
 const props = defineProps<{
   rule: SigmaRule

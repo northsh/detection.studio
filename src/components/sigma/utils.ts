@@ -1,4 +1,4 @@
-import type { SigmaRule } from '@/lib/sigma/SigmaRepoService';
+import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
 
 /**
  * Get badge class based on rule level

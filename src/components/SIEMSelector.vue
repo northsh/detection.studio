@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/select";
 
 
-import splunk_svg from '../images/splunk.svg?component';
-import loki_svg from '../images/grafana.svg?component';
-import elasticsearch_svg from '../images/elasticsearch.svg?component';
+import splunk_svg from '@/images/splunk.svg?component';
+import loki_svg from '@/images/grafana.svg?component';
+import elasticsearch_svg from '@/images/elasticsearch.svg?component';
 import {Card} from "@/components/ui/card";
 import {supportedSiems} from "@/types/SIEMs";
 

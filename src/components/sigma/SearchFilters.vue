@@ -1,26 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Toggle } from '@/components/ui/toggle';
+import {computed, ref} from 'vue';
+import {Badge} from '@/components/ui/badge';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '@/components/ui/collapsible';
+import {Toggle} from '@/components/ui/toggle';
 import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxEmpty,
-  ComboboxGroup,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxItemIndicator,
-  ComboboxList
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList
 } from '@/components/ui/combobox';
-import { ChevronDown, Check, Search } from 'lucide-vue-next';
-import { cn } from '@/lib/utils';
-import type { SigmaRule } from '@/lib/sigma/SigmaRepoService';
-import { 
-  STATUS_OPTIONS, 
-  generateLogsourceMapping, 
-  extractLogsourceOptions 
-} from './utils';
+import {Check, ChevronDown, Search} from 'lucide-vue-next';
+import {cn} from '@/lib/utils';
+import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
+import {extractLogsourceOptions, generateLogsourceMapping, STATUS_OPTIONS} from './utils';
 
 // Component props
 const props = defineProps<{

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { Badge } from '@/components/ui/badge';
-import type { SigmaRule } from '@/lib/sigma/SigmaRepoService';
-import { useVirtualizer, defaultRangeExtractor } from '@tanstack/vue-virtual';
+import {computed, ref} from 'vue';
+import {Badge} from '@/components/ui/badge';
+import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
+import {defaultRangeExtractor, useVirtualizer} from '@tanstack/vue-virtual';
 import RuleItem from './RuleItem.vue';
 
 // Props

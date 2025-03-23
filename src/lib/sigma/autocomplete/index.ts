@@ -1,11 +1,8 @@
 /** @module autocomplete/sigma */
 
-import { registerCompletions } from "prism-code-editor/autocomplete"
-import type {
-    Completion,
-    CompletionSource,
-} from "./types.ts"
-import { optionsFromKeys } from "./utils.ts"
+import {registerCompletions} from "prism-code-editor/autocomplete"
+import type {Completion, CompletionSource,} from "./types.ts"
+import {optionsFromKeys} from "./utils.ts"
 
 import {
     categoryValues,
@@ -21,7 +18,7 @@ import {
     statusValues,
     windowsEventIds
 } from "./data.ts"
-import type { PrismEditor } from "prism-code-editor"
+import type {PrismEditor} from "prism-code-editor"
 
 // Pattern to match field modifiers
 const fieldModifierPattern = /([a-zA-Z0-9_]+)(\|[a-zA-Z0-9_]+)*:?\s*$/

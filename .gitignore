@@ -33,4 +33,4 @@ dist-ssr
 /test-results/
 /playwright-report/
 public/sigma-rules-index.json
-/prism-code-editor/
+/.vite-ssg-temp/

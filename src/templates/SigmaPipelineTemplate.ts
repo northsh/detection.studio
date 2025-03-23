@@ -90,7 +90,7 @@ export default function sigmaPipelineTemplate(
     /**
      * Parse Sigma Rule
      */
-    const rule: Sigma = yaml.loadAll(file.content)[0] ?? {};
+    const rule: Sigma | object = yaml.loadAll(file.content)[0] ?? {};
     const logsource: any = rule?.logsource || {};
 
     const pipeline = new SigmaPipeline();

@@ -1,17 +1,17 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {HTMLAttributes} from 'vue'
 import {cn} from '@/lib/utils'
 
 const props = defineProps<{
-  class?: HTMLAttributes['class']
+    class?: HTMLAttributes['class']
 }>()
 </script>
 
 <template>
-  <div
-    data-sidebar="group-content"
-    :class="cn('w-full text-sm', props.class)"
-  >
-    <slot />
-  </div>
+    <div
+        :class="cn('w-full text-sm', props.class)"
+        data-sidebar="group-content"
+    >
+        <slot/>
+    </div>
 </template>

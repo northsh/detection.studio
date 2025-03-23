@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {ContextMenuTriggerProps} from 'radix-vue'
 import {ContextMenuTrigger, useForwardProps} from 'radix-vue'
 
@@ -8,7 +8,7 @@ const forwardedProps = useForwardProps(props)
 </script>
 
 <template>
-  <ContextMenuTrigger v-bind="forwardedProps">
-    <slot />
-  </ContextMenuTrigger>
+    <ContextMenuTrigger v-bind="forwardedProps">
+        <slot/>
+    </ContextMenuTrigger>
 </template>

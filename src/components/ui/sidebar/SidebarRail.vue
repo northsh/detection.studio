@@ -1,22 +1,18 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {HTMLAttributes} from 'vue'
 import {cn} from '@/lib/utils'
 import {useSidebar} from './utils'
 
 const props = defineProps<{
-  class?: HTMLAttributes['class']
+    class?: HTMLAttributes['class']
 }>()
 
-const { toggleSidebar } = useSidebar()
+const {toggleSidebar} = useSidebar()
 </script>
 
 <template>
-  <button
-    data-sidebar="rail"
-    aria-label="Toggle Sidebar"
-    :tabindex="-1"
-    title="Toggle Sidebar"
-    :class="cn(
+    <button
+        :class="cn(
       'absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex',
       '[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize',
       '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
@@ -25,8 +21,12 @@ const { toggleSidebar } = useSidebar()
       '[[data-side=right][data-collapsible=offcanvas]_&]:-left-2',
       props.class,
     )"
-    @click="toggleSidebar"
-  >
-    <slot />
-  </button>
+        :tabindex="-1"
+        aria-label="Toggle Sidebar"
+        data-sidebar="rail"
+        title="Toggle Sidebar"
+        @click="toggleSidebar"
+    >
+        <slot/>
+    </button>
 </template>

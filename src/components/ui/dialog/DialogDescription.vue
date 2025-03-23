@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
 import type {DialogDescriptionProps} from 'radix-vue'
 import {DialogDescription, useForwardProps} from 'radix-vue'
 import type {HTMLAttributes} from 'vue'
@@ -8,19 +8,19 @@ import {cn} from '@/lib/utils'
 const props = defineProps<DialogDescriptionProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+    const {class: _, ...delegated} = props
 
-  return delegated
+    return delegated
 })
 
 const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <DialogDescription
-    v-bind="forwardedProps"
-    :class="cn('text-sm text-muted-foreground', props.class)"
-  >
-    <slot />
-  </DialogDescription>
+    <DialogDescription
+        :class="cn('text-sm text-muted-foreground', props.class)"
+        v-bind="forwardedProps"
+    >
+        <slot/>
+    </DialogDescription>
 </template>
