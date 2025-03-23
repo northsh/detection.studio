@@ -130,8 +130,9 @@ const workStore = useWorkspaceStore();
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom to="/">
-                                <SidebarMenuButton :active="isActive" class="[active=true]/text-white"
-                                                   @click="navigate">
+                                <SidebarMenuButton :active="isActive" class="[active=true]/text-white" @click="navigate" :class="{
+                                    'text-primary bg-primary/10': isActive,
+                                }">
                                     <PaletteIcon/>
                                     <span>Studio</span>
                                 </SidebarMenuButton>
@@ -140,7 +141,9 @@ const workStore = useWorkspaceStore();
 
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom to="/browser">
-                                <SidebarMenuButton :active="isActive" @click="navigate">
+                                <SidebarMenuButton :active="isActive" @click="navigate" :class="{
+                                    'text-primary bg-primary/10': isActive,
+                                }">
                                     <GlobeIcon/>
                                     <span>Browser</span>
                                 </SidebarMenuButton>
@@ -149,7 +152,9 @@ const workStore = useWorkspaceStore();
 
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom disabled to="/settings">
-                                <SidebarMenuButton :active="isActive" disabled @click="navigate">
+                                <SidebarMenuButton :active="isActive" disabled @click="navigate" :class="{
+                                    'text-primary bg-primary/10': isActive,
+                                }">
                                     <Settings2/>
                                     <span>Settings</span>
                                 </SidebarMenuButton>
