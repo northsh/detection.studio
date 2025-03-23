@@ -1,11 +1,6 @@
 <script lang="ts" setup>
 import {PanelRightClose, PanelRightOpen, X} from "lucide-vue-next";
 
-// Importing Prism grammars
-import "prism-code-editor/prism/languages/markup";
-
-import "prism-code-editor/prism/languages/javascript";
-import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
 import PrismEditor from "./PrismEditor.vue";
 import {ResizableHandle, ResizablePanel, ResizablePanelGroup,} from "@/components/ui/resizable";

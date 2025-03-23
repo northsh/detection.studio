@@ -11,8 +11,8 @@ import {
 import {SidebarMenuButton,} from "@/components/ui/sidebar";
 import {ChevronsUpDown, Edit2, Layers2, Plus, Trash2,} from "lucide-vue-next";
 import {computed, ref} from "vue";
-import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {supportedSiems} from "@/types/SIEMs";
+import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
+import {supportedSiems} from "@/types/SIEMs.ts";
 
 import splunk_svg from '@/images/splunk.svg?component';
 import loki_svg from '@/images/grafana.svg?component';

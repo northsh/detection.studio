@@ -51,7 +51,20 @@ import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
 import {Github} from "lucide-vue-next";
 import ShareButton from "@/components/ShareButton.vue";
+import {useHead} from "@unhead/vue";
 
+/**
+ * Head
+ */
+useHead({
+    title: 'Sigma Browser – detection.studio',
+    meta: [
+        {
+            name: 'description',
+            content: 'Browse and Import Sigma rules from different available repos.',
+        },
+    ],
+})
 
 // Accept route props
 defineProps<{

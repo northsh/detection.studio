@@ -1,10 +1,8 @@
-import Studio from '@/views/Studio.vue'
-
 const routes = [
     {
         path: '/',
         name: 'studio',
-        component: Studio
+        component: () => import('@/views/Studio.vue')
     },
     {
         path: '/browser',
@@ -14,11 +12,6 @@ const routes = [
         props: (route) => ({
             ruleId: route.query.ruleId || null
         })
-    },
-    {
-        path: '/settings',
-        name: 'settings',
-        component: () => import('@/views/Settings.vue')
     }
 ]
 

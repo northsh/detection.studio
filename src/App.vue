@@ -19,17 +19,10 @@ import {
     SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles,} from "lucide-vue-next";
-import {computed, ref, watch} from "vue";
 import {Card} from "@/components/ui/card";
-// Importing Prism grammars
-import "prism-code-editor/prism/languages/markup";
-
-import "prism-code-editor/prism/languages/javascript";
-import "prism-code-editor/prism/languages/yaml";
 
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {useMagicKeys} from '@vueuse/core'
-import WorkspaceSelection from "@/WorkspaceSelection.vue";
+import WorkspaceSelection from "@/components/WorkspaceSelection.vue";
 
 // This is sample data.
 const data = {
@@ -109,92 +102,6 @@ const data = {
  */
 
 const workStore = useWorkspaceStore();
-const sigma = computed(() => workStore.currentWorkspace?.sigmaStore());
-const fs = computed(() => workStore.currentWorkspace?.fileStore());
-
-function createWorkspace() {
-    workStore.newWorkspace('New Workspace', 'Free');
-}
-
-// State for rename operation
-const isRenaming = ref(false);
-const workspaceToRename = ref('');
-const newWorkspaceName = ref('');
-
-// Start rename operation
-function startRename(workspace) {
-    workspaceToRename.value = workspace.id;
-    newWorkspaceName.value = workspace.name;
-    isRenaming.value = true;
-}
-
-// Confirm rename operation
-function confirmRename() {
-    if (newWorkspaceName.value.trim() && workspaceToRename.value) {
-        workStore.renameWorkspace(workspaceToRename.value, newWorkspaceName.value.trim());
-        cancelRename();
-    }
-}
-
-// Cancel rename operation
-function cancelRename() {
-    isRenaming.value = false;
-    workspaceToRename.value = '';
-    newWorkspaceName.value = '';
-}
-
-// Delete workspace
-function deleteWorkspace(workspaceId) {
-    workStore.deleteWorkspace(workspaceId);
-}
-
-/**
- * Workspace Shortcuts
- */
-
-// const { Cmd, Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9 } = useMagicKeys({
-//
-//     passive: false,
-//     onEventFired: (e) => {
-//         // if (e.ctrlKey && e.key === 's' && e.type === 'keydown')
-//         if (['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(e.key)) {
-//             e.preventDefault();
-//         }
-//     },
-// })
-//
-// const hotkeys = [Num1, Num2, Num3, Num4, Num5, Num6, Num7, Num8, Num9]
-//
-// watch(hotkeys, (keys) => {
-//     keys.forEach((key, index) => {
-//         if (key && Cmd.value) {
-//             workStore.setCurrentWorkspace(workStore.availableWorkspaces[index])
-//         }
-//     })
-// })
-
-
-/**
- * Undo / Redo Shortcuts
- */
-const {Cmd, Z, Y} = useMagicKeys({
-    passive: false,
-    onEventFired: (e) => {
-        if (e.ctrlKey && e.key === 'z' && e.type === 'keydown') {
-            e.preventDefault();
-        }
-    },
-})
-
-watch([Z, Y], ([undo, redo]) => {
-    if (undo && Cmd.value) {
-        fs.value.undo();
-    }
-
-    if (redo && Cmd.value) {
-        fs.value.redo();
-    }
-})
 
 </script>
 
@@ -222,7 +129,7 @@ watch([Z, Y], ([undo, redo]) => {
                     <SidebarGroupLabel class="text-muted-foreground">Navigation</SidebarGroupLabel>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <router-link v-slot="{ isActive, href, navigate }" custom to="/">
+                            <router-link v-slot="{ isActive, navigate }" custom to="/">
                                 <SidebarMenuButton :active="isActive" class="[active=true]/text-white"
                                                    @click="navigate">
                                     <PaletteIcon/>
@@ -232,7 +139,7 @@ watch([Z, Y], ([undo, redo]) => {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <router-link v-slot="{ isActive, href, navigate }" custom to="/browser">
+                            <router-link v-slot="{ isActive, navigate }" custom to="/browser">
                                 <SidebarMenuButton :active="isActive" @click="navigate">
                                     <GlobeIcon/>
                                     <span>Browser</span>
@@ -241,7 +148,7 @@ watch([Z, Y], ([undo, redo]) => {
                         </SidebarMenuItem>
 
                         <SidebarMenuItem>
-                            <router-link v-slot="{ isActive, href, navigate }" custom disabled to="/settings">
+                            <router-link v-slot="{ isActive, navigate }" custom disabled to="/settings">
                                 <SidebarMenuButton :active="isActive" disabled @click="navigate">
                                     <Settings2/>
                                     <span>Settings</span>
