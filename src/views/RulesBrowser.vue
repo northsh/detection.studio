@@ -44,10 +44,6 @@ import SigmaRulesBrowser from '@/components/SigmaRuleList.vue';
 import SigmaRuleViewer from '@/components/SigmaRuleViewer.vue';
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
-// Importing Prism grammars
-import "prism-code-editor/prism/languages/markup";
-import "prism-code-editor/prism/languages/javascript";
-import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
 import {Github} from "lucide-vue-next";
 import ShareButton from "@/components/ShareButton.vue";
