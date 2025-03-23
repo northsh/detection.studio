@@ -234,9 +234,12 @@ import {Button} from './ui/button';
 import {Skeleton} from './ui/skeleton';
 import PrismEditor from './PrismEditor.vue';
 import {toast} from 'vue-sonner';
-import router from "@/router";
 import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
+import {useRouter} from "vue-router";
 
+
+
+const router = useRouter()
 
 const sigmaRulesStore = useSigmaRulesStore();
 const isImporting = ref(false);
@@ -367,7 +370,7 @@ async function importRule() {
             });
 
             // Navigate to the studio view
-            router.push({path: '/'});
+            router.push({name: 'studio',});
             return;
         }
 
@@ -379,7 +382,7 @@ async function importRule() {
         });
 
         // Navigate to the studio view if we're not already there
-        router.push({path: '/'});
+        router.push({name: 'studio',});
 
         // Set this rule as the active file in the file store
         fileStore.openFile(fileId);

@@ -139,7 +139,7 @@
                         <Skeleton class="h-4 w-32"/>
                         <Skeleton class="h-4 w-12"/>
                     </div>
-                    <div v-for="j in 3" :key="`skeleton-item-${i}-${j}`" class="p-3 border rounded-md">
+                    <div v-for="j in 3" :key="`skeleton-item-${i}-${j}`" class="p-3 border border-border rounded-md">
                         <Skeleton class="h-5 w-2/3 mb-2"/>
                         <div class="flex gap-1.5 mb-2">
                             <Skeleton class="h-4 w-16"/>
@@ -182,11 +182,10 @@
                     <div
                         v-for="(group, groupIndex) in visibleGroups"
                         :key="group.label"
-                        :style="{ transform: `translateY(${group.offsetTop}px)`, position: 'absolute', width: 'calc(100% - 16px)', left: 0, right: 0 }"
-                        class="mb-6 px-4"
+                        class="mb-6"
                     >
                         <div
-                            class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2">
+                            class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2 px-4">
                             <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                                 {{ group.label }}
                             </h3>
@@ -197,7 +196,7 @@
                                 v-for="itemInfo in group.items"
                                 :key="itemInfo.rule.id || itemInfo.rule.path"
                                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
-                                class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm"
+                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm"
                                 @click="selectRule(itemInfo.rule)"
                             >
                                 <div class="flex items-start justify-between">

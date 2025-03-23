@@ -1,6 +1,5 @@
 import './assets/index.css'
 import App from './App.vue'
-import routes from './router'
 
 import {createPinia} from "pinia";
 import {PiniaColada} from "@pinia/colada";
@@ -15,6 +14,28 @@ import "@fontsource-variable/dm-sans/index.css";
 
 import * as Sentry from "@sentry/vue";
 import {ViteSSG} from "vite-ssg";
+
+const routes = [
+    {
+        path: '/',
+        name: 'studio',
+        component: () => import('@/views/Studio.vue')
+    },
+    {
+        path: '/browser',
+        name: 'browser',
+        component: () => import('@/views/RulesBrowser.vue'),
+        // Add query parameters to allow sharing specific rules
+        props: (route) => ({
+            ruleId: route.query.ruleId || null
+        })
+    },
+    {
+        path: '/settings',
+        name: 'settings',
+        component: () => import('@/views/Settings.vue')
+    }
+]
 
 export const createApp = ViteSSG(
     // the root component
@@ -59,6 +80,7 @@ export const createApp = ViteSSG(
 
         app.use(pinia)
             .use(PiniaColada, {})
+            .use(router)
 
     },
 )

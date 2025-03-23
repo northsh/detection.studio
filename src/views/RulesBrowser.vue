@@ -26,7 +26,7 @@
         <div class="px-1 pb-6 mt-1">
             <div class="mx-auto">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
-                    <SigmaRulesBrowser
+                    <SigmaRuleList
                         :initialRuleId="ruleId"
                         class="h-full border rounded-lg overflow-hidden shadow-sm"
                     />
@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import SigmaRulesBrowser from '@/components/SigmaRuleList.vue';
+import SigmaRuleList from '@/components/SigmaRuleList.vue';
 import SigmaRuleViewer from '@/components/SigmaRuleViewer.vue';
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
