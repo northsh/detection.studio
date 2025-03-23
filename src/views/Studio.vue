@@ -2,10 +2,6 @@
 import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/components/ui/breadcrumb";
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
-// Importing Prism grammars
-import "prism-code-editor/prism/languages/markup";
-import "prism-code-editor/prism/languages/javascript";
-import "prism-code-editor/prism/languages/yaml";
 import {Button} from "@/components/ui/button";
 import PrismEditor from "../components/PrismEditor.vue";
 import Editor from "@/components/Editor.vue";
@@ -33,6 +29,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import {useHead} from "@unhead/vue";
+import ExportButton from "@/components/ExportButton.vue";
 
 /**
  * Head
@@ -237,25 +234,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 
                     <ShareButton/>
 
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <Button
-                                    :disabled="!fs?.files.length"
-                                    class="hidden h-8 md:flex gap-1 md:gap-2"
-                                    size="sm"
-                                    variant="secondary"
-                                    @click="exportFiles"
-                                >
-                                    <Download class="h-3.5 w-3.5"/>
-                                    Export
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent align="end" side="bottom">
-                                <p>Export files as ZIP archive</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <ExportButton />
                 </div>
             </div>
         </header>

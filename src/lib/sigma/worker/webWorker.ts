@@ -18,7 +18,7 @@ let searchResults: { matches: any[], stats: any } = {matches: [], stats: {totalM
 const pyodideReadyPromise = (async () => {
     try {
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.3/full/"
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/"
         });
 
         await pyodide?.loadPackage("micropip");
