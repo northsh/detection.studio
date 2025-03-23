@@ -231,6 +231,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 );
 
                 if (result.error) {
+                    // debugger
                     siem_conversion_error.value = result.error;
                     return siem_query.value;
                 }
