@@ -16,13 +16,13 @@ import "@fontsource-variable/dm-sans/index.css";
 import * as Sentry from "@sentry/vue";
 import {ViteSSG} from "vite-ssg";
 
-export const app = ViteSSG(
+export const createApp = ViteSSG(
     // the root component
     App,
     // vue-router options
     {routes},
     // function to have custom setups
-    ({app, router, _routes, _isClient, _initialState}) => {
+    ({app, router}) => {
 
 
         Sentry.init({

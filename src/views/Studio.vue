@@ -32,7 +32,25 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
+import {useHead} from "@unhead/vue";
 
+/**
+ * Head
+ */
+useHead({
+    title: 'Detection Studio – detection.studio',
+    meta: [
+        {
+            name: 'description',
+            content: 'Design, build and share detection rules for your security tools.',
+        },
+    ],
+})
+
+
+/**
+ * Stores
+ */
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());

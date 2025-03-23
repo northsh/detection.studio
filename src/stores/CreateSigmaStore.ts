@@ -33,7 +33,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         );
 
         // SIEM conversion settings
-        const selected_siem = ref("sqlite");  // Default to SQLite for local matching
+        const selected_siem = ref("splunk");
         const siem_conversion_error = ref("");
 
         // Initialize the converter

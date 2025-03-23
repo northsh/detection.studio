@@ -1,5 +1,5 @@
 import {sentryVitePlugin} from "@sentry/vite-plugin";
-import {defineConfig} from 'vite'
+import {defineConfig, type UserConfig} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from "vite-svg-loader";
 import path from "path";
@@ -33,4 +33,10 @@ export default defineConfig({
     worker: {
         format: 'es',
     },
-})
+    ssgOptions: {
+        script: 'async',
+        formatting: 'minify',
+        dirStyle: 'nested',
+        mock: true
+    }
+}) as UserConfig
