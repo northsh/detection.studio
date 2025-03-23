@@ -236,6 +236,7 @@ import PrismEditor from './PrismEditor.vue';
 import {toast} from 'vue-sonner';
 import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
 import {useRouter} from "vue-router";
+import {ScrollArea} from "@/components/ui/scroll-area";
 
 
 
