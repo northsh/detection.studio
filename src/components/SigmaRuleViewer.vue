@@ -239,7 +239,6 @@ import {useRouter} from "vue-router";
 import {ScrollArea} from "@/components/ui/scroll-area";
 
 
-
 const router = useRouter()
 
 const sigmaRulesStore = useSigmaRulesStore();
