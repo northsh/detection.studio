@@ -201,7 +201,9 @@ const workStore = useWorkspaceStore();
                                   class="text-xs text-muted-foreground p-2 flex items-center gap-2">
                                 Powered by
                                 <Sparkles class="text-primary h-4 w-4"/>
-                                <span class="text-primary font-semibold">north.sh</span>
+                                <a href="https://north.sh/" target="_blank" class="text-primary font-semibold">
+                                    north.sh
+                                </a>
                             </Card>
                         </Transition>
                     </SidebarMenuItem>
