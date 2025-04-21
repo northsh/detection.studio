@@ -5,7 +5,7 @@
         </div>
 
         <div v-else-if="isLoadingIndividualRule" class="flex flex-col h-full">
-            <div class="border-b p-6 bg-card shadow-sm h-full">
+            <div class="border-b p-6 bg-card shadow-xs h-full">
                 <!-- Skeleton title section -->
                 <div class="flex items-start justify-between">
                     <Skeleton class="h-8 w-64"/>
@@ -72,11 +72,11 @@
             </div>
 
             <!-- Skeleton code editor -->
-            <div class="flex-grow flex flex-col h-full">
+            <div class="grow flex flex-col h-full">
                 <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
                     <Skeleton class="h-4 w-32 bg-gray-700/20"/>
                 </div>
-                <div class="flex-grow bg-[#0D1116] h-full p-4">
+                <div class="grow bg-[#0D1116] h-full p-4">
                     <Skeleton class="h-full w-full bg-gray-700/20"/>
                 </div>
             </div>
@@ -88,7 +88,7 @@
         </div>
 
         <template v-else>
-            <div class="border-b p-6 bg-card shadow-sm">
+            <div class="border-b p-6 bg-card shadow-xs">
                 <!-- Title section with level and status badges -->
                 <div class="flex items-start justify-between">
                     <h2 class="text-2xl font-bold">{{ currentRule.title }}</h2>

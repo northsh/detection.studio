@@ -100,7 +100,7 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
                                             </TooltipContent>
                                         </Tooltip>
                                         <button
-                                            class="ml-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                            class="ml-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                             @click.stop="fs.closeFile(fileId)">
                                             <X class="h-4 w-4"/>
                                             <span class="sr-only">Close</span>
@@ -115,7 +115,7 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
 
                 <TabsContent v-for="fileId in fs.openFiles" :key="fileId" :style="{ maxHeight: editorMaxHeight }"
                              :value="fileId" as-child
-                             class="!mt-0 flex-1 min-h-0 bg-[#0D1116] overflow-auto">
+                             class="mt-0! flex-1 min-h-0 bg-[#0D1116] overflow-auto">
                     <PrismEditor v-model="fs.files.find(f => f.id === fileId)!.content"
                                  :insert-spaces="true"
                                  :line-numbers="true"
@@ -195,7 +195,7 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
     padding: 0 0.5rem;
     font-size: 0.75rem;
     line-height: 1rem;
-    flex-shrink: 0;
+    shrink: 0;
 }
 
 /* Tab content styles */

@@ -117,7 +117,7 @@ const workStore = useWorkspaceStore();
                         <div v-else class="pl-1 w-full font-semibold">D.S</div>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarSeparator :class="{'mx-2': workStore.sidebarOpen}" class="w-full !bg-border mx-0"/>
+                <SidebarSeparator :class="{'mx-2': workStore.sidebarOpen}" class="w-full bg-border! mx-0"/>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <WorkspaceSelection/>

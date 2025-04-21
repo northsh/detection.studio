@@ -60,7 +60,7 @@ const isCompactView = computed(() => width.value < 768 || height.value < 600);
         <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
             <div class="w-full flex items-center gap-1 md:gap-4 px-4">
                 <SidebarTrigger/>
-                <Separator class="!h-4" orientation="vertical"/>
+                <Separator class="h-4!" orientation="vertical"/>
                 <Breadcrumb v-if="false">
                     <BreadcrumbList>
                         <BreadcrumbItem class="hidden md:block">
@@ -123,7 +123,7 @@ const isCompactView = computed(() => width.value < 768 || height.value < 600);
 
                                 <div
                                     v-if="sigma.siem_conversion_error"
-                                    class="absolute inset-0 flex  z-10 bg-red-950/50 backdrop-blur-sm"
+                                    class="absolute inset-0 flex  z-10 bg-red-950/50 backdrop-blur-xs"
                                 >
                                     <ScrollArea class="h-full w-full">
                                         <div v-if="sigma.siem_conversion_error" class="text-red-300 p-10">

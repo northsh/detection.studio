@@ -101,7 +101,7 @@ function deleteWorkspace(workspaceId) {
             </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent :side-offset="4" align="start"
-                             class="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                             class="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                              side="bottom">
             <DropdownMenuLabel class="text-xs text-muted-foreground">
                 Workspaces
@@ -163,7 +163,7 @@ function deleteWorkspace(workspaceId) {
                         ref="renameInput"
                         v-model="newWorkspaceName"
                         autofocus
-                        class="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        class="flex h-8 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring"
                         placeholder="Workspace name"
                         @keydown.enter="confirmRename"
                         @keydown.escape="cancelRename"

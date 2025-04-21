@@ -61,7 +61,7 @@ const debounceFocus = useDebounceFn(() => {
                     <FileText class="ml-4 text-muted-foreground min-h-4 min-w-4 h-4 w-4"/>
                     <span v-if="fs.fileBeingEdited === file.id" @click.stop>
                         <Input ref="rename-input" v-model="fs.editingFileName"
-                               class="bg-transparent border-none outline-none focus:ring-1 focus:ring-primary px-1 -ml-1 h-8"
+                               class="bg-transparent border-none outline-hidden focus:ring-1 focus:ring-primary px-1 -ml-1 h-8"
                                @blur="debounceFocus" @keyup.enter="fs.saveRename" @keyup.esc="fs.cancelRename"/>
                     </span>
                     <span v-else class="truncate"

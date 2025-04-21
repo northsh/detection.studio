@@ -28,7 +28,7 @@ function selectRule() {
 
 <template>
   <div 
-    class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm my-2"
+    class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs my-2"
     :class="{'border-primary/50 bg-primary/5': isSelected(rule)}"
     @click="selectRule"
   >
