@@ -1,38 +1,119 @@
 <template>
     <div class="flex flex-col h-full overflow-hidden">
         <div class="p-4 border-b bg-card shadow-xs">
-            <!-- Search input with throttled input -->
-            <div class="relative w-full">
-                <Input
-                    v-model="searchQuery"
-                    class="w-full pl-9"
-                    placeholder="Search across rules..."
-                    @input="onSearch"
-                />
-                <Search
-                    class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-                <Button
-                    v-if="searchQuery"
-                    variant="ghost"
-                    size="icon"
-                    class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    @click="clearSearch"
-                >
-                    <XCircle class="h-4 w-4" />
-                </Button>
-            </div>
+
+            <!-- Search input -->
+            <Input
+                v-model="searchQuery"
+                class="w-full"
+                placeholder="Search rules..."
+                @input="onSearch"
+            />
 
             <!-- Filter controls -->
-            <SearchFilters
-                :status-filters="statusFilters"
-                :selected-product="selectedProduct"
-                :logsource-sorting-style="logsourceSortingStyle"
-                :all-rules="allRules"
-                @update:status-filters="onUpdateStatusFilters"
-                @update:selected-product="onUpdateSelectedProduct"
-                @update:logsource-sorting="onUpdateLogsourceSorting"
-            />
+            <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
+                <!-- Collapsible filters section -->
+                <Collapsible>
+                    <CollapsibleTrigger asChild>
+                        <div class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-medium">Filters</h3>
+                                <Badge class="text-xs" variant="outline">{{ getActiveFiltersCount() }}</Badge>
+                            </div>
+                            <ChevronDown
+                                class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"/>
+                        </div>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent class="pt-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Status filter -->
+                            <div class="space-y-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <Badge
+                                        v-for="status in statusOptions"
+                                        :key="status"
+                                        :class="[
+                      statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' :
+                      'bg-muted/50 text-muted-foreground hover:bg-muted',
+                      'cursor-pointer transition-colors'
+                    ]"
+                                        variant="outline"
+                                        @click="toggleStatusFilter(status)"
+                                    >
+                                        {{ status }}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <!-- Logsource filter with combobox for search -->
+                            <div class="space-y-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">Filter by Logsource</h3>
+                                <Combobox v-model="selectedProduct" @update:modelValue="applyFilters">
+                                    <ComboboxAnchor>
+                                        <div class="relative w-full items-center">
+                                            <ComboboxInput
+                                                :display-value="(val) => val"
+                                                class="pl-9 w-full bg-background"
+                                                placeholder="Search product/category/service..."
+                                                @input="onProductSearch"
+                                            />
+                                            <span
+                                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3">
+                        <Search class="size-4 text-muted-foreground"/>
+                      </span>
+                                        </div>
+                                    </ComboboxAnchor>
+
+                                    <ComboboxList class="w-full">
+                                        <ComboboxEmpty>
+                                            No matches found
+                                        </ComboboxEmpty>
+
+                                        <ComboboxGroup>
+                                            <ComboboxItem
+                                                v-for="option in filteredProductOptions"
+                                                :key="option"
+                                                :value="option"
+                                                class="flex items-center justify-between"
+                                            >
+                                                <div class="flex items-center gap-2">
+                                                    <span>{{ option }}</span>
+                                                    <Badge v-if="getOptionType(option)" class="text-[10px]"
+                                                           variant="outline">
+                                                        {{ getOptionType(option) }}
+                                                    </Badge>
+                                                </div>
+
+                                                <ComboboxItemIndicator>
+                                                    <Check :class="cn('ml-auto h-4 w-4')"/>
+                                                </ComboboxItemIndicator>
+                                            </ComboboxItem>
+                                        </ComboboxGroup>
+                                    </ComboboxList>
+                                </Combobox>
+                            </div>
+                        </div>
+
+                        <!-- Logsource sorting toggle -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-muted-foreground">Product</span>
+                                <Toggle
+                                    :pressed="logsourceSortingStyle === 'category-product-service'"
+                                    size="sm"
+                                    @update:pressed="toggleLogSourceSorting"
+                                />
+                                <span class="text-xs text-muted-foreground">Category</span>
+                            </div>
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
+            </div>
         </div>
 
         <!-- Error state -->
@@ -41,7 +122,13 @@
                 <AlertTitle>Error loading rules</AlertTitle>
                 <AlertDescription>{{ error }}</AlertDescription>
             </Alert>
-            <Button class="mt-4" variant="default" @click="retryLoadRules"> Retry </Button>
+            <Button
+                class="mt-4"
+                variant="default"
+                @click="retryLoadRules"
+            >
+                Retry
+            </Button>
         </div>
 
         <!-- Loading state with skeleton -->
@@ -49,24 +136,20 @@
             <div class="space-y-4">
                 <div v-for="i in 3" :key="`skeleton-group-${i}`" class="space-y-3">
                     <div class="flex items-center justify-between">
-                        <Skeleton class="h-4 w-32" />
-                        <Skeleton class="h-4 w-12" />
+                        <Skeleton class="h-4 w-32"/>
+                        <Skeleton class="h-4 w-12"/>
                     </div>
-                    <div
-                        v-for="j in 3"
-                        :key="`skeleton-item-${i}-${j}`"
-                        class="p-3 border border-border rounded-md"
-                    >
-                        <Skeleton class="h-5 w-2/3 mb-2" />
+                    <div v-for="j in 3" :key="`skeleton-item-${i}-${j}`" class="p-3 border border-border rounded-md">
+                        <Skeleton class="h-5 w-2/3 mb-2"/>
                         <div class="flex gap-1.5 mb-2">
-                            <Skeleton class="h-4 w-16" />
-                            <Skeleton class="h-4 w-16" />
+                            <Skeleton class="h-4 w-16"/>
+                            <Skeleton class="h-4 w-16"/>
                         </div>
-                        <Skeleton class="h-4 w-full mb-2" />
-                        <Skeleton class="h-4 w-3/4" />
+                        <Skeleton class="h-4 w-full mb-2"/>
+                        <Skeleton class="h-4 w-3/4"/>
                         <div class="flex gap-1.5 mt-2">
-                            <Skeleton class="h-4 w-20" />
-                            <Skeleton class="h-4 w-20" />
+                            <Skeleton class="h-4 w-20"/>
+                            <Skeleton class="h-4 w-20"/>
                         </div>
                     </div>
                 </div>
@@ -74,47 +157,46 @@
         </div>
 
         <!-- Results list -->
-        <ScrollArea v-else class="grow overflow-hidden">
-            <div
-                v-if="allRules.length === 0"
-                class="text-center py-16 flex flex-col items-center justify-center h-full"
-            >
+        <div v-else class="grow overflow-hidden">
+            <div v-if="allRules.length === 0"
+                 class="text-center py-16 flex flex-col items-center justify-center h-full">
                 <div class="bg-muted/30 rounded-lg p-6 max-w-md">
                     <h3 class="text-lg font-medium mb-2">No Sigma Rules Found</h3>
                     <p class="text-muted-foreground mb-4">
-                        The rules index file may be missing or empty. Please ensure the
-                        "sigma-rules-index.json" file exists in the public directory.
+                        The rules index file may be missing or empty. Please ensure the "sigma-rules-index.json" file
+                        exists in the public directory.
                     </p>
-                    <Button variant="default" @click="retryLoadRules"> Retry Loading Rules </Button>
+                    <Button
+                        variant="default"
+                        @click="retryLoadRules"
+                    >
+                        Retry Loading Rules
+                    </Button>
                 </div>
             </div>
-            <div
-                v-else-if="groupedRules.length === 0"
-                class="text-center py-4 text-muted-foreground"
-            >
+            <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
                 No rules found matching your criteria.
             </div>
-            <div v-else ref="containerRef" class="">
+            <div v-else ref="containerRef" class="h-full overflow-auto">
                 <div :style="{ height: `${totalHeight}px` }" class="relative">
-                    <div v-for="group in visibleGroups" :key="group.label" class="mb-6">
+                    <div
+                        v-for="(group, groupIndex) in visibleGroups"
+                        :key="group.label"
+                        class="mb-6"
+                    >
                         <div
-                            class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2 px-4"
-                        >
-                            <h3
-                                class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
-                            >
+                            class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2 px-4">
+                            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
                                 {{ group.label }}
                             </h3>
-                            <Badge class="text-xs" variant="outline"
-                                >{{ group.items.length }} rules</Badge
-                            >
+                            <Badge class="text-xs" variant="outline">{{ group.items.length }} rules</Badge>
                         </div>
                         <div class="space-y-2">
                             <div
                                 v-for="itemInfo in group.items"
                                 :key="itemInfo.rule.id || itemInfo.rule.path"
                                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
-                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-px hover:shadow-xs"
+                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs"
                                 @click="selectRule(itemInfo.rule)"
                             >
                                 <div class="flex items-start justify-between">
@@ -139,31 +221,20 @@
                                         </Badge>
                                     </div>
                                 </div>
-                                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">
-                                    {{
+                                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">{{
                                         itemInfo.rule.description
-                                    }}
-                                </p>
+                                    }}</p>
                                 <div class="flex flex-wrap gap-1.5 mt-2">
-                                    <Badge
-                                        v-if="itemInfo.rule.logsource?.product"
-                                        class="px-2 py-0 text-xs"
-                                        variant="secondary"
-                                    >
+                                    <Badge v-if="itemInfo.rule.logsource?.product" class="px-2 py-0 text-xs"
+                                           variant="secondary">
                                         {{ itemInfo.rule.logsource.product }}
                                     </Badge>
-                                    <Badge
-                                        v-if="itemInfo.rule.logsource?.category"
-                                        class="px-2 py-0 text-xs"
-                                        variant="secondary"
-                                    >
+                                    <Badge v-if="itemInfo.rule.logsource?.category" class="px-2 py-0 text-xs"
+                                           variant="secondary">
                                         {{ itemInfo.rule.logsource.category }}
                                     </Badge>
-                                    <Badge
-                                        v-if="itemInfo.rule.logsource?.service"
-                                        class="px-2 py-0 text-xs"
-                                        variant="secondary"
-                                    >
+                                    <Badge v-if="itemInfo.rule.logsource?.service" class="px-2 py-0 text-xs"
+                                           variant="secondary">
                                         {{ itemInfo.rule.logsource.service }}
                                     </Badge>
                                 </div>
@@ -172,8 +243,7 @@
                     </div>
                 </div>
             </div>
-            <ScrollBar />
-        </ScrollArea>
+        </div>
     </div>
 </template>
 
@@ -183,13 +253,24 @@ import {useSigmaRulesStore} from '../stores/SigmaBrowserStore.ts';
 import {Input} from '@/components/ui/input';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
+import {
+    Combobox,
+    ComboboxAnchor,
+    ComboboxEmpty,
+    ComboboxGroup,
+    ComboboxInput,
+    ComboboxItem,
+    ComboboxItemIndicator,
+    ComboboxList
+} from '@/components/ui/combobox';
+import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '@/components/ui/collapsible';
+import {Toggle} from '@/components/ui/toggle';
 import {Skeleton} from '@/components/ui/skeleton';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {Search, XCircle} from 'lucide-vue-next';
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
-import SearchFilters from '@/components/sigma/SearchFilters.vue';
+import {Check, ChevronDown, Search} from 'lucide-vue-next';
+import {cn} from '@/lib/utils';
 
 // Accept initial rule ID from parent component
 const props = defineProps<{
@@ -205,7 +286,6 @@ const searchQuery = ref('');
 const isLoading = computed(() => sigmaRulesStore.isLoading);
 const error = computed(() => sigmaRulesStore.error);
 const allRules = computed(() => sigmaRulesStore.rules);
-const localError = ref<string | null>(null);
 
 // Filter options
 const statusOptions = ['stable', 'test', 'experimental', 'deprecated', 'unsupported'];
@@ -219,57 +299,121 @@ const statusFilters = reactive({
 
 const selectedProduct = ref('');
 const logsourceSortingStyle = ref('product-category-service');
+const productSearchQuery = ref('');
 
-// Handle status filter updates from SearchFilters component
-function onUpdateStatusFilters(filters: Record<string, boolean>) {
-    Object.assign(statusFilters, filters);
+// Track product-category-service mappings for better UX
+const logsourceMapping = computed(() => {
+    const mapping: Record<string, { type: string, items: Set<string> }> = {};
+
+    allRules.value.forEach(rule => {
+        if (rule.logsource?.product) {
+            if (!mapping[rule.logsource.product]) {
+                mapping[rule.logsource.product] = {type: 'product', items: new Set()};
+            }
+
+            if (rule.logsource.category) {
+                mapping[rule.logsource.product].items.add(rule.logsource.category);
+
+                if (!mapping[rule.logsource.category]) {
+                    mapping[rule.logsource.category] = {type: 'category', items: new Set()};
+                }
+            }
+
+            if (rule.logsource.service) {
+                mapping[rule.logsource.product].items.add(rule.logsource.service);
+
+                if (!mapping[rule.logsource.service]) {
+                    mapping[rule.logsource.service] = {type: 'service', items: new Set()};
+                }
+            }
+        }
+    });
+
+    return mapping;
+});
+
+// Helper to determine option type
+function getOptionType(option: string): string | null {
+    return logsourceMapping.value[option]?.type || null;
+}
+
+// Computed status filters that are enabled
+const enabledStatusFilters = computed(() => {
+    return Object.entries(statusFilters)
+        .filter(([_, enabled]) => enabled)
+        .map(([status]) => status);
+});
+
+// Get active filters count for badge
+function getActiveFiltersCount(): string {
+    let count = enabledStatusFilters.value.length;
+    if (selectedProduct.value) count++;
+    return count.toString();
+}
+
+// Toggle status filter
+function toggleStatusFilter(status: string) {
+    statusFilters[status] = !statusFilters[status];
     applyFilters();
 }
 
-// Handle selected product updates from SearchFilters component
-function onUpdateSelectedProduct(product: string) {
-    selectedProduct.value = product;
-    applyFilters();
+// Get unique logsource options (products, categories, services) from rules
+const productOptions = computed(() => {
+    const options = new Set<string>();
+
+    allRules.value.forEach(rule => {
+        if (rule.logsource?.product) {
+            options.add(rule.logsource.product);
+        }
+        if (rule.logsource?.category) {
+            options.add(rule.logsource.category);
+        }
+        if (rule.logsource?.service) {
+            options.add(rule.logsource.service);
+        }
+    });
+
+    return Array.from(options).sort();
+});
+
+// Filtered product options based on search query
+const filteredProductOptions = computed(() => {
+    if (!productSearchQuery.value) return productOptions.value;
+
+    const query = productSearchQuery.value.toLowerCase();
+    return productOptions.value.filter(product =>
+        product.toLowerCase().includes(query)
+    );
+});
+
+// Handle product search
+function onProductSearch(event: Event) {
+    productSearchQuery.value = (event.target as HTMLInputElement).value;
 }
 
-// Clear search input and reset search results
-function clearSearch() {
-    // Clear any pending search timeout to prevent redundant calls
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-        searchTimeout = null;
-    }
-
-    searchQuery.value = '';
-    sigmaRulesStore.searchRules('');
-    resetScroll();
-}
-
-// Filter rules based on search and filters with memoization
+// Filter rules based on search and filters
 const filteredRules = computed(() => {
-    // First apply the text search - call the function from the store
-    let rules = sigmaRulesStore.filteredRules();
+    // First apply the text search
+    let rules = sigmaRulesStore.filteredRules;
 
     // Then apply status filters
     rules = rules.filter(rule => {
-        // If rule has no status, exclude it (rules should have a status to be included)
-        if (!rule.status) return false;
+        // If rule has no status, include it only if at least one filter is enabled
+        if (!rule.status) return Object.values(statusFilters).some(value => value);
 
-        // Check if the rule's status is in the enabled filters
-        const normalizedStatus = rule.status.toLowerCase();
-        return statusFilters[normalizedStatus] === true;
+        // Otherwise, check if the rule's status is in the enabled filters
+        return statusFilters[rule.status.toLowerCase()] === true;
     });
 
     // Apply product filter if selected
     if (selectedProduct.value) {
         // Check if the selected product might actually be a category or service
-        const selected = selectedProduct.value.toLowerCase();
-
         rules = rules.filter(rule => {
             const logsource = rule.logsource || {};
-            const product = logsource.product?.toLowerCase() || '';
-            const category = logsource.category?.toLowerCase() || '';
-            const service = logsource.service?.toLowerCase() || '';
+            const product = logsource.product?.toLowerCase();
+            const category = logsource.category?.toLowerCase();
+            const service = logsource.service?.toLowerCase();
+            const selected = selectedProduct.value.toLowerCase();
 
             return product === selected || category === selected || service === selected;
         });
@@ -278,28 +422,8 @@ const filteredRules = computed(() => {
     return rules;
 });
 
-// Cache for grouped rules
-const groupedRulesCache = ref({
-    key: '',
-    result: [] as { label: string; rules: SigmaRule[]; expanded: boolean }[]
-});
-
-// Group rules by product, category, or other criteria with memoization
+// Group rules by product, category, or other criteria
 const groupedRules = computed(() => {
-    // Create a cache key based on current filtering and sorting values
-    const cacheKey = JSON.stringify({
-        rulesCount: filteredRules.value.length,
-        sortingStyle: logsourceSortingStyle.value,
-        searchQuery: sigmaRulesStore.searchQuery,
-        statusFilters: Object.entries(statusFilters).filter(([_, v]) => v).map(([k]) => k).join(','),
-        product: selectedProduct.value
-    });
-
-    // If cache is valid, return cached result
-    if (groupedRulesCache.value.key === cacheKey && groupedRulesCache.value.result.length > 0) {
-        return groupedRulesCache.value.result;
-    }
-
     const rules = filteredRules.value;
     const groups: Record<string, SigmaRule[]> = {};
 
@@ -321,21 +445,13 @@ const groupedRules = computed(() => {
     });
 
     // Convert to array and sort
-    const result = Object.entries(groups)
+    return Object.entries(groups)
         .map(([label, rules]) => ({
             label,
             rules,
             expanded: true
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
-
-    // Update cache
-    groupedRulesCache.value = {
-        key: cacheKey,
-        result
-    };
-
-    return result;
 });
 
 // Virtual scroll implementation
@@ -357,26 +473,8 @@ interface GroupInfo {
     height: number;
 }
 
-// Cache for group positions calculation
-const groupPositionsCache = ref({
-    key: '',
-    positions: [] as GroupInfo[]
-});
-
-// Calculate positions and visible groups with caching
+// Calculate positions and visible groups
 const allGroupPositions = computed(() => {
-    // Create a cache key from the grouped rules
-    const cacheKey = JSON.stringify({
-        groupCount: groupedRules.value.length,
-        itemCounts: groupedRules.value.map(g => g.rules.length).join(',')
-    });
-
-    // Return cached result if valid
-    if (groupPositionsCache.value.key === cacheKey &&
-        groupPositionsCache.value.positions.length > 0) {
-        return groupPositionsCache.value.positions;
-    }
-
     const positions: GroupInfo[] = [];
     let currentOffset = 0;
 
@@ -393,12 +491,6 @@ const allGroupPositions = computed(() => {
 
         currentOffset += groupHeight + 24; // Add margin between groups
     });
-
-    // Update cache
-    groupPositionsCache.value = {
-        key: cacheKey,
-        positions
-    };
 
     return positions;
 });
@@ -462,7 +554,7 @@ onMounted(async () => {
         updateScroll();
     } catch (err) {
         console.error('SigmaRulesBrowser: Error during initialization:', err);
-        localError.value = err instanceof Error ? err.message : 'Failed to initialize rules browser';
+        error.value = err instanceof Error ? err.message : 'Failed to initialize rules browser';
     }
 });
 
@@ -472,21 +564,10 @@ onUnmounted(() => {
     }
 });
 
-// Debounce search to avoid triggering search on every keystroke
-let searchTimeout: number | null = null;
-
-// Handle search input with debouncing
+// Handle search input
 function onSearch() {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-
-    // Only perform search after 300ms of inactivity
-    searchTimeout = window.setTimeout(() => {
-        sigmaRulesStore.searchRules(searchQuery.value);
-        resetScroll();
-        searchTimeout = null;
-    }, 300);
+    sigmaRulesStore.searchRules(searchQuery.value);
+    resetScroll();
 }
 
 // Apply filters and reset scroll
@@ -494,15 +575,17 @@ function applyFilters() {
     resetScroll();
 }
 
-// Handle logsource sorting updates from SearchFilters component
-function onUpdateLogsourceSorting(style: string) {
-    logsourceSortingStyle.value = style;
+// Toggle between product and category grouping
+function toggleLogSourceSorting(pressed: boolean) {
+    logsourceSortingStyle.value = pressed
+        ? 'category-product-service'
+        : 'product-category-service';
     applyFilters();
 }
 
 // Retry loading rules if there was an error
 async function retryLoadRules() {
-    localError.value = null;
+    error.value = null;
 
     try {
         console.log('SigmaRulesBrowser: Retrying fetch rules...');
@@ -516,7 +599,7 @@ async function retryLoadRules() {
         updateScroll();
     } catch (err) {
         console.error('SigmaRulesBrowser: Error during retry:', err);
-        localError.value = err instanceof Error ? err.message : 'Failed to load rules';
+        error.value = err instanceof Error ? err.message : 'Failed to load rules';
     }
 }
 

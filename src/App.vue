@@ -4,7 +4,7 @@ import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
-    SidebarGroup, SidebarGroupContent,
+    SidebarGroup,
     SidebarGroupLabel,
     SidebarHeader,
     SidebarInset,
@@ -18,15 +18,11 @@ import {
     SidebarRail,
     SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles, FileText,} from "lucide-vue-next";
+import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles,} from "lucide-vue-next";
 import {Card} from "@/components/ui/card";
-import {Button} from "@/components/ui/button";
 
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import WorkspaceSelection from "@/components/WorkspaceSelection.vue";
-import ChangelogDialog from "@/components/ChangelogDialog.vue";
-import {ref} from "vue";
-import Logo from "./images/logo.png"
 
 // This is sample data.
 const data = {
@@ -106,48 +102,22 @@ const data = {
  */
 
 const workStore = useWorkspaceStore();
-const changelogDialogRef = ref<InstanceType<typeof ChangelogDialog>>();
 
-function openChangelog() {
-    changelogDialogRef.value?.openDialog();
-}
 </script>
 
 <template>
-    <SidebarProvider v-model:open="workStore.sidebarOpen" class="flex min-h-screen">
-        <Sidebar class="-mr-1" collapsible="icon" variant="inset">
+    <SidebarProvider v-model:open="workStore.sidebarOpen" class="">
+        <Sidebar collapsible="icon" variant="sidebar">
             <SidebarHeader>
                 <SidebarMenu>
-                    <SidebarMenuItem
-                        :class="{'mx-2': workStore.sidebarOpen}"
-                        class="flex items-center gap-2"
-                    >
-                        <Transition
-                            enter-active-class="transition-opacity duration-100"
-                            enter-from-class="opacity-0"
-                            enter-to-class="opacity-100"
-                            leave-active-class="transition-opacity duration-100"
-                            leave-from-class="opacity-100"
-                            leave-to-class="opacity-0"
-                            mode="out-in"
-                        >
-                            <div
-                                v-if="workStore.sidebarOpen"
-                                key="label"
-                                class="w-full font-semibold whitespace-nowrap"
-                            >
-                                Detection Studio
-                            </div>
-                            <div v-else key="logo" class="pl-1 w-full font-semibold">
-                                <img alt="Logo" class="w-7.5 h-7.5" src="@/images/logo.png"/>
-                            </div>
-                        </Transition>
+                    <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2">
+                        <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap">Detection
+                            Studio
+                        </div>
+                        <div v-else class="pl-1 w-full font-semibold">D.S</div>
                     </SidebarMenuItem>
                 </SidebarMenu>
-                <SidebarSeparator
-                    :class="{'mx-2': workStore.sidebarOpen}"
-                    class="w-full bg-border! mx-0"
-                />
+                <SidebarSeparator :class="{'mx-2': workStore.sidebarOpen}" class="w-full bg-border! mx-0"/>
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <WorkspaceSelection/>
@@ -156,140 +126,82 @@ function openChangelog() {
             </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <SidebarMenuItem>
-                                <router-link v-slot="{ isActive, navigate }" custom to="/">
-                                    <SidebarMenuButton
-                                        :active="isActive"
-                                        :class="{
+                    <SidebarGroupLabel class="text-muted-foreground">Navigation</SidebarGroupLabel>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <router-link v-slot="{ isActive, navigate }" custom to="/">
+                                <SidebarMenuButton :active="isActive" class="[active=true]/text-white" @click="navigate" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }"
-                                        class="[active=true]/text-white"
-                                        @click="navigate"
-                                    >
-                                        <PaletteIcon/>
-                                        <span>Studio</span>
-                                    </SidebarMenuButton>
-                                </router-link>
-                            </SidebarMenuItem>
+                                }">
+                                    <PaletteIcon/>
+                                    <span>Studio</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
 
-                            <SidebarMenuItem>
-                                <router-link v-slot="{ isActive, navigate }" custom to="/browser">
-                                    <SidebarMenuButton
-                                        :active="isActive"
-                                        :class="{
+                        <SidebarMenuItem>
+                            <router-link v-slot="{ isActive, navigate }" custom to="/browser">
+                                <SidebarMenuButton :active="isActive" @click="navigate" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }"
-                                        @click="navigate"
-                                    >
-                                        <GlobeIcon/>
-                                        <span>Browser</span>
-                                    </SidebarMenuButton>
-                                </router-link>
-                            </SidebarMenuItem>
+                                }">
+                                    <GlobeIcon/>
+                                    <span>Browser</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
 
-                            <SidebarMenuItem>
-                                <router-link
-                                    v-slot="{ isActive, navigate }"
-                                    custom
-                                    disabled
-                                    to="/settings"
-                                >
-                                    <SidebarMenuButton
-                                        :active="isActive"
-                                        :class="{
+                        <SidebarMenuItem>
+                            <router-link v-slot="{ isActive, navigate }" custom disabled to="/settings">
+                                <SidebarMenuButton :active="isActive" disabled @click="navigate" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }"
-                                        disabled
-                                        @click="navigate"
-                                    >
-                                        <Settings2/>
-                                        <span>Settings</span>
-                                    </SidebarMenuButton>
-                                </router-link>
-                            </SidebarMenuItem>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
+                                }">
+                                    <Settings2/>
+                                    <span>Settings</span>
+                                </SidebarMenuButton>
+                            </router-link>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
                 </SidebarGroup>
 
                 <SidebarGroup class="group-data-[collapsible=icon]:hidden">
-                    <SidebarGroupLabel class="text-muted-foreground"
-                    >Documentation
-                    </SidebarGroupLabel
-                    >
-                    <SidebarGroupContent>
-                        <SidebarMenu>
-                            <Collapsible
-                                v-for="item in data.documentation"
-                                :key="item.title"
-                                :default-open="true"
-                                as-child
-                                class="group/collapsible"
-                            >
-                                <SidebarMenuItem>
-                                    <CollapsibleTrigger as-child>
-                                        <SidebarMenuButton :tooltip="item.title">
-                                            <component :is="item.icon"/>
-                                            <span>{{ item.title }}</span>
-                                            <ChevronRight
-                                                class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
-                                            />
-                                        </SidebarMenuButton>
-                                    </CollapsibleTrigger>
-                                    <CollapsibleContent>
-                                        <SidebarMenuSub>
-                                            <SidebarMenuSubItem
-                                                v-for="subItem in item.items"
-                                                :key="subItem.title"
-                                            >
-                                                <SidebarMenuSubButton as-child>
-                                                    <a :href="subItem.url" target="_blank">
-                                                        <span>{{ subItem.title }}</span>
-                                                    </a>
-                                                </SidebarMenuSubButton>
-                                            </SidebarMenuSubItem>
-                                        </SidebarMenuSub>
-                                    </CollapsibleContent>
-                                </SidebarMenuItem>
-                            </Collapsible>
-                        </SidebarMenu>
-                    </SidebarGroupContent>
+                    <SidebarGroupLabel class="text-muted-foreground">Documentation</SidebarGroupLabel>
+                    <SidebarMenu>
+                        <Collapsible v-for="item in data.documentation" :key="item.title" :default-open="true" as-child
+                                     class="group/collapsible">
+                            <SidebarMenuItem>
+                                <CollapsibleTrigger as-child>
+                                    <SidebarMenuButton :tooltip="item.title">
+                                        <component :is="item.icon"/>
+                                        <span>{{ item.title }}</span>
+                                        <ChevronRight
+                                            class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
+                                    </SidebarMenuButton>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <SidebarMenuSub>
+                                        <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
+                                            <SidebarMenuSubButton as-child>
+                                                <a :href="subItem.url" target="_blank">
+                                                    <span>{{ subItem.title }}</span>
+                                                </a>
+                                            </SidebarMenuSubButton>
+                                        </SidebarMenuSubItem>
+                                    </SidebarMenuSub>
+                                </CollapsibleContent>
+                            </SidebarMenuItem>
+                        </Collapsible>
+                    </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            class="relative"
-                            tooltip="Changelog"
-                            @click="openChangelog"
-                        >
-                            <FileText/>
-                            <span>What's New</span>
-                            <div class="relative flex size-3">
-                                <div
-                                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"
-                                ></div>
-                                <div
-                                    class="relative inline-flex size-3 rounded-full bg-sky-500"
-                                ></div>
-                            </div>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                    <SidebarMenuItem>
                         <Transition>
-                            <Card
-                                v-if="workStore.sidebarOpen"
-                                class="text-xs text-muted-foreground p-2 flex items-center gap-2"
-                            >
+                            <Card v-if="workStore.sidebarOpen"
+                                  class="text-xs text-muted-foreground p-2 flex items-center gap-2">
                                 Powered by
                                 <Sparkles class="text-primary h-4 w-4"/>
-                                <a
-                                    class="text-primary font-semibold"
-                                    href="https://north.sh/"
-                                    target="_blank"
-                                >
+                                <a href="https://north.sh/" target="_blank" class="text-primary font-semibold">
                                     north.sh
                                 </a>
                             </Card>
@@ -299,11 +211,8 @@ function openChangelog() {
             </SidebarFooter>
             <SidebarRail/>
         </Sidebar>
-        <SidebarInset class="bg-muted/30 flex-1 flex flex-col overflow-hidden">
-            <router-view class="flex-1 w-full overflow-hidden"></router-view>
+        <SidebarInset class="bg-muted/30 h-screen max-h-screen overflow-hidden">
+            <router-view class="h-full w-full overflow-hidden"></router-view>
         </SidebarInset>
     </SidebarProvider>
-
-    <!-- Changelog Dialog with auto-show for new releases -->
-    <ChangelogDialog ref="changelogDialogRef" :auto-show="true"/>
 </template>

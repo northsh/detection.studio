@@ -4,7 +4,7 @@
         <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
             <div class="w-full flex items-center gap-1 md:gap-4 px-4">
                 <SidebarTrigger/>
-                <Separator class="!h-4" orientation="vertical"/>
+                <Separator class="h-4!" orientation="vertical"/>
                 <div class="grow"></div>
                 <div class="flex items-center gap-1 md:gap-2">
                     <Button
@@ -28,9 +28,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
                     <SigmaRuleList
                         :initialRuleId="ruleId"
-                        class="h-full border rounded-lg overflow-hidden shadow-sm"
+                        class="h-full border rounded-lg overflow-hidden shadow-xs"
                     />
-                    <div class="md:col-span-2 h-full border rounded-lg overflow-hidden shadow-sm">
+                    <div class="md:col-span-2 h-full border rounded-lg overflow-hidden shadow-xs">
                         <SigmaRuleViewer class="h-full"/>
                     </div>
                 </div>

@@ -1,20 +1,20 @@
-<script setup lang="ts">
-import type { SidebarProps } from "."
-import { cn } from "@/lib/utils"
-import { Sheet, SheetContent } from '@/components/ui/sheet'
-import { SIDEBAR_WIDTH_MOBILE, useSidebar } from "./utils"
+<script lang="ts" setup>
+import type {SidebarProps} from '.'
+import {cn} from '@/lib/utils'
+import {Sheet, SheetContent} from '@/components/ui/sheet'
+import {SIDEBAR_WIDTH_MOBILE, useSidebar} from './utils'
 
 defineOptions({
-  inheritAttrs: false,
+    inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<SidebarProps>(), {
-  side: "left",
-  variant: "sidebar",
-  collapsible: "offcanvas",
+    side: 'left',
+    variant: 'sidebar',
+    collapsible: 'offcanvas',
 })
 
-const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+const {isMobile, state, openMobile, setOpenMobile} = useSidebar()
 </script>
 
 <template>
@@ -23,37 +23,36 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
         :class="cn('flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground', props.class)"
         v-bind="$attrs"
     >
-        <slot />
+        <slot/>
     </div>
 
     <Sheet v-else-if="isMobile" :open="openMobile" v-bind="$attrs" @update:open="setOpenMobile">
         <SheetContent
-            data-sidebar="sidebar"
-            data-mobile="true"
             :side="side"
-            class="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             :style="{
         '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
       }"
+            class="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            data-mobile="true"
+            data-sidebar="sidebar"
         >
             <div class="flex h-full w-full flex-col">
-                <slot />
+                <slot/>
             </div>
         </SheetContent>
     </Sheet>
 
     <div
-        v-else
-        class="group peer hidden md:block"
-        :data-state="state"
-        :data-collapsible="state === 'collapsed' ? collapsible : ''"
-        :data-variant="variant"
+        v-else :data-collapsible="state === 'collapsed' ? collapsible : ''"
         :data-side="side"
+        :data-state="state"
+        :data-variant="variant"
+        class="group peer hidden md:block"
     >
         <!-- This is what handles the sidebar gap on desktop  -->
         <div
             :class="cn(
-        'duration-500 relative h-svh w-(--sidebar-width) bg-transparent transition-[width] ease-in-out',
+        'duration-200 relative h-svh w-(--sidebar-width) bg-transparent transition-[width] ease-linear',
         'group-data-[collapsible=offcanvas]:w-0',
         'group-data-[side=right]:rotate-180',
         variant === 'floating' || variant === 'inset'
@@ -63,7 +62,7 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
         />
         <div
             :class="cn(
-        'duration-500 fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] ease-in-out md:flex',
+        'duration-200 fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] ease-linear md:flex',
         side === 'left'
           ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
           : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
@@ -76,10 +75,10 @@ const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
             v-bind="$attrs"
         >
             <div
+                class="flex h-full w-full flex-col text-sidebar-foreground bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow-sm"
                 data-sidebar="sidebar"
-                class="flex h-full w-full flex-col text-sidebar-foreground bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
             >
-                <slot />
+                <slot/>
             </div>
         </div>
     </div>
