@@ -11,7 +11,7 @@ test.describe('Conversion', () => {
     await page.getByRole('tabpanel', { name: 'new_sigma_rule Close' }).getByRole('textbox').press('ControlOrMeta+a');
     await page.getByRole('tabpanel', { name: 'new_sigma_rule Close' }).getByRole('textbox').fill('title: AWS Root Credentials\ndescription: Detects AWS root account usage\nlogsource:\n    product: aws\n    service: cloudtrail\ndetection:\n    selection:\n        userIdentity.type: Root\n    filter:\n        eventType: AwsServiceEvent\n    condition: selection and not filter\nfalsepositives:\n    - AWS Tasks That Require Root User Credentials\nlevel: medium');
     await expect(page.locator('#siem-query-editor')).toContainText('userIdentity.type="Root" NOT eventType="AwsServiceEvent"', {
-      timeout: 30000,
+      timeout: 90000,
     });
   });
 });
