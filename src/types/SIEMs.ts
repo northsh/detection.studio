@@ -26,7 +26,7 @@ export const supportedSiems: Array<Siem> = [
         name: "Splunk SPL",
         icon: splunk_svg,
         company: 'Splunk',
-        colorClass: '!text-[#74B036]',
+        colorClass: 'text-[#74B036]!',
         backend: 'pysigma-backend-splunk'
     },
     {
@@ -34,7 +34,7 @@ export const supportedSiems: Array<Siem> = [
         name: "ES | QL",
         icon: elasticsearch_svg,
         company: 'Elasticsearch',
-        colorClass: "!text-[#23BBB1]",
+        colorClass: "text-[#23BBB1]!",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
@@ -42,7 +42,7 @@ export const supportedSiems: Array<Siem> = [
         name: "Lucene",
         icon: elasticsearch_svg,
         company: 'Elasticsearch',
-        colorClass: "!text-[#23BBB1]",
+        colorClass: "text-[#23BBB1]!",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
@@ -50,7 +50,7 @@ export const supportedSiems: Array<Siem> = [
         name: "EQL",
         icon: elasticsearch_svg,
         company: 'Elasticsearch',
-        colorClass: "!text-[#23BBB1]",
+        colorClass: "text-[#23BBB1]!",
         backend: 'pysigma-backend-elasticsearch'
     },
     {
@@ -58,7 +58,7 @@ export const supportedSiems: Array<Siem> = [
         name: "Loki",
         icon: loki_svg,
         company: 'Grafana',
-        colorClass: '!text-[#F49D2A]',
+        colorClass: 'text-[#F49D2A]!',
         backend: 'pysigma-backend-loki'
     },
     {id: "carbon_black", name: "Carbon Black", icon: null, backend: 'pysigma-backend-carbonblack'},

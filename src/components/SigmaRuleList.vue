@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col h-full overflow-hidden">
-        <div class="p-4 border-b bg-card shadow-sm">
+        <div class="p-4 border-b bg-card shadow-xs">
 
             <!-- Search input -->
             <Input
@@ -117,7 +117,7 @@
         </div>
 
         <!-- Error state -->
-        <div v-if="error" class="p-4 flex flex-col justify-center items-center flex-grow text-red-500">
+        <div v-if="error" class="p-4 flex flex-col justify-center items-center grow text-red-500">
             <Alert class="max-w-md" variant="destructive">
                 <AlertTitle>Error loading rules</AlertTitle>
                 <AlertDescription>{{ error }}</AlertDescription>
@@ -132,7 +132,7 @@
         </div>
 
         <!-- Loading state with skeleton -->
-        <div v-else-if="isLoading" class="p-4 flex-grow">
+        <div v-else-if="isLoading" class="p-4 grow">
             <div class="space-y-4">
                 <div v-for="i in 3" :key="`skeleton-group-${i}`" class="space-y-3">
                     <div class="flex items-center justify-between">
@@ -157,7 +157,7 @@
         </div>
 
         <!-- Results list -->
-        <div v-else class="flex-grow overflow-hidden">
+        <div v-else class="grow overflow-hidden">
             <div v-if="allRules.length === 0"
                  class="text-center py-16 flex flex-col items-center justify-center h-full">
                 <div class="bg-muted/30 rounded-lg p-6 max-w-md">
@@ -196,7 +196,7 @@
                                 v-for="itemInfo in group.items"
                                 :key="itemInfo.rule.id || itemInfo.rule.path"
                                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
-                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-sm"
+                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs"
                                 @click="selectRule(itemInfo.rule)"
                             >
                                 <div class="flex items-start justify-between">

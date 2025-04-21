@@ -26,7 +26,7 @@ const width = computed(() => {
 
         <Skeleton
             :style="{ '--skeleton-width': width }"
-            class="h-4 flex-1 max-w-[--skeleton-width]"
+            class="h-4 flex-1 max-w-(--skeleton-width)"
             data-sidebar="menu-skeleton-text"
         />
     </div>

@@ -40,7 +40,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
         >
             <SelectScrollUpButton/>
             <SelectViewport
-                :class="cn('p-1', position === 'popper' && 'h-[--radix-select-trigger-height] w-full min-w-[--radix-select-trigger-width]')">
+                :class="cn('p-1', position === 'popper' && 'h-(--radix-select-trigger-height) w-full min-w-(--radix-select-trigger-width)')">
                 <slot/>
             </SelectViewport>
             <SelectScrollDownButton/>
