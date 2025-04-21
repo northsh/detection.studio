@@ -18,14 +18,14 @@ let searchResults: { matches: any[], stats: any } = {matches: [], stats: {totalM
 const pyodideReadyPromise = (async () => {
     try {
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.4/full/"
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.5/full/"
         });
 
         await pyodide?.loadPackage("micropip");
         const micropip = pyodide?.pyimport("micropip");
 
         // Install sigma-cli
-        await micropip.install('https://files.pythonhosted.org/packages/43/60/1431361a1a4afa2e81ecab4b5fb7af08b015dfd4d8b9edf1dd2923d2a8b6/pysigma-0.11.19-py3-none-any.whl');
+        await micropip.install('https://files.pythonhosted.org/packages/51/4e/f9139956ecd088b21aecddbdf5a69fcd737578856704dbfc6965a5c8acdb/pysigma-0.11.22-py3-none-any.whl');
 
         // Install SQLite backend
         await micropip.install('pysigma-backend-sqlite');
