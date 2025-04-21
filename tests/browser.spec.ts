@@ -13,7 +13,7 @@ test.describe('Conversion', () => {
         await page.getByRole('button', {name: 'Import to Studio'}).click({
             timeout: 30000,
         });
-        await expect(page.locator('#siem-query-editor')).toContainText('eventSource="lambda.amazonaws.com" eventName="UpdateFunctionConfiguration*"eventSource="lambda.amazonaws.com" eventName="UpdateFunctionConfiguration*"', {
+        await expect(page.locator('#siem-query-editor')).toContainText('eventSource="cloudtrail.amazonaws.com" eventName IN ("StopLogging", "UpdateTrail", "DeleteTrail")', {
             timeout: 30000,
         });
 
