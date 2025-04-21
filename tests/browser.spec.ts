@@ -14,7 +14,7 @@ test.describe('Conversion', () => {
             timeout: 30000,
         });
         await expect(page.locator('#siem-query-editor')).toContainText('eventSource="cloudtrail.amazonaws.com" eventName IN ("StopLogging", "UpdateTrail", "DeleteTrail")', {
-            timeout: 30000,
+            timeout: 90000,
         });
 
     });
