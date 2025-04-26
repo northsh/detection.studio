@@ -9,7 +9,7 @@
   <a href="https://vuejs.org/"><img src="https://img.shields.io/badge/Built%20with-Vue%203-42b883" alt="Built with Vue3" /></a>
   <a href="https://pyodide.org/"><img src="https://img.shields.io/badge/Powered%20by-Pyodide-3775A9" alt="Powered by Pyodide" /></a>
   <a href="https://detection.studio"><img src="https://img.shields.io/badge/Visit-Website-7977FE" alt="Visit Website" /></a>
-  <a href="https://github.com/northsh/detection.studio/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/northsh/detection.studio/workflows%2Fdeploy.yml" alt="Visit Website" /></a>
+  <a href="https://github.com/northsh/detection.studio/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/northsh/detection.studio/deploy.yml" alt="Visit Website" /></a>
 </p>
 
 <p align="center">
