@@ -43,7 +43,7 @@ jobs:
 
             -   name: Install Playwright browsers
                 run: bunx playwright install --with-deps ${{ matrix.browser }}
-                if: steps.playwright-cache.outputs.cache-hit != 'true' && matrix.browser != 'webkit'
+                if: steps.playwright-cache.outputs.cache-hit != 'true' || matrix.browser != 'webkit'
 
             -   name: Run Playwright tests for ${{ matrix.browser }}
                 run: bunx playwright test --project=${{ matrix.browser }}
