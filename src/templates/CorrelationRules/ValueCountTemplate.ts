@@ -2,8 +2,8 @@ import {v4 as uuid} from "uuid";
 
 export default function sigmaCorrelationTemplate() {
     return `title: High-privilege group enumeration
-id: ${uuid()}
 name: privileged_group_enumeration
+id: ${uuid()}
 status: stable
 logsource:
   product: windows
@@ -42,3 +42,7 @@ falsepositives:
   - Directory assessment tools
 `;
 }
+
+
+
+

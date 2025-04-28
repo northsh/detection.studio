@@ -1,44 +1,100 @@
 import {v4 as uuid} from "uuid";
 
 export default function sigmaCorrelationTemplate() {
-    return `title: High-privilege group enumeration
+    return `
+title: Suspicious Scheduled Task Creation
 id: ${uuid()}
-name: privileged_group_enumeration
-status: stable
+name: suspicious_schtask_creation
+description: Detects the creation of a scheduled task with suspicious parameters
+status: experimental
 logsource:
   product: windows
   service: security
+  category: process_creation
 detection:
   selection:
-    EventID: 4799
-    CallerProcessId: 0x0
-    TargetUserName:
-      - Administrators
-      - Remote Desktop Users
-      - Remote Management Users
-      - Distributed COM Users
-  condition: selection
-level: informational
+    Image|endswith: 
+      - '\\schtasks.exe'
+    CommandLine|contains: 
+      - ' /create '
+      - ' /sc '
+    CommandLine|contains|all:
+      - '.exe'
+  filter:
+    User: 'NT AUTHORITY\\SYSTEM'
+  condition: selection and not filter
 falsepositives:
-  - Administrative activity
-  - Directory assessment tools
+  - Legitimate task scheduling by administrators
+  - Software installation and updates
+tags:
+  - attack.persistence
+  - attack.t1053.005
 ---
-title: Enumeration of multiple high-privilege groups by tools like BloodHound
+title: Suspicious Process with System Privileges
 id: ${uuid()}
-status: stable
-correlation:
-  type: value_count
-  rules:
-    - privileged_group_enumeration
-  group-by:
-    - SubjectUserName
-  timespan: 15m
-  condition:
-    gte: 4
-    field: TargetUserName
-level: high
+name: suspicious_system_process
+description: Detects execution of suspicious processes with SYSTEM privileges
+status: experimental
+logsource:
+  product: windows
+  service: security
+  category: process_creation
+detection:
+  selection:
+    User: 'NT AUTHORITY\\SYSTEM'
+    Image|endswith:
+      - '\\powershell.exe'
+      - '\\cmd.exe'
+      - '\\wscript.exe'
+      - '\\cscript.exe'
+      - '\\rundll32.exe'
+      - '\\regsvr32.exe'
+    CommandLine|contains:
+      - 'iex'
+      - 'Invoke-Expression'
+      - 'Invoke-WebRequest'
+      - 'wget'
+      - 'curl'
+      - 'DownloadString'
+      - 'DownloadFile'
+      - 'WebClient'
+      - 'hidden'
+      - '-enc'
+      - '-encoded'
+      - '-e '
+      - 'base64'
+  condition: selection
 falsepositives:
-  - Administrative activity
-  - Directory assessment tools
+  - Administrative scripts
+  - Software updates
+tags:
+  - attack.execution
+  - attack.t1059
+---
+title: Potential Privilege Escalation via Scheduled Task Chain
+id: ${uuid()}
+description: Detects a suspicious scheduled task creation followed by execution of suspicious process with SYSTEM privileges
+status: experimental
+correlation:
+  type: temporal
+  rules:
+    - suspicious_schtask_creation
+    - suspicious_system_process
+  group-by:
+    - Hostname
+  timespan: 2m
+level: high
+tags:
+  - attack.privilege_escalation
+  - attack.persistence
+  - attack.t1053.005
+  - attack.execution
+  - attack.t1059
+falsepositives:
+  - Legitimate administrative activity
+  - Some automated software updates
+references:
+  - https://attack.mitre.org/techniques/T1053/005/
+  - https://attack.mitre.org/techniques/T1059/
 `;
 }

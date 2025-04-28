@@ -17,6 +17,7 @@ import loki_svg from '@/images/grafana.svg?component';
 import elasticsearch_svg from '@/images/elasticsearch.svg?component';
 import {Card} from "@/components/ui/card";
 import {supportedSiems} from "@/types/SIEMs";
+import {Badge} from "@/components/ui/badge";
 
 
 const workspace = useWorkspaceStore();
@@ -30,7 +31,7 @@ const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
         <SelectTrigger class="h-8 border-primary">
             <SelectValue placeholder="Select a SIEM"/>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent class="rounded-xl">
             <SelectLabel class="m-0 pt-2 pb-0 px-3">SIEMs <span class="opacity-30 px-1">/</span> Log Engines
             </SelectLabel>
             <SelectGroup>
@@ -50,7 +51,7 @@ const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
                                 <SelectItem v-if="siem.company === vendor" :value="siem.id" class="">
                                 <span class="flex items-center gap-2">
                                     <component :is="siem.icon" :class="[siem.colorClass]" class="h-4 w-4"/>
-                                    <span>{{ siem.name }}</span>
+                                    <span>{{ siem.name }}</span> <Badge variant="outline" class="ml-1 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0" v-if="siem.correlation">Correlation</Badge>
                                 </span>
                                 </SelectItem>
                             </template>
