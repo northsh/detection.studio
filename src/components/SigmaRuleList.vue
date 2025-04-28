@@ -157,7 +157,7 @@
         </div>
 
         <!-- Results list -->
-        <div v-else class="grow overflow-hidden">
+        <ScrollArea v-else class="grow overflow-hidden">
             <div v-if="allRules.length === 0"
                  class="text-center py-16 flex flex-col items-center justify-center h-full">
                 <div class="bg-muted/30 rounded-lg p-6 max-w-md">
@@ -177,7 +177,7 @@
             <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
                 No rules found matching your criteria.
             </div>
-            <div v-else ref="containerRef" class="h-full overflow-auto">
+            <div v-else ref="containerRef" class="h-full">
                 <div :style="{ height: `${totalHeight}px` }" class="relative">
                     <div
                         v-for="(group, groupIndex) in visibleGroups"
@@ -243,7 +243,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+            <ScrollBar />
+        </ScrollArea>
     </div>
 </template>
 
@@ -271,6 +272,7 @@ import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
 import {Check, ChevronDown, Search} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
+import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
 
 // Accept initial rule ID from parent component
 const props = defineProps<{
