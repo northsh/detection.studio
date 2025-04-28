@@ -2,13 +2,25 @@
     <div class="flex flex-col h-full overflow-hidden">
         <div class="p-4 border-b bg-card shadow-xs">
 
-            <!-- Search input -->
-            <Input
-                v-model="searchQuery"
-                class="w-full"
-                placeholder="Search rules..."
-                @input="onSearch"
-            />
+            <!-- Search input with throttled input -->
+            <div class="relative w-full">
+                <Input
+                    v-model="searchQuery"
+                    class="w-full pl-9"
+                    placeholder="Search across rules..."
+                    @input="onSearch"
+                />
+                <Search class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Button 
+                    v-if="searchQuery"
+                    variant="ghost" 
+                    size="icon" 
+                    class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    @click="clearSearch"
+                >
+                    <XCircle class="h-4 w-4" />
+                </Button>
+            </div>
 
             <!-- Filter controls -->
             <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
@@ -270,7 +282,7 @@ import {Skeleton} from '@/components/ui/skeleton';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {Check, ChevronDown, Search} from 'lucide-vue-next';
+import {Check, ChevronDown, Search, XCircle} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
 
@@ -359,8 +371,20 @@ function toggleStatusFilter(status: string) {
     applyFilters();
 }
 
-// Get unique logsource options (products, categories, services) from rules
+// Cache for product options
+const productOptionsCache = ref({
+    rulesLength: 0,
+    options: [] as string[]
+});
+
+// Get unique logsource options (products, categories, services) from rules with caching
 const productOptions = computed(() => {
+    // Only recompute if the rules array has changed
+    if (productOptionsCache.value.rulesLength === allRules.value.length && 
+        productOptionsCache.value.options.length > 0) {
+        return productOptionsCache.value.options;
+    }
+    
     const options = new Set<string>();
 
     allRules.value.forEach(rule => {
@@ -375,7 +399,15 @@ const productOptions = computed(() => {
         }
     });
 
-    return Array.from(options).sort();
+    const sortedOptions = Array.from(options).sort();
+    
+    // Update cache
+    productOptionsCache.value = {
+        rulesLength: allRules.value.length,
+        options: sortedOptions
+    };
+    
+    return sortedOptions;
 });
 
 // Filtered product options based on search query
@@ -388,13 +420,50 @@ const filteredProductOptions = computed(() => {
     );
 });
 
-// Handle product search
+// Debounce product search to avoid triggering on every keystroke
+let productSearchTimeout: number | null = null;
+
+// Handle product search with debouncing
 function onProductSearch(event: Event) {
-    productSearchQuery.value = (event.target as HTMLInputElement).value;
+    if (productSearchTimeout) {
+        clearTimeout(productSearchTimeout);
+    }
+    
+    productSearchTimeout = window.setTimeout(() => {
+        productSearchQuery.value = (event.target as HTMLInputElement).value;
+        productSearchTimeout = null;
+    }, 200);
 }
 
-// Filter rules based on search and filters
+// Clear search input and reset search results
+function clearSearch() {
+    searchQuery.value = '';
+    sigmaRulesStore.searchRules('');
+    resetScroll();
+}
+
+// Memoize the filter results to avoid recomputing for the same inputs
+const lastFilters = ref({
+    searchResult: [] as SigmaRule[],
+    searchQuery: '',
+    statusFilters: {...statusFilters},
+    selectedProduct: ''
+});
+
+// Filter rules based on search and filters with memoization
 const filteredRules = computed(() => {
+    // Check if search results or filters have changed
+    const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
+    const statusFiltersChanged = Object.entries(statusFilters).some(
+        ([key, value]) => lastFilters.value.statusFilters[key] !== value
+    );
+    const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
+    
+    // If nothing has changed, return the cached results
+    if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
+        return lastFilters.value.searchResult;
+    }
+    
     // First apply the text search
     let rules = sigmaRulesStore.filteredRules;
 
@@ -410,22 +479,51 @@ const filteredRules = computed(() => {
     // Apply product filter if selected
     if (selectedProduct.value) {
         // Check if the selected product might actually be a category or service
+        const selected = selectedProduct.value.toLowerCase();
+        
         rules = rules.filter(rule => {
             const logsource = rule.logsource || {};
-            const product = logsource.product?.toLowerCase();
-            const category = logsource.category?.toLowerCase();
-            const service = logsource.service?.toLowerCase();
-            const selected = selectedProduct.value.toLowerCase();
+            const product = logsource.product?.toLowerCase() || '';
+            const category = logsource.category?.toLowerCase() || '';
+            const service = logsource.service?.toLowerCase() || '';
 
             return product === selected || category === selected || service === selected;
         });
     }
 
+    // Update the cached values
+    lastFilters.value = {
+        searchResult: rules,
+        searchQuery: sigmaRulesStore.searchQuery,
+        statusFilters: {...statusFilters},
+        selectedProduct: selectedProduct.value
+    };
+
     return rules;
 });
 
-// Group rules by product, category, or other criteria
+// Cache for grouped rules
+const groupedRulesCache = ref({
+    key: '',
+    result: [] as { label: string; rules: SigmaRule[]; expanded: boolean }[]
+});
+
+// Group rules by product, category, or other criteria with memoization
 const groupedRules = computed(() => {
+    // Create a cache key based on current filtering and sorting values
+    const cacheKey = JSON.stringify({
+        rulesCount: filteredRules.value.length,
+        sortingStyle: logsourceSortingStyle.value,
+        searchQuery: sigmaRulesStore.searchQuery,
+        statusFilters: Object.entries(statusFilters).filter(([_, v]) => v).map(([k]) => k).join(','),
+        product: selectedProduct.value
+    });
+    
+    // If cache is valid, return cached result
+    if (groupedRulesCache.value.key === cacheKey && groupedRulesCache.value.result.length > 0) {
+        return groupedRulesCache.value.result;
+    }
+    
     const rules = filteredRules.value;
     const groups: Record<string, SigmaRule[]> = {};
 
@@ -447,13 +545,21 @@ const groupedRules = computed(() => {
     });
 
     // Convert to array and sort
-    return Object.entries(groups)
+    const result = Object.entries(groups)
         .map(([label, rules]) => ({
             label,
             rules,
             expanded: true
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
+        
+    // Update cache
+    groupedRulesCache.value = {
+        key: cacheKey,
+        result
+    };
+    
+    return result;
 });
 
 // Virtual scroll implementation
@@ -475,8 +581,26 @@ interface GroupInfo {
     height: number;
 }
 
-// Calculate positions and visible groups
+// Cache for group positions calculation
+const groupPositionsCache = ref({
+    key: '',
+    positions: [] as GroupInfo[]
+});
+
+// Calculate positions and visible groups with caching
 const allGroupPositions = computed(() => {
+    // Create a cache key from the grouped rules
+    const cacheKey = JSON.stringify({
+        groupCount: groupedRules.value.length,
+        itemCounts: groupedRules.value.map(g => g.rules.length).join(',')
+    });
+    
+    // Return cached result if valid
+    if (groupPositionsCache.value.key === cacheKey && 
+        groupPositionsCache.value.positions.length > 0) {
+        return groupPositionsCache.value.positions;
+    }
+    
     const positions: GroupInfo[] = [];
     let currentOffset = 0;
 
@@ -493,6 +617,12 @@ const allGroupPositions = computed(() => {
 
         currentOffset += groupHeight + 24; // Add margin between groups
     });
+    
+    // Update cache
+    groupPositionsCache.value = {
+        key: cacheKey,
+        positions
+    };
 
     return positions;
 });
@@ -566,10 +696,21 @@ onUnmounted(() => {
     }
 });
 
-// Handle search input
+// Debounce search to avoid triggering search on every keystroke
+let searchTimeout: number | null = null;
+
+// Handle search input with debouncing
 function onSearch() {
-    sigmaRulesStore.searchRules(searchQuery.value);
-    resetScroll();
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    
+    // Only perform search after 300ms of inactivity
+    searchTimeout = window.setTimeout(() => {
+        sigmaRulesStore.searchRules(searchQuery.value);
+        resetScroll();
+        searchTimeout = null;
+    }, 300);
 }
 
 // Apply filters and reset scroll

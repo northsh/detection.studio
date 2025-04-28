@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Files, Folder, Plus, TextCursor, Trash,} from "lucide-vue-next";
 import sigmaTemplate from "@/templates/SigmaRuleTemplate";
-import sigmaCorrelationTemplate from "@/templates/CorrelationRules/EventCountTemplate";
+import eventCountCorrelationTemplate from "@/templates/CorrelationRules/EventCountTemplate";
+import valueCountCorrelationTemplate from "@/templates/CorrelationRules/ValueCountTemplate";
+import temporalCorrelationTemplate from "@/templates/CorrelationRules/TemporalTemplate";
 import sigmaFilterTemplate from "@/templates/SigmaFilterTemplate";
 import sigmaPipelineTemplate from "@/templates/SigmaPipelineTemplate";
 import {computed} from "vue";
@@ -34,21 +36,24 @@ const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
-const templates: Record<FileType, () => string> = {
+const templates: Record<string, () => string> = {
     sigma: sigmaTemplate,
-    correlation: sigmaCorrelationTemplate,
+    correlation: eventCountCorrelationTemplate,
     filter: () => sigmaFilterTemplate(fs.value.getFile(
         sigma.value.active_sigma_rule_file_id
     )),
     pipeline: () => sigmaPipelineTemplate(fs.value.getFile(
         sigma.value.active_sigma_rule_file_id
     )),
+    eventCount: eventCountCorrelationTemplate,
+    valueCount: valueCountCorrelationTemplate,
+    temporal: temporalCorrelationTemplate,
 };
 
-const newFile = (rule_type: FileType) => {
+const newFile = (rule_type: FileType, template: string = '') => {
     fs.value.addFile({
         name: `new_${rule_type}_rule`,
-        content: templates[rule_type]() as string,
+        content: (templates[template] ?? templates[rule_type])() as string,
         type: rule_type,
     });
 };
@@ -112,21 +117,21 @@ const groupedFiles = computed(function () {
                                 <DropdownMenuPortal>
                                     <DropdownMenuSubContent>
                                         <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation')">
+                                                          @click="newFile('correlation', 'eventCount')">
                                             Event Count
                                             <p class="text-muted-foreground">
                                                 Count the number of events in a time window
                                             </p>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation')">
+                                                          @click="newFile('correlation', 'valueCount')">
                                             Value Count
                                             <p class="text-muted-foreground">
                                                 Count the number of individual values in a time window
                                             </p>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation')">
+                                                          @click="newFile('correlation', 'temporal')">
                                             Temporal
                                             <p class="text-muted-foreground">
                                                 Multiple different events close together in time

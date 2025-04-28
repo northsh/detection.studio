@@ -133,8 +133,8 @@ export default function sigmaPipelineTemplate(
                 "set_custom_log_source",
                 {
                     selection: {
-                        index: "logs-test-*",
-                        source: "logs-test-*"
+                        job: "job-name",
+                        app: "loki",
                     }
                 },
                 logsource

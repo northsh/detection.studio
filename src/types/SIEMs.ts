@@ -9,6 +9,7 @@ export type Siem = {
     company?: string;
     colorClass?: string;
     backend?: string;
+    correlation?: boolean;
 }
 
 export type SigmaTarget = {
@@ -27,7 +28,8 @@ export const supportedSiems: Array<Siem> = [
         icon: splunk_svg,
         company: 'Splunk',
         colorClass: 'text-[#74B036]!',
-        backend: 'pysigma-backend-splunk'
+        backend: 'pysigma-backend-splunk',
+        correlation: true
     },
     {
         id: "esql",
@@ -35,7 +37,8 @@ export const supportedSiems: Array<Siem> = [
         icon: elasticsearch_svg,
         company: 'Elasticsearch',
         colorClass: "text-[#23BBB1]!",
-        backend: 'pysigma-backend-elasticsearch'
+        backend: 'pysigma-backend-elasticsearch',
+        correlation: true
     },
     {
         id: "lucene",
@@ -59,7 +62,8 @@ export const supportedSiems: Array<Siem> = [
         icon: loki_svg,
         company: 'Grafana',
         colorClass: 'text-[#F49D2A]!',
-        backend: 'pysigma-backend-loki'
+        backend: 'pysigma-backend-loki',
+        correlation: true
     },
     {id: "carbon_black", name: "Carbon Black", icon: null, backend: 'pysigma-backend-carbonblack'},
     {id: "cortex_xdr", name: "Cortex XDR", icon: null, backend: 'pysigma-backend-cortexxdr'},

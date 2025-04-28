@@ -62,7 +62,11 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
                     includeScore: true,
                     threshold: 0.3,
                     ignoreLocation: true,
-                    useExtendedSearch: true,
+                    useExtendedSearch: false, // Disabled for better performance
+                    minMatchCharLength: 2,    // Require at least 2 chars to match
+                    shouldSort: true,
+                    fastAllMatches: true,     // Improve performance for large datasets
+                    cache: true               // Enable caching for better performance
                 });
                 isFuseLoaded.value = true;
                 console.log('SigmaRulesStore: Fuse.js initialized successfully');
