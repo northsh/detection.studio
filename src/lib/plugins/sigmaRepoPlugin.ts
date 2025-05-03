@@ -123,6 +123,11 @@ async function indexRules(repoPath) {
                     // Extract the relative path from the repository root
                     const relativePath = path.relative(repoPath, fullPath);
 
+                    // Remove the logsource.definition if it exists
+                    if (yamlContent?.logsource?.definition) {
+                        delete yamlContent.logsource.definition;
+                    }
+
                     // Basic rule parsing
                     const rule = {
                         id: yamlContent.id || '',
@@ -130,13 +135,10 @@ async function indexRules(repoPath) {
                         description: yamlContent.description || '',
                         status: yamlContent.status || '',
                         author: yamlContent.author || '',
-                        date: yamlContent.date || '',
-                        modified: yamlContent.modified || '',
                         tags: yamlContent.tags || [],
                         level: yamlContent.level || '',
                         path: relativePath,
                         logsource: yamlContent.logsource || {},
-                        references: yamlContent.references || [],
                     };
 
                     rules.push(rule);
