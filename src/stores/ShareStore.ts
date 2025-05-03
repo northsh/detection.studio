@@ -40,10 +40,13 @@ export const useWorkspaceSharingStore = defineStore('workspaceSharing', () => {
 
     // Deserialize workspace from shared data
     function deserializeWorkspace(serialized: SerializedWorkspace): Workspace {
-        // Create new store instances
-        const sigmaStore = createSigmaStore(serialized.id);
-        const fileStore = createFileStore(serialized.id);
-        const dataStore = createDataStore(serialized.id);
+        // Generate a new ID for the imported workspace to prevent duplicates
+        const newId = Math.random().toString(36).substring(7);
+        
+        // Create new store instances with the new ID
+        const sigmaStore = createSigmaStore(newId);
+        const fileStore = createFileStore(newId);
+        const dataStore = createDataStore(newId);
 
         // Restore store states if available
         if (serialized.fileState) {
@@ -57,8 +60,8 @@ export const useWorkspaceSharingStore = defineStore('workspaceSharing', () => {
         }
 
         return {
-            id: serialized.id,
-            name: serialized.name,
+            id: newId,
+            name: `${serialized.name} (Imported)`,
             plan: serialized.plan,
             sigmaStore,
             fileStore,

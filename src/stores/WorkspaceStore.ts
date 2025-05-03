@@ -34,6 +34,27 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         const workspace = shareStore.reconstructFromUrl(hash);
 
         if (workspace) {
+            // Check if a workspace with the same name already exists
+            const existingName = availableWorkspaces.value.some(w => 
+                w.name.replace(' (Imported)', '') === workspace.name.replace(' (Imported)', ''));
+            
+            // Add a counter to the name if necessary
+            if (existingName) {
+                const baseNameMatch = workspace.name.match(/(.*?)( \(\d+\))?( \(Imported\))?$/);
+                const baseName = baseNameMatch ? baseNameMatch[1] : workspace.name;
+                
+                let counter = 1;
+                let newName = `${baseName} (${counter})`;
+                
+                while (availableWorkspaces.value.some(w => 
+                    w.name.replace(' (Imported)', '') === newName)) {
+                    counter++;
+                    newName = `${baseName} (${counter})`;
+                }
+                
+                workspace.name = `${newName} (Imported)`;
+            }
+            
             availableWorkspaces.value.push(workspace);
             setCurrentWorkspace(workspace);
             removeHash();

@@ -87,7 +87,7 @@
             </div>
         </div>
 
-        <template v-else>
+        <template v-else>            
             <div class="border-b p-6 bg-card shadow-xs">
                 <!-- Title section with level and status badges -->
                 <div class="flex items-start justify-between">
@@ -187,6 +187,23 @@
                     </div>
                 </div>
             </div>
+            <!-- Add the buttons at the top -->
+            <div class="border-b p-4 flex justify-between bg-card">
+                <Button class="gap-1.5" variant="outline" @click="copyRule">
+                    <Clipboard class="h-4 w-4"/>
+                    Copy Rule
+                </Button>
+                <Button
+                    :disabled="isImporting"
+                    class="gap-1.5"
+                    variant="default"
+                    @click="importRule"
+                >
+                    <Download v-if="!isImporting" class="h-4 w-4"/>
+                    <Loader2 v-else class="h-4 w-4"/>
+                    {{ isImporting ? 'Importing...' : 'Import to Studio' }}
+                </Button>
+            </div>
 
             <!-- Rule Definition with code editor - full height and clean styling -->
             <div class="grow flex flex-col h-full">
@@ -204,23 +221,6 @@
                         language="yaml"
                     />
                 </div>
-            </div>
-
-            <div class="border-t p-4 flex justify-between bg-card">
-                <Button class="gap-1.5" variant="outline" @click="copyRule">
-                    <Clipboard class="h-4 w-4"/>
-                    Copy Rule
-                </Button>
-                <Button
-                    :disabled="isImporting"
-                    class="gap-1.5"
-                    variant="default"
-                    @click="importRule"
-                >
-                    <Download v-if="!isImporting" class="h-4 w-4"/>
-                    <Loader2 v-else class="h-4 w-4"/>
-                    {{ isImporting ? 'Importing...' : 'Import to Studio' }}
-                </Button>
             </div>
         </template>
     </ScrollArea>

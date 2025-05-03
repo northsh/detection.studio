@@ -55,8 +55,8 @@ const debounceFocus = useDebounceFn(() => {
         <ContextMenuTrigger>
             <div class="group relative">
                 <Button :class="[
-                    'w-full justify-start h-7 px-2 hover:bg-muted/50 flex gap-2',
-                    fs.currentlyOpenFileId == file.id && 'bg-muted outline outline-primary/30 outline-1'
+                    'w-full justify-start h-7 px-2 hover:bg-muted/50 flex gap-2 outline-primary/30',
+                    fs.currentlyOpenFileId == file.id && 'bg-muted outline-1'
                 ]" variant="ghost" @click="fs.openFile(file.id)">
                     <FileText class="ml-4 text-muted-foreground min-h-4 min-w-4 h-4 w-4"/>
                     <span v-if="fs.fileBeingEdited === file.id" @click.stop>

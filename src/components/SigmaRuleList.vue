@@ -189,7 +189,7 @@
             <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
                 No rules found matching your criteria.
             </div>
-            <div v-else ref="containerRef" class="h-full">
+            <div v-else ref="containerRef" class="">
                 <div :style="{ height: `${totalHeight}px` }" class="relative">
                     <div
                         v-for="(group, groupIndex) in visibleGroups"
@@ -453,51 +453,51 @@ const lastFilters = ref({
 // Filter rules based on search and filters with memoization
 const filteredRules = computed(() => {
     // Check if search results or filters have changed
-    const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
-    const statusFiltersChanged = Object.entries(statusFilters).some(
-        ([key, value]) => lastFilters.value.statusFilters[key] !== value
-    );
-    const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
-    
-    // If nothing has changed, return the cached results
-    if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
-        return lastFilters.value.searchResult;
-    }
+    // const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
+    // const statusFiltersChanged = Object.entries(statusFilters).some(
+    //     ([key, value]) => lastFilters.value.statusFilters[key] !== value
+    // );
+    // const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
+    //
+    // // If nothing has changed, return the cached results
+    // if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
+    //     return lastFilters.value.searchResult;
+    // }
     
     // First apply the text search
     let rules = sigmaRulesStore.filteredRules;
 
     // Then apply status filters
-    rules = rules.filter(rule => {
-        // If rule has no status, include it only if at least one filter is enabled
-        if (!rule.status) return Object.values(statusFilters).some(value => value);
-
-        // Otherwise, check if the rule's status is in the enabled filters
-        return statusFilters[rule.status.toLowerCase()] === true;
-    });
+    // rules = rules.filter(rule => {
+    //     // If rule has no status, include it only if at least one filter is enabled
+    //     if (!rule.status) return Object.values(statusFilters).some(value => value);
+    //
+    //     // Otherwise, check if the rule's status is in the enabled filters
+    //     return statusFilters[rule.status.toLowerCase()] === true;
+    // });
 
     // Apply product filter if selected
-    if (selectedProduct.value) {
-        // Check if the selected product might actually be a category or service
-        const selected = selectedProduct.value.toLowerCase();
-        
-        rules = rules.filter(rule => {
-            const logsource = rule.logsource || {};
-            const product = logsource.product?.toLowerCase() || '';
-            const category = logsource.category?.toLowerCase() || '';
-            const service = logsource.service?.toLowerCase() || '';
-
-            return product === selected || category === selected || service === selected;
-        });
-    }
+    // if (selectedProduct.value) {
+    //     // Check if the selected product might actually be a category or service
+    //     const selected = selectedProduct.value.toLowerCase();
+    //
+    //     rules = rules.filter(rule => {
+    //         const logsource = rule.logsource || {};
+    //         const product = logsource.product?.toLowerCase() || '';
+    //         const category = logsource.category?.toLowerCase() || '';
+    //         const service = logsource.service?.toLowerCase() || '';
+    //
+    //         return product === selected || category === selected || service === selected;
+    //     });
+    // }
 
     // Update the cached values
-    lastFilters.value = {
-        searchResult: rules,
-        searchQuery: sigmaRulesStore.searchQuery,
-        statusFilters: {...statusFilters},
-        selectedProduct: selectedProduct.value
-    };
+    // lastFilters.value = {
+    //     searchResult: rules,
+    //     searchQuery: sigmaRulesStore.searchQuery,
+    //     statusFilters: {...statusFilters},
+    //     selectedProduct: selectedProduct.value
+    // };
 
     return rules;
 });
@@ -701,16 +701,16 @@ let searchTimeout: number | null = null;
 
 // Handle search input with debouncing
 function onSearch() {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
+    // if (searchTimeout) {
+    //     clearTimeout(searchTimeout);
+    // }
     
     // Only perform search after 300ms of inactivity
-    searchTimeout = window.setTimeout(() => {
+    // searchTimeout = window.setTimeout(() => {
         sigmaRulesStore.searchRules(searchQuery.value);
         resetScroll();
         searchTimeout = null;
-    }, 300);
+    // }, 300);
 }
 
 // Apply filters and reset scroll
