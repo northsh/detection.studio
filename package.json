@@ -21,7 +21,7 @@
     "@sentry/vue": "^9.14.0",
     "@tailwindcss/postcss": "^4.1.4",
     "@tanstack/vue-table": "^8.21.3",
-    "@tanstack/vue-virtual": "^3.13.6",
+    "@tanstack/vue-virtual": "^3.13.8",
     "@types/js-yaml": "^4.0.9",
     "@unhead/vue": "^2.0.8",
     "@vueuse/core": "^13.1.0",
