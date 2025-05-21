@@ -1,12 +1,12 @@
 import {defineStore, type StoreDefinition} from "pinia";
 import {computed, type Ref, ref, watch} from "vue";
-import {computedAsync} from "@vueuse/core";
+import {computedAsync, useTimeoutPoll} from "@vueuse/core";
 
 import type {FileItem} from "@/types/types.ts";
 import type {SigmaStore} from "@/types/SigmaStore";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {SigmaConverter} from "@/lib/sigma";
-import {loadLogDataAsync, searchLogsAsync} from "@/lib/sigma/worker/workerApi";
+import {isPyodideReadyAsync, loadLogDataAsync, searchLogsAsync} from "@/lib/sigma/worker/workerApi";
 
 export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore> {
     // @ts-ignore
@@ -245,7 +245,12 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
             }
         }
 
-        const isReady: Ref<boolean | undefined, boolean | undefined> = computedAsync(async () => await sigmaConverter.value.isReady());
+        const isReady = ref(false)
+        async function checkReady() {
+            isReady.value = await sigmaConverter.value.isReady()
+        }
+        useTimeoutPoll(checkReady, 500)
+
 
         return {
             convert,

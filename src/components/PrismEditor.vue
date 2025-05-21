@@ -126,11 +126,11 @@ onMounted(() => {
         // Placeholder for potential input handling logic
     }, true);
 
-    editor.addListener("update", (e: string) => {
+    editor.on("update", (e: string) => {
         emit("update:modelValue", e);
     });
 
-    editor.addListener("selectionChange", (e: string) => {
+    editor.on("selectionChange", (e: string) => {
         emit("selectionChange", e);
     });
 

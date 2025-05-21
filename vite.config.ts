@@ -6,12 +6,14 @@ import path from "path";
 
 import viteStaticCopyPyodide from "./src/lib/plugins/viteStaticCopyPyodide.ts";
 import sigmaRepoPlugin from "./src/lib/plugins/sigmaRepoPlugin.ts";
+import tailwindcss from "@tailwindcss/vite";
 
 
 export default defineConfig({
 
     plugins: [
         vue(),
+        tailwindcss(),
         sigmaRepoPlugin(),
         svgLoader(),
         viteStaticCopyPyodide(),
