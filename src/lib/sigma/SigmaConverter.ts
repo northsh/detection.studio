@@ -7,6 +7,7 @@ import {convertSigmaRuleAsync, installBackendAsync, isPyodideReadyAsync} from '.
  */
 export class SigmaConverter {
     private pyodideReady = false;
+    private backendReady = false;
     private installedBackends = new Set<string>();
     private initPromise: Promise<void>;
 
@@ -54,6 +55,8 @@ export class SigmaConverter {
         try {
             // Ensure the backend is installed
             if (!this.installedBackends.has(target)) {
+                this.backendReady = false;
+
                 const installResult: {
                     success?: boolean;
                     error?: string;
@@ -61,12 +64,15 @@ export class SigmaConverter {
                 if (installResult.success) {
                     this.installedBackends.add(target);
                 } else if (installResult.error) {
+                    this.backendReady = false;
                     return {
                         query: '',
                         error: `Failed to install backend: ${installResult.error}`
                     };
                 }
             }
+
+            this.backendReady = true;
 
             // Convert the rule using all configured parameters
             const result = await convertSigmaRuleAsync(
@@ -108,15 +114,11 @@ export class SigmaConverter {
         if (typeof Worker === 'undefined') {
             return false;
         }
-        
-        if (this.pyodideReady) {
-            return true;
-        }
 
         try {
             const status = await isPyodideReadyAsync();
             this.pyodideReady = status.ready;
-            return this.pyodideReady;
+            return this.pyodideReady && this.backendReady;
         } catch (e) {
             console.error('Error checking Pyodide status:', e);
             return false;

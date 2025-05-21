@@ -25,20 +25,20 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
         }
 
         // Fallback if Fuse.js isn't loaded yet
-        return rules.value.filter(rule => {
-            const query = searchQuery.value.toLowerCase();
-            return (
-                rule.title?.toLowerCase().includes(query) ||
-                rule.description?.toLowerCase().includes(query) ||
-                rule.tags?.some((tag: string) => tag.toLowerCase().includes(query)) ||
-                rule.author?.toLowerCase().includes(query) ||
-                rule.level?.toLowerCase().includes(query) ||
-                rule.status?.toLowerCase().includes(query) ||
-                rule.logsource?.product?.toLowerCase().includes(query) ||
-                rule.logsource?.category?.toLowerCase().includes(query) ||
-                rule.logsource?.service?.toLowerCase().includes(query)
-            );
-        });
+        // return rules.value.filter(rule => {
+        //     const query = searchQuery.value.toLowerCase();
+        //     return (
+        //         rule.title?.toLowerCase().includes(query) ||
+        //         rule.description?.toLowerCase().includes(query) ||
+        //         rule.tags?.some((tag: string) => tag.toLowerCase().includes(query)) ||
+        //         rule.author?.toLowerCase().includes(query) ||
+        //         rule.level?.toLowerCase().includes(query) ||
+        //         rule.status?.toLowerCase().includes(query) ||
+        //         rule.logsource?.product?.toLowerCase().includes(query) ||
+        //         rule.logsource?.category?.toLowerCase().includes(query) ||
+        //         rule.logsource?.service?.toLowerCase().includes(query)
+        //     );
+        // });
     });
 
     async function initFuse() {
@@ -50,23 +50,15 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
                 fuseInstance.value = new Fuse.default(rules.value, {
                     keys: [
                         'title',
-                        'description',
-                        'tags',
-                        'author',
-                        'level',
-                        'status',
-                        'logsource.category',
-                        'logsource.product',
-                        'logsource.service'
+                        // 'description',
+                        // 'tags',
+                        // 'author',
+                        // 'level',
+                        // 'status',
+                        // 'logsource.category',
+                        // 'logsource.product',
+                        // 'logsource.service'
                     ],
-                    includeScore: true,
-                    threshold: 0.3,
-                    ignoreLocation: true,
-                    useExtendedSearch: false, // Disabled for better performance
-                    minMatchCharLength: 2,    // Require at least 2 chars to match
-                    shouldSort: true,
-                    fastAllMatches: true,     // Improve performance for large datasets
-                    cache: true               // Enable caching for better performance
                 });
                 isFuseLoaded.value = true;
                 console.log('SigmaRulesStore: Fuse.js initialized successfully');

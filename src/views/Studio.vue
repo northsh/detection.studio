@@ -3,7 +3,6 @@ import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/com
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {Button} from "@/components/ui/button";
-import PrismEditor from "../components/PrismEditor.vue";
 import Editor from "@/components/Editor.vue";
 import {Github} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
@@ -27,7 +26,7 @@ import {
 } from '@/components/ui/sheet';
 import {useHead} from "@unhead/vue";
 import ExportButton from "@/components/ExportButton.vue";
-import {ScrollArea} from "@/components/ui/scroll-area";
+import SiemOutputQuery from "@/components/SiemOutputQuery.vue";
 
 /**
  * Head
@@ -42,12 +41,6 @@ useHead({
     ],
 })
 
-
-/**
- * Stores
- */
-const workspace = useWorkspaceStore();
-const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
 // Use VueUse's useWindowSize for responsive behavior
 const {width, height} = useWindowSize();
@@ -116,31 +109,7 @@ const isCompactView = computed(() => width.value < 768 || height.value < 600);
                     <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
                         <!-- SIEM Query Output - Compact - Takes only 35% -->
                         <ResizablePanel :default-size="35" :max-size="50" :min-size="15" class="min-h-0 flex flex-col">
-                            <div class="h-full w-full rounded-xl bg-muted relative overflow-hidden flex flex-col">
-                                <div class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5">
-                                    <h3 class="text-xs font-medium">SIEM Query Output</h3>
-                                </div>
-
-                                <div
-                                    v-if="sigma.siem_conversion_error"
-                                    class="absolute inset-0 flex  z-10 bg-red-950/50 backdrop-blur-xs"
-                                >
-                                    <ScrollArea class="h-full w-full">
-                                        <div v-if="sigma.siem_conversion_error" class="text-red-300 p-10">
-                                            <pre>{{ sigma.siem_conversion_error }}</pre>
-                                        </div>
-                                    </ScrollArea>
-                                </div>
-
-                                <PrismEditor
-                                    id="siem-query-editor"
-                                    v-model:model-value="sigma.siem_query"
-                                    :read-only="true"
-                                    :word-wrap="true"
-                                    class="h-full w-full border-border text-xs md:text-sm overflow-y-auto overflow-x-hidden bg-[#0D1118]"
-                                    language="splunk-spl"
-                                />
-                            </div>
+                            <SiemOutputQuery/>
                         </ResizablePanel>
 
                         <!-- Resize Handle -->
