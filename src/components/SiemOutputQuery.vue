@@ -1,11 +1,10 @@
 <script lang="ts" setup>
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
-import {computed, onMounted} from "vue";
+import {computed} from "vue";
 
 import {useHead} from "@unhead/vue";
 import PrismEditor from "./PrismEditor.vue";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {storeToRefs} from "pinia";
 
 
 /**
@@ -46,8 +45,6 @@ const isReady = computed(() => {
         <div class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5">
             <h3 class="text-xs font-medium">SIEM Query Output</h3>
         </div>
-
-        {{ isReady }}
 
         <div
             v-if="sigma.siem_conversion_error"
