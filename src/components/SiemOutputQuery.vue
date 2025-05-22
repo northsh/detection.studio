@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
-import {computed} from "vue";
-
+import {computed, ref, onMounted, onBeforeUnmount} from "vue";
+import { useChangeCase } from '@vueuse/integrations/useChangeCase'
 import {useHead} from "@unhead/vue";
 import PrismEditor from "./PrismEditor.vue";
 import {ScrollArea} from "@/components/ui/scroll-area";
@@ -26,25 +26,72 @@ useHead({
  */
 const workspace = useWorkspaceStore();
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
-// const test = workspace.currentWorkspace?.sigmaStore()
-// const sigma = storeToRefs(test)
-// console.log(sigma.isReady.value)
-//
-// onMounted(() => {
-//     debugger
-//     console.log(sigma.isReady.value)
-// })
+
 
 const isReady = computed(() => {
     return sigma.value.isReady;
 });
 
+/**
+ * Loading messages
+ */
+const loadingMessages = [
+    "Finding Attackers...",
+    "Crafting next-gen Sigma rules...",
+    "Hunting APT groups...",
+    "Correlating suspicious events...",
+    "Decoding obfuscated PowerShell...",
+    "Detecting lateral movement...",
+    "Analyzing behavior patterns...",
+    "Investigating suspicious DNS queries...",
+    "Scanning memory for IOCs...",
+    "Chasing false positives away...",
+];
+
+const currentLoadingMessage = ref(loadingMessages[0]);
+let messageInterval: number | null = null;
+
+// Cycle through messages every 3 seconds
+onMounted(() => {
+    let index = 0;
+    messageInterval = window.setInterval(() => {
+        index = (index + 1) % loadingMessages.length;
+        currentLoadingMessage.value = loadingMessages[index];
+    }, 3000);
+});
+
+onBeforeUnmount(() => {
+    if (messageInterval !== null) {
+        clearInterval(messageInterval);
+    }
+});
+
+const siem_title = computed(() => {
+    return useChangeCase(sigma.value.selected_siem, 'sentenceCase')
+});
+
 </script>
 <template>
     <div class="h-full w-full rounded-xl bg-muted relative overflow-hidden flex flex-col">
-        <div class="flex items-center justify-between bg-muted-foreground/10 px-3 py-1.5">
+        <div class="flex items-center gap-2 bg-muted-foreground/10 px-3 py-1.5">
             <h3 class="text-xs font-medium">SIEM Query Output</h3>
+            <p class="text-xs font-bold text-muted-foreground title">
+                {{ siem_title }}
+            </p>
         </div>
+
+        <!-- Loading overlay -->
+        <Transition name="fade">
+            <div
+                v-if="!isReady && !sigma.siem_conversion_error"
+                class="absolute inset-0 flex items-center justify-center z-10 bg-secondary/70 backdrop-blur-sm"
+            >
+                <div class="text-center px-4 py-8 gap-4 flex flex-col items-center">
+                    <div class="animate-spin h-8 w-8 border-4 border-secondary border-t-primary rounded-full mx-auto"></div>
+                    <div class="animate-pulse text-secondary-foreground text-lg font-medium">{{ currentLoadingMessage }}</div>
+                </div>
+            </div>
+        </Transition>
 
         <div
             v-if="sigma.siem_conversion_error"
@@ -67,3 +114,15 @@ const isReady = computed(() => {
         />
     </div>
 </template>
+
+<style scoped>
+/* Fade transition for loading screen */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+</style>

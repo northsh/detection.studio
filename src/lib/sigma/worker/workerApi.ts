@@ -1,89 +1,120 @@
 import PromiseWorker from 'promise-worker';
 
 // For client-side use only - lazy initialization
-let worker: Worker | null = null;
-let promiseWorker: any = null;
+let worker: Worker;
+let promiseWorker: PromiseWorker;
+
+// Status event handlers
+const statusListeners: ((status: WorkerStatus) => void)[] = [];
+
+export type WorkerStatus = {
+    ready: boolean;
+    pyodideReady: boolean;
+    installedBackends: string[];
+    error?: string;
+};
+
+type WorkerMessage = {
+    type: string;
+    conversionParams?: ConversionParams;
+    target?: string;
+}
+
+type WorkerResponse = {
+    type?: string;
+    status?: WorkerStatus;
+    result?: string;
+    error?: string;
+    success?: boolean;
+};
 
 // Initialize worker only in browser environment
-function getPromiseWorker() {
+function getWorker(): PromiseWorker {
     if (!promiseWorker) {
         // Check if we're in a browser environment
         if (typeof window !== 'undefined' && typeof Worker !== 'undefined') {
-            worker = new Worker(new URL("./webWorker.ts", import.meta.url), {type: "module"});
+            worker = new Worker(new URL("./webWorker.ts", import.meta.url), { type: "module" });
             promiseWorker = new PromiseWorker(worker);
-        } else {
-            // Mock for SSR/SSG context - return an object that can handle the method calls
-            const errorHandler = () => Promise.resolve({ 
-                error: "Worker not available in SSR/SSG context",
-                ready: false 
+            
+            // Set up direct message handler for status updates
+            worker.addEventListener('message', (event) => {
+                const data = event.data;
+
+                // Handle direct status updates that bypass PromiseWorker
+                if (data && data.type === 'status_update') {
+                    notifyStatusListeners(data.status);
+                }
             });
-            promiseWorker = { postMessage: errorHandler };
         }
     }
+
     return promiseWorker;
 }
 
+export type ConversionParams = {
+    rule: string;
+    target: string;
+    pipelines?: string[];
+    pipelineYmls?: string[];
+    filterYml?: string;
+    format?: string;
+    correlationMethod?: string;
+    backendOptions?: Record<string, any>;
+};
+
 /**
- * Convert a Sigma rule to a SIEM query
+ * Add a listener for worker status updates
  */
-export function convertSigmaRuleAsync(
-    rule: string,
-    target: string,
-    pipelines: string[] = [],
-    pipelineYmls: string[] = [],
-    filterYml: string,
-    format: string,
-    correlationMethod: string,
-    backendOptions: Record<string, any> = {}
-) {
-    return getPromiseWorker().postMessage({
+export function addStatusListener(listener: (status: WorkerStatus) => void) {
+    statusListeners.push(listener);
+    
+    // Immediately request current status
+    getWorkerStatus().then(status => {
+        listener(status);
+    }).catch(error => {
+        console.error("Error fetching initial worker status:", error);
+    });
+    
+    return () => {
+        const index = statusListeners.indexOf(listener);
+        if (index !== -1) {
+            statusListeners.splice(index, 1);
+        }
+    };
+}
+
+/**
+ * Notify all status listeners of a status update
+ */
+function notifyStatusListeners(status: WorkerStatus) {
+    statusListeners.forEach(listener => listener(status));
+}
+
+/**
+ * Convert a Sigma rule to a target query format
+ */
+export function convert(conversionParams: ConversionParams): Promise<WorkerResponse> {
+    return getWorker().postMessage<WorkerResponse, WorkerMessage>({
         type: 'convert',
-        rule,
-        target,
-        pipelines,
-        pipelineYmls,
-        filterYml,
-        format,
-        correlationMethod,
-        backendOptions
+        conversionParams,
     });
 }
 
 /**
  * Install a backend for a specific target
  */
-export function installBackendAsync(target: string) {
-    return getPromiseWorker().postMessage({
+export function installBackend(target: string): Promise<WorkerResponse> {
+    return getWorker().postMessage<WorkerResponse, WorkerMessage>({
         type: 'install',
         target,
     });
 }
 
 /**
- * Check if Pyodide is ready
+ * Get current worker status
  */
-export function isPyodideReadyAsync() {
-    return getPromiseWorker().postMessage({
+export function getWorkerStatus(): Promise<WorkerStatus> {
+    return getWorker().postMessage<WorkerStatus, WorkerMessage>({
         type: 'status',
-    });
-}
-
-/**
- * Load JSON log data into SQLite
- */
-export function loadLogDataAsync(data: string) {
-    return getPromiseWorker().postMessage({
-        type: 'loadData',
-        data
-    });
-}
-
-/**
- * Search logs with the SQL query
- */
-export function searchLogsAsync(query: string) {
-    return getPromiseWorker().postMessage({
-        type: 'search',
-        query
     });
 }

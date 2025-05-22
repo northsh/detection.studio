@@ -3,7 +3,7 @@ import App from './App.vue'
 
 import {createPinia} from "pinia";
 import {PiniaColada} from "@pinia/colada";
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 import {PiniaUndo} from "pinia-undo";
 
 // Import stores
@@ -71,7 +71,7 @@ export const createApp = ViteSSG(
 
         const pinia = createPinia()
             .use(PiniaUndo)
-            .use(piniaPluginPersistedstate);
+            .use(piniaPluginPersistedState);
 
         // Initialize stores
         useSigmaRulesStore(pinia);
