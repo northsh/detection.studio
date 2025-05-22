@@ -19,12 +19,4 @@ export interface SigmaStore {
     updateSelectedPipelines: (pipelines: string[]) => void;
     isReady: Ref<boolean>;
 
-    // SQLite search functionality
-    search_results: Ref<SearchResult>;
-    search_error: Ref<string>;
-    is_searching: Ref<boolean>;
-    is_data_loaded: Ref<boolean>;
-    data_loading_error: Ref<string>;
-    searchLogs: () => Promise<void>;
-    loadData: (jsonData: string) => Promise<void>;
 }

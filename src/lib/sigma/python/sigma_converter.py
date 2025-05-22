@@ -43,7 +43,7 @@ def convert_rule(
         correlation_method: Optional correlation method
         backend_options: Optional backend-specific options
         skip_unsupported: Skip rules that can't be handled by the backend
-    
+
     Returns:
         The converted rule in the format specified by the backend
     """

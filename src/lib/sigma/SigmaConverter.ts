@@ -1,26 +1,102 @@
 import type {SigmaConversionResult} from './types';
 import {SIGMA_TARGETS} from '@/types/SIEMs';
-import {convertSigmaRuleAsync, installBackendAsync, isPyodideReadyAsync} from './worker/workerApi';
+import {
+  convert,
+  installBackend, 
+  getWorkerStatus, 
+  addStatusListener, 
+  type WorkerStatus
+} from './worker/workerApi';
 
 /**
  * Implementation of SigmaConverter that uses Pyodide for local conversion
  */
 export class SigmaConverter {
-    private isReady = false;
-    private installedBackends = new Set<string>();
-    private initPromise: Promise<void>;
+    private readinessListeners: Array<(ready: boolean) => void> = [];
+    private statusListeners: Array<(status: WorkerStatus) => void> = [];
+    private currentStatus: WorkerStatus = {
+        ready: false,
+        pyodideReady: false,
+        installedBackends: []
+    };
+    
+    // Clean up function for the worker status listener
+    private cleanupListener: (() => void) | null = null;
 
     /**
-     * Create a new PyodideSigmaConverter
-     *
+     * Create a new SigmaConverter
      */
     constructor() {
-        // Initialize Pyodide in the background
-        this.initPromise = this.initPyodide();
+        // Set up the status listener
+        this.cleanupListener = addStatusListener(this.handleStatusUpdate.bind(this));
+        
+        // Initial status check
+        this.refreshStatus();
+    }
+    
+    /**
+     * Handle status updates from the worker
+     */
+    private handleStatusUpdate(status: WorkerStatus): void {
+        this.currentStatus = status;
+        
+        // Notify all status listeners
+        this.statusListeners.forEach(listener => listener(status));
+        
+        // Notify readiness listeners if readiness state has changed
+        this.readinessListeners.forEach(listener => listener(status.ready));
+    }
+    
+    /**
+     * Refresh the current status
+     */
+    private async refreshStatus(): Promise<void> {
+        try {
+            const status = await getWorkerStatus();
+            this.handleStatusUpdate(status);
+        } catch (error) {
+            console.error('Error refreshing worker status:', error);
+        }
     }
 
     /**
-     * Convert a Sigma rule to a SIEM query using Pyodide
+     * Add a listener for status updates
+     */
+    public addStatusListener(listener: (status: WorkerStatus) => void): () => void {
+        this.statusListeners.push(listener);
+        
+        // Immediately notify with current status
+        listener(this.currentStatus);
+        
+        // Return a cleanup function
+        return () => {
+            const index = this.statusListeners.indexOf(listener);
+            if (index !== -1) {
+                this.statusListeners.splice(index, 1);
+            }
+        };
+    }
+    
+    /**
+     * Add a listener for readiness changes
+     */
+    public addReadinessListener(listener: (ready: boolean) => void): () => void {
+        this.readinessListeners.push(listener);
+        
+        // Immediately notify with current readiness
+        listener(this.currentStatus.ready);
+        
+        // Return a cleanup function
+        return () => {
+            const index = this.readinessListeners.indexOf(listener);
+            if (index !== -1) {
+                this.readinessListeners.splice(index, 1);
+            }
+        };
+    }
+
+    /**
+     * Convert a Sigma rule to a SIEM query
      */
     async convert(
         rule: string,
@@ -40,9 +116,6 @@ export class SigmaConverter {
             };
         }
 
-        // Wait for Pyodide to be initialized
-        await this.initPromise;
-
         // Check if target is supported
         if (!SIGMA_TARGETS.has(target)) {
             return {
@@ -52,18 +125,10 @@ export class SigmaConverter {
         }
 
         try {
-            // Ensure the backend is installed
-            if (!this.installedBackends.has(target)) {
-
-
-                const installResult: {
-                    success?: boolean;
-                    error?: string;
-                } = await installBackendAsync(target);
-                if (installResult.success) {
-                    this.installedBackends.add(target);
-                } else if (installResult.error) {
-
+            // Ensure the backend is installed if not already
+            if (!this.currentStatus.installedBackends.includes(target)) {
+                const installResult = await installBackend(target);
+                if (!installResult.success && installResult.error) {
                     return {
                         query: '',
                         error: `Failed to install backend: ${installResult.error}`
@@ -71,18 +136,17 @@ export class SigmaConverter {
                 }
             }
 
-
             // Convert the rule using all configured parameters
-            const result = await convertSigmaRuleAsync(
+            const result = await convert({
                 rule,
                 target,
-                [], // TODO: pipelines,
+                pipelines: pipeline,
                 pipelineYmls,
                 filterYml,
                 format,
                 correlationMethod,
                 backendOptions
-            );
+            });
 
             if (result.error) {
                 return {
@@ -105,41 +169,29 @@ export class SigmaConverter {
     }
 
     /**
-     * Check if Pyodide is ready for conversions
+     * Check if the converter is ready for use
      */
-    async checkReadiness(): Promise<boolean> {
-        // Return false in SSR/SSG environment
-        if (typeof Worker === 'undefined') {
-            return false;
-        }
-
-        try {
-            const status = await isPyodideReadyAsync();
-            this.isReady = status.ready;
-            return this.isReady
-        } catch (e) {
-            console.error('Error checking Pyodide status:', e);
-            return false;
-        }
+    isReady(): boolean {
+        return this.currentStatus.ready;
     }
-
+    
     /**
-     * Initialize Pyodide and required libraries
+     * Get current status
      */
-    private async initPyodide(): Promise<void> {
-        // Skip initialization during SSR/SSG
-        if (typeof Worker === 'undefined') {
-            console.log('Skipping Pyodide initialization in SSR/SSG environment');
-            this.isReady = false;
-            return;
+    getStatus(): WorkerStatus {
+        return {...this.currentStatus};
+    }
+    
+    /**
+     * Clean up resources
+     */
+    dispose(): void {
+        if (this.cleanupListener) {
+            this.cleanupListener();
+            this.cleanupListener = null;
         }
-
-        try {
-            const status = await isPyodideReadyAsync();
-            this.isReady = status.ready;
-        } catch (error) {
-            console.error('Error initializing Pyodide:', error);
-            this.isReady = false;
-        }
+        
+        this.readinessListeners = [];
+        this.statusListeners = [];
     }
 }
