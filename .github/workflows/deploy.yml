@@ -36,7 +36,7 @@ jobs:
                 with:
                     path: |
                         ~/.cache/ms-playwright
-                    key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+                    key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}-${{ matrix.browser }}-${{ hashFiles('**/package-lock.json') }}
 
             -   name: Install dependencies
                 run: bun install
