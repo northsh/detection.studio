@@ -17,7 +17,7 @@
     "@fontsource-variable/dm-sans": "^5.2.5",
     "@pinia/colada": "^0.15.3",
     "@radix-icons/vue": "^1.0.0",
-    "@sentry/vite-plugin": "^3.4.0",
+    "@sentry/vite-plugin": "^3.5.0",
     "@sentry/vue": "^9.22.0",
     "@tailwindcss/vite": "^4.1.7",
     "@tanstack/vue-table": "^8.21.3",
