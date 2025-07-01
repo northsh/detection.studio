@@ -55,7 +55,7 @@
         "@vitejs/plugin-vue": "^5.2.4",
         "@vue/tsconfig": "^0.7.0",
         "oxlint": "^0.16.11",
-        "playwright": "^1.53.0-alpha-2025-04-26",
+        "playwright": "^1.53.2",
         "typescript": "~5.8.3",
         "vite": "^6.3.5",
         "vue-tsc": "^2.2.10",
@@ -735,9 +735,9 @@
 
     "plain-tag": ["plain-tag@0.1.3", "", {}, "sha512-yyVAOFKTAElc7KdLt2+UKGExNYwYb/Y/WE9i+1ezCQsJE8gbKSjewfpRqK2nQgZ4d4hhAAGgDCOcIZVilqE5UA=="],
 
-    "playwright": ["playwright@1.53.0-alpha-2025-05-21", "", { "dependencies": { "playwright-core": "1.53.0-alpha-2025-05-21" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-zplHUa9ALvRygqhSBQbPtebMAnnj3+Xx0B7hiNM7aqW37tPQLfcMHIkl+TvIIjJRmZjqlRcEqykuZQawisN5yQ=="],
+    "playwright": ["playwright@1.53.2", "", { "dependencies": { "playwright-core": "1.53.2" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-6K/qQxVFuVQhRQhFsVZ9fGeatxirtrpPgxzBYWyZLEXJzqYwuL4fuNmfOfD5et1tJE4GScKyPNeLhZeRwuTU3A=="],
 
-    "playwright-core": ["playwright-core@1.53.0-alpha-2025-05-21", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-W087CBxyE0T1OUHAg2/ZpYyBPm1IOisHQPkGFl1vhT8CgZjW7kWdTR6zyHzY9wwlX0OW+kQXYnp3zPddIaH5KA=="],
+    "playwright-core": ["playwright-core@1.53.2", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-ox/OytMy+2w1jcYEYlOo1Hhp8hZkLCximMTUTMBXjGUA1KoFfiSZ+DU+3a739jsPY0yoKH2TFy9S2fsJas8yAw=="],
 
     "postcss": ["postcss@8.5.3", "", { "dependencies": { "nanoid": "^3.3.8", "picocolors": "^1.1.1", "source-map-js": "^1.2.1" } }, "sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A=="],
 
