@@ -47,6 +47,7 @@ def convert_rule(
     Returns:
         The converted rule in the format specified by the backend
     """
+
     # Apply filter if provided
     if filter_yml:
         try:

@@ -38,14 +38,15 @@ const pyodideReadyPromise = (async () => {
         updateStatus({ ready: false, pyodideReady: false });
         
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/"
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/",
+            convertNullToNone: true,
         });
 
         await pyodide?.loadPackage("micropip");
         const micropip = pyodide?.pyimport("micropip");
 
         // Install sigma-cli
-        await micropip.install('https://files.pythonhosted.org/packages/51/4e/f9139956ecd088b21aecddbdf5a69fcd737578856704dbfc6965a5c8acdb/pysigma-0.11.22-py3-none-any.whl');
+        await micropip.install('https://files.pythonhosted.org/packages/6c/96/2da0acf4ded16ef746782a95f2c4ec5dd41ab02667df35a4e68adb8b69b1/pysigma-0.11.23-py3-none-any.whl');
 
         updateStatus({ pyodideReady: true });
         await loadPythonModule();
