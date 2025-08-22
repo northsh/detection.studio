@@ -1,13 +1,13 @@
-import { loadPyodide, type PyodideInterface } from "pyodide";
-import { SIGMA_TARGETS } from "@/types/SIEMs";
+import {loadPyodide, type PyodideInterface} from 'pyodide';
+import {SIGMA_TARGETS} from '@/types/SIEMs';
 import registerPromiseWorker from "promise-worker/register";
-import type { ConversionParams, WorkerStatus } from "./workerApi";
+import type {ConversionParams, WorkerStatus} from "./workerApi";
 
 // Runtime state
 let pyodide: PyodideInterface | null = null;
 let installedBackends = new Set<string>();
 let pythonModuleLoaded = false;
-let sigmaNamespace: any = null;
+let sigmaNamespace = null;
 
 // Keep track of the initialization state
 let initializationState: WorkerStatus = {
@@ -24,11 +24,11 @@ function updateStatus(status: Partial<WorkerStatus>) {
         ...status,
         installedBackends: Array.from(installedBackends),
     };
-
+    
     // Send the update to the main thread
     self.postMessage({
-        type: "status_update",
-        status: initializationState,
+        type: 'status_update',
+        status: initializationState
     });
 }
 
@@ -36,45 +36,29 @@ function updateStatus(status: Partial<WorkerStatus>) {
 const pyodideReadyPromise = (async () => {
     try {
         updateStatus({ ready: false, pyodideReady: false });
-
+        
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.0/full/",
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/",
             convertNullToNone: true,
         });
 
         await pyodide?.loadPackage("micropip");
         const micropip = pyodide?.pyimport("micropip");
 
-        // Install custom PyYAML 6.0.3 wheel for PySigma 2.x compatibility
-        const wheelUrl = new URL(
-            "/wheels/pyyaml-6.0.3-cp313-cp313-pyodide_2025_0_wasm32.whl",
-            self.location.origin,
-        ).href;
-        await micropip.install(wheelUrl);
-
-        // Install PySigma (now compatible with PyYAML 6.0.3+)
-        await micropip.install("pysigma");
-
-        // Install pipeline packages
-        // These pipelines will be available for all backends (allowed_backends is typically None for pipelines)
-        await micropip.install([
-            "pysigma-pipeline-windows",
-            "pysigma-pipeline-sysmon",
-            // "pysigma-pipeline-ocsf", // TODO: Blocked behind pysigma 1.0.0
-            // "pySigma-pipeline-rclinuxedr" // TODO: Blocked behind pysigma 1.0.0
-        ]);
+        // Install sigma-cli
+        await micropip.install('https://files.pythonhosted.org/packages/6c/96/2da0acf4ded16ef746782a95f2c4ec5dd41ab02667df35a4e68adb8b69b1/pysigma-0.11.23-py3-none-any.whl');
 
         updateStatus({ pyodideReady: true });
         await loadPythonModule();
         updateStatus({ ready: true });
-
+        
         return pyodide;
     } catch (error) {
-        console.error("Error initializing Pyodide:", error);
-        updateStatus({
-            ready: false,
+        console.error('Error initializing Pyodide:', error);
+        updateStatus({ 
+            ready: false, 
             pyodideReady: false,
-            error: error instanceof Error ? error.message : String(error),
+            error: error instanceof Error ? error.message : String(error)
         });
         throw error;
     }
@@ -86,23 +70,21 @@ const pyodideReadyPromise = (async () => {
 async function loadPythonModule() {
     try {
         // Import the Python module using Vite's dynamic import
-        const sigmaConverterModule = await import("/src/lib/sigma/python/sigma_converter.py?raw");
+        const sigmaConverterModule = await import('/src/lib/sigma/python/sigma_converter.py?raw');
         const pythonCode = sigmaConverterModule.default;
 
-        // Create a namespace for our Python module only if it doesn't exist
-        if (!sigmaNamespace) {
-            sigmaNamespace = pyodide?.globals.get("dict")();
-        }
+        // Create a namespace for our Python module
+        sigmaNamespace = pyodide?.globals.get("dict")();
 
         // Run the module code to define the functions in our namespace
-        pyodide?.runPython(pythonCode, { globals: sigmaNamespace });
+        pyodide?.runPython(pythonCode, {globals: sigmaNamespace});
         pythonModuleLoaded = true;
 
         return true;
     } catch (error) {
-        console.error("Error loading Python module:", error);
-        updateStatus({
-            error: `Error loading Python module: ${error instanceof Error ? error.message : String(error)}`,
+        console.error('Error loading Python module:', error);
+        updateStatus({ 
+            error: `Error loading Python module: ${error instanceof Error ? error.message : String(error)}`
         });
         return false;
     }
@@ -113,7 +95,7 @@ async function loadPythonModule() {
  */
 async function installBackend(target: string) {
     if (installedBackends.has(target)) {
-        return { success: true };
+        return {success: true};
     }
 
     const targetInfo = SIGMA_TARGETS.get(target);
@@ -123,31 +105,26 @@ async function installBackend(target: string) {
 
     try {
         updateStatus({ ready: false });
-
+        
         const micropip = pyodide?.pyimport("micropip");
-
-        const backendPackage = targetInfo.backend;
-
-        console.log(`Installing backend ${backendPackage} for target ${target}...`);
-        await micropip.install(backendPackage);
-
+        await micropip.install(targetInfo.backend);
         installedBackends.add(target);
 
-        // Reload the Python module to pick up the newly installed backend
-        // This re-runs plugin autodiscovery which will find the new backend
+        // Reset the Python module loaded flag to reload the module
+        pythonModuleLoaded = false;
         await loadPythonModule();
-
+        
         updateStatus({ ready: true });
 
-        return { success: true };
+        return {success: true};
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        updateStatus({
-            error: `Error installing backend ${target}: ${errorMsg}`,
+        updateStatus({ 
+            error: `Error installing backend ${target}: ${errorMsg}`
         });
         return {
             success: false,
-            error: errorMsg,
+            error: errorMsg
         };
     }
 }
@@ -161,9 +138,9 @@ async function convertRule(params: ConversionParams) {
         target,
         pipelines = [],
         pipelineYmls = [],
-        filterYml = "",
+        filterYml = '',
         format = "default",
-        correlationMethod = "",
+        correlationMethod = '',
         backendOptions = {},
     } = params;
 
@@ -176,17 +153,16 @@ async function convertRule(params: ConversionParams) {
     }
 
     try {
-        // Convert JavaScript parameters to Python, ensuring proper types
-        // Use empty list for arrays, but null for optional string parameters
+        // Create a namespace with parameters directly
         const pythonParams = {
             rule,
             target,
-            pipeline_names: pipelines || [],
-            pipeline_ymls: pipelineYmls || [],
+            pipeline_names: pipelines || null,
+            pipeline_ymls: pipelineYmls || null,
             filter_yml: filterYml || null,
             format,
             correlation_method: correlationMethod || null,
-            backend_options: backendOptions || {},
+            backend_options: backendOptions || null,
         };
 
         // Set parameters in namespace using toPy
@@ -208,31 +184,15 @@ async function convertRule(params: ConversionParams) {
         )
       `;
 
-        const result = pyodide?.runPython(pythonCode, { globals: sigmaNamespace });
-        return { result: result };
+        const result = pyodide?.runPython(pythonCode, {globals: sigmaNamespace});
+        return {result: result};
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         return {
             error: errorMsg,
-            success: false,
+            success: false
         };
     }
-}
-
-/**
- * Extract backend name from target
- * e.g., "splunk" -> "splunk" (backend name for pysigma-backend-splunk)
- */
-function getBackendNameFromTarget(target: string): string {
-    const targetInfo = SIGMA_TARGETS.get(target);
-    if (!targetInfo?.backend) {
-        return target; // Fallback to using target as-is
-    }
-
-    // Extract backend name from package name
-    // e.g., "pysigma-backend-splunk" -> "splunk"
-    const match = targetInfo.backend.match(/pysigma-backend-(.+)/);
-    return match ? match[1] : target;
 }
 
 // Register promise worker handler
@@ -242,48 +202,22 @@ registerPromiseWorker(async (message) => {
         await pyodideReadyPromise;
         console.log(`Worker: Processing message of type '${message.type}'`);
 
-        const { type } = message;
+        const {type} = message;
 
         switch (type) {
-            case "convert":
+            case 'convert':
                 return await convertRule(message.conversionParams);
-
-            case "install":
+                
+            case 'install':
                 return await installBackend(message.target);
-
-            case "status":
+                
+            case 'status':
                 // Return the current initialization state
                 return {
                     ...initializationState,
-                    installedBackends: Array.from(installedBackends),
+                    installedBackends: Array.from(installedBackends)
                 };
-
-            case "get_pipelines":
-                // Get available pipelines from Python
-                if (!pythonModuleLoaded) {
-                    await loadPythonModule();
-                }
-                try {
-                    // Translate target to backend name
-                    const backendName = getBackendNameFromTarget(message.target);
-                    const pipelines = pyodide?.runPython(
-                        "get_available_pipelines('" + backendName + "')",
-                        {
-                            globals: sigmaNamespace,
-                        },
-                    );
-                    return {
-                        success: true,
-                        pipelines: pipelines?.toJs() || [],
-                    };
-                } catch (error) {
-                    return {
-                        success: false,
-                        error: error instanceof Error ? error.message : String(error),
-                        pipelines: [],
-                    };
-                }
-
+                
             default:
                 throw new Error(`Unknown message type: ${type}`);
         }
@@ -292,10 +226,10 @@ registerPromiseWorker(async (message) => {
         // Return a structured error response
         return {
             error: error instanceof Error ? error.message : String(error),
-            name: error instanceof Error ? error.name : "UnknownError",
+            name: error instanceof Error ? error.name : 'UnknownError',
             success: false,
             // Include type information to assist with debugging
-            messageType: message?.type,
+            messageType: message?.type
         };
     }
 });
