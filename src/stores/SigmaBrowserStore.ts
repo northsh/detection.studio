@@ -1,7 +1,28 @@
 import {defineStore} from 'pinia';
 import {computed, ref, shallowRef} from 'vue';
-import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {SigmaRepoService} from '../lib/sigma/SigmaRepoService';
+import {useFuse} from '@vueuse/integrations/useFuse';
+
+export interface SigmaLogsource {
+    category?: string;
+    product?: string;
+    service?: string;
+}
+
+export interface SigmaRule {
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+    author: string;
+    date: string;
+    modified: string;
+    tags: string[];
+    level: string;
+    path: string;
+    logsource?: SigmaLogsource;
+    rawContent?: string;
+    references?: string[];
+}
 
 export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     const rules = ref<SigmaRule[]>([]);
@@ -9,63 +30,47 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     const isLoadingIndividualRule = ref(false);
     const currentRule = ref<SigmaRule | null>(null);
     const currentRuleContent = ref<string>('');
-    const searchQuery = ref('');
+    const searchQuery = shallowRef('');
     const error = ref<string | null>(null);
-    const fuseInstance = shallowRef<any>(null);
-    const isFuseLoaded = ref(false);
 
-    const sigmaRepoService = SigmaRepoService.getInstance();
+    const allRules = ref<SigmaRule[]>([]);
+    const isRulesLoaded = ref(false);
+
+
+    const {results: searchResults} = useFuse(searchQuery, rules, {});
 
     const filteredRules = computed(() => {
         if (!searchQuery.value) return rules.value;
-
-        if (fuseInstance.value) {
-            const results = fuseInstance.value.search(searchQuery.value);
-            return results.map((result: any) => result.item);
-        }
-
-        // Fallback if Fuse.js isn't loaded yet
-        // return rules.value.filter(rule => {
-        //     const query = searchQuery.value.toLowerCase();
-        //     return (
-        //         rule.title?.toLowerCase().includes(query) ||
-        //         rule.description?.toLowerCase().includes(query) ||
-        //         rule.tags?.some((tag: string) => tag.toLowerCase().includes(query)) ||
-        //         rule.author?.toLowerCase().includes(query) ||
-        //         rule.level?.toLowerCase().includes(query) ||
-        //         rule.status?.toLowerCase().includes(query) ||
-        //         rule.logsource?.product?.toLowerCase().includes(query) ||
-        //         rule.logsource?.category?.toLowerCase().includes(query) ||
-        //         rule.logsource?.service?.toLowerCase().includes(query)
-        //     );
-        // });
+        return searchResults.value.map(result => result.item);
     });
 
-    async function initFuse() {
-        try {
-            // Dynamically import Fuse.js
-            const Fuse = await import('fuse.js').catch(() => null);
+    async function loadRulesIndex(): Promise<void> {
+        if (isRulesLoaded.value) return;
 
-            if (Fuse && Fuse.default && rules.value.length > 0) {
-                fuseInstance.value = new Fuse.default(rules.value, {
-                    keys: [
-                        'title',
-                        // 'description',
-                        // 'tags',
-                        // 'author',
-                        // 'level',
-                        // 'status',
-                        // 'logsource.category',
-                        // 'logsource.product',
-                        // 'logsource.service'
-                    ],
-                });
-                isFuseLoaded.value = true;
-                console.log('SigmaRulesStore: Fuse.js initialized successfully');
+        try {
+            console.log('SigmaRulesStore: Loading rules index...');
+
+            const response = await fetch('/sigma-rules-index.json');
+
+            if (!response.ok) {
+                console.error(`Failed to load rules index: ${response.status} ${response.statusText}`);
+                throw new Error(`Failed to load rules index: ${response.status} ${response.statusText}`);
             }
-        } catch (err) {
-            console.error('Error initializing Fuse.js:', err);
-            // We'll use the fallback search method
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                console.error('Rules index is not an array:', data);
+                throw new Error('Invalid rules index format');
+            }
+
+            allRules.value = data;
+            isRulesLoaded.value = true;
+            console.log(`SigmaRulesStore: Successfully loaded ${allRules.value.length} rules`);
+        } catch (error) {
+            console.error('Error loading rules index:', error);
+            allRules.value = [];
+            throw error;
         }
     }
 
@@ -74,18 +79,15 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
         error.value = null;
 
         try {
-            // Reset the SigmaRepoService if force reload is requested
             if (forceReload) {
-                // Use a private method to force reload from the service
-                // @ts-ignore - Accessing private member
-                sigmaRepoService['isLoaded'] = false;
+                isRulesLoaded.value = false;
             }
 
-            rules.value = await sigmaRepoService.getRules();
+            if (!isRulesLoaded.value) {
+                await loadRulesIndex();
+            }
+            rules.value = allRules.value;
             console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
-
-            // Initialize search after rules are loaded
-            await initFuse();
         } catch (err) {
             console.error('Error fetching sigma rules:', err);
             error.value = err instanceof Error ? err.message : 'Failed to fetch rules';
@@ -99,7 +101,12 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
         error.value = null;
 
         try {
-            currentRuleContent.value = await sigmaRepoService.getRule(rulePath);
+            const cdnPath = `https://cdn.jsdelivr.net/gh/SigmaHQ/sigma@master/${rulePath}`;
+            const response = await fetch(cdnPath);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch rule: ${response.status} ${response.statusText}`);
+            }
+            currentRuleContent.value = await response.text();
         } catch (err) {
             console.error(`Error fetching rule content for ${rulePath}:`, err);
             error.value = err instanceof Error ? err.message : 'Failed to fetch rule content';

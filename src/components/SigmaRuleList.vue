@@ -11,10 +11,10 @@
                     @input="onSearch"
                 />
                 <Search class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Button 
+                <Button
                     v-if="searchQuery"
-                    variant="ghost" 
-                    size="icon" 
+                    variant="ghost"
+                    size="icon"
                     class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     @click="clearSearch"
                 >
@@ -380,11 +380,11 @@ const productOptionsCache = ref({
 // Get unique logsource options (products, categories, services) from rules with caching
 const productOptions = computed(() => {
     // Only recompute if the rules array has changed
-    if (productOptionsCache.value.rulesLength === allRules.value.length && 
+    if (productOptionsCache.value.rulesLength === allRules.value.length &&
         productOptionsCache.value.options.length > 0) {
         return productOptionsCache.value.options;
     }
-    
+
     const options = new Set<string>();
 
     allRules.value.forEach(rule => {
@@ -400,13 +400,13 @@ const productOptions = computed(() => {
     });
 
     const sortedOptions = Array.from(options).sort();
-    
+
     // Update cache
     productOptionsCache.value = {
         rulesLength: allRules.value.length,
         options: sortedOptions
     };
-    
+
     return sortedOptions;
 });
 
@@ -428,7 +428,7 @@ function onProductSearch(event: Event) {
     if (productSearchTimeout) {
         clearTimeout(productSearchTimeout);
     }
-    
+
     productSearchTimeout = window.setTimeout(() => {
         productSearchQuery.value = (event.target as HTMLInputElement).value;
         productSearchTimeout = null;
@@ -463,7 +463,7 @@ const filteredRules = computed(() => {
     // if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
     //     return lastFilters.value.searchResult;
     // }
-    
+
     // First apply the text search
     let rules = sigmaRulesStore.filteredRules;
 
@@ -518,12 +518,12 @@ const groupedRules = computed(() => {
         statusFilters: Object.entries(statusFilters).filter(([_, v]) => v).map(([k]) => k).join(','),
         product: selectedProduct.value
     });
-    
+
     // If cache is valid, return cached result
     if (groupedRulesCache.value.key === cacheKey && groupedRulesCache.value.result.length > 0) {
         return groupedRulesCache.value.result;
     }
-    
+
     const rules = filteredRules.value;
     const groups: Record<string, SigmaRule[]> = {};
 
@@ -552,13 +552,13 @@ const groupedRules = computed(() => {
             expanded: true
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
-        
+
     // Update cache
     groupedRulesCache.value = {
         key: cacheKey,
         result
     };
-    
+
     return result;
 });
 
@@ -594,13 +594,13 @@ const allGroupPositions = computed(() => {
         groupCount: groupedRules.value.length,
         itemCounts: groupedRules.value.map(g => g.rules.length).join(',')
     });
-    
+
     // Return cached result if valid
-    if (groupPositionsCache.value.key === cacheKey && 
+    if (groupPositionsCache.value.key === cacheKey &&
         groupPositionsCache.value.positions.length > 0) {
         return groupPositionsCache.value.positions;
     }
-    
+
     const positions: GroupInfo[] = [];
     let currentOffset = 0;
 
@@ -617,7 +617,7 @@ const allGroupPositions = computed(() => {
 
         currentOffset += groupHeight + 24; // Add margin between groups
     });
-    
+
     // Update cache
     groupPositionsCache.value = {
         key: cacheKey,
@@ -704,12 +704,12 @@ function onSearch() {
     // if (searchTimeout) {
     //     clearTimeout(searchTimeout);
     // }
-    
+
     // Only perform search after 300ms of inactivity
     // searchTimeout = window.setTimeout(() => {
-        sigmaRulesStore.searchRules(searchQuery.value);
-        resetScroll();
-        searchTimeout = null;
+    sigmaRulesStore.searchRules(searchQuery.value);
+    resetScroll();
+    searchTimeout = null;
     // }, 300);
 }
 

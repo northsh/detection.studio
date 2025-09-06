@@ -156,7 +156,7 @@ export class SigmaConverter {
             }
 
             return {
-                query: result.result,
+                query: result.result || '',
                 error: undefined
             };
         } catch (e) {

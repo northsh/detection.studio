@@ -3,7 +3,7 @@ import path from "path";
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
 
-import fs from 'fs-extra';
+import * as fs from 'fs-extra';
 
 export default function sigmaRepoPlugin() {
     const REPO_URL = 'https://github.com/SigmaHQ/sigma.git';
@@ -58,7 +58,7 @@ export default function sigmaRepoPlugin() {
                     await git.checkout({
                         fs,
                         dir: repoPath,
-                        ref: latestCommitSha,
+                        ref: latestCommitSha || undefined,
                         force: true
                     });
 
@@ -97,11 +97,11 @@ export default function sigmaRepoPlugin() {
 
 
 // Function to index all Sigma rules and generate metadata
-async function indexRules(repoPath) {
+async function indexRules(repoPath: string) {
     const rulesPath = path.join(repoPath, 'rules');
-    const rules = [];
+    const rules: any[] = [];
 
-    async function processDirectory(dirPath) {
+    async function processDirectory(dirPath: string) {
         const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
         for (const entry of entries) {
@@ -115,7 +115,7 @@ async function indexRules(repoPath) {
                 try {
                     const content = await fs.readFile(fullPath, 'utf-8');
                     const yaml = await import('js-yaml');
-                    const yamlContent = yaml.load(content);
+                    const yamlContent = yaml.load(content) as any;
 
                     // Skip if not a valid rule or it's a collection
                     if (!yamlContent || Array.isArray(yamlContent)) continue;
