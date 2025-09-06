@@ -1,89 +1,108 @@
 // Function to clone or update the Sigma repository at build time
 import path from "path";
-import simpleGit from "simple-git";
-import { mkdir, access, writeFile, readdir, readFile } from "fs/promises";
-import { constants } from "fs";
+import git from "isomorphic-git";
+import http from "isomorphic-git/http/node";
+
+import * as fs from 'fs-extra';
 
 export default function sigmaRepoPlugin() {
-    const REPO_URL = "https://github.com/SigmaHQ/sigma.git";
-    const LOCAL_REPO_PATH = ".sigma-repo";
-
-    if (import.meta.env?.SSR) {
-        return;
-    }
+    const REPO_URL = 'https://github.com/SigmaHQ/sigma.git';
+    const LOCAL_REPO_PATH = '.sigma-repo';
 
     return {
-        name: "sigma-repo-plugin",
-        buildStart: async function () {
-            console.log("Cloning or updating SigmaHQ repository...");
+        name: 'sigma-repo-plugin',
+        buildStart: async () => {
+            console.log('Cloning or updating SigmaHQ repository...');
 
             try {
                 const repoPath = path.resolve(LOCAL_REPO_PATH);
-                const gitDirPath = path.join(repoPath, ".git");
 
                 // Check if repo already exists
-                let repoExists = false;
-                try {
-                    await access(gitDirPath, constants.F_OK);
-                    repoExists = true;
-                } catch {
-                    repoExists = false;
-                }
-
-                if (repoExists) {
-                    console.log("Repo exists, updating...");
-
-                    const git = simpleGit(repoPath);
+                if (fs.existsSync(path.join(repoPath, '.git'))) {
+                    console.log('Repo exists, updating...');
 
                     // Fetch the latest changes
-                    await git.fetch(["--depth", "1"]);
+                    await git.fetch({
+                        fs,
+                        http,
+                        dir: repoPath,
+                        url: REPO_URL,
+                        depth: 1,
+                        singleBranch: true,
+                        tags: false
+                    });
 
                     // Get current branch name
-                    const branch = await git.branch();
-                    const currentBranch = branch.current || "master";
+                    const currentBranch = await git.currentBranch({
+                        fs,
+                        dir: repoPath,
+                        fullname: false
+                    });
 
-                    // Pull latest changes (fetch + merge)
-                    await git.pull("origin", currentBranch, ["--depth", "1"]);
+                    // Get latest remote commit
+                    const remoteInfo = await git.fetch({
+                        fs,
+                        http,
+                        dir: repoPath,
+                        url: REPO_URL,
+                        ref: currentBranch || 'master',
+                        depth: 1,
+                        singleBranch: true,
+                        tags: false
+                    });
 
-                    console.log("Repository updated successfully.");
+                    // Get the latest commit SHA
+                    const latestCommitSha = remoteInfo.fetchHead;
+
+                    // Force checkout to that commit
+                    await git.checkout({
+                        fs,
+                        dir: repoPath,
+                        ref: latestCommitSha || undefined,
+                        force: true
+                    });
+
+                    console.log('Repository updated successfully.');
                 } else {
-                    console.log("Repo does not exist, cloning...");
+                    console.log('Repo does not exist, cloning...');
 
                     // Ensure parent directory exists
-                    await mkdir(repoPath, { recursive: true });
+                    fs.ensureDirSync(repoPath);
 
                     // Clone the repository
-                    await simpleGit().clone(REPO_URL, repoPath, [
-                        "--depth",
-                        "1",
-                        "--single-branch",
-                        "--branch",
-                        "master",
-                    ]);
+                    await git.clone({
+                        fs,
+                        http,
+                        dir: repoPath,
+                        url: REPO_URL,
+                        depth: 1,
+                        singleBranch: true,
+                        ref: 'master'
+                    });
 
-                    console.log("Repository cloned successfully.");
+                    console.log('Repository cloned successfully.');
                 }
 
                 // Generate an index file with metadata of all rules
                 const indexData = await indexRules(repoPath);
-                const indexPath = path.join("public", "sigma-rules-index.json");
-                await mkdir(path.dirname(indexPath), { recursive: true });
-                await writeFile(indexPath, JSON.stringify(indexData, null, 2), "utf-8");
-                console.log("Sigma rules index generated successfully.");
+                fs.writeJSONSync(path.join('public', 'sigma-rules-index.json'), indexData, {spaces: 2});
+                console.log('Sigma rules index generated successfully.');
             } catch (error) {
-                console.error("Error in sigma-repo-plugin:", error);
+                console.error('Error in sigma-repo-plugin:', error);
             }
-        },
+        }
     };
 }
 
+
+
 // Function to index all Sigma rules and generate metadata
 async function indexRules(repoPath: string) {
-    const rulesPath = path.join(repoPath, "rules");
+    const rulesPath = path.join(repoPath, 'rules');
     const rules: any[] = [];
 
     async function processDirectory(dirPath: string) {
-        const entries = await readdir(dirPath, { withFileTypes: true });
+        const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
         for (const entry of entries) {
             const fullPath = path.join(dirPath, entry.name);
@@ -91,14 +110,11 @@ async function indexRules(repoPath: string) {
             if (entry.isDirectory()) {
                 // Recursively process subdirectories
                 await processDirectory(fullPath);
-            } else if (
-                entry.isFile() &&
-                (entry.name.endsWith(".yml") || entry.name.endsWith(".yaml"))
-            ) {
+            } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
                 // Process YAML files
                 try {
-                    const content = await readFile(fullPath, "utf-8");
-                    const yaml = await import("js-yaml");
+                    const content = await fs.readFile(fullPath, 'utf-8');
+                    const yaml = await import('js-yaml');
                     const yamlContent = yaml.load(content) as any;
 
                     // Skip if not a valid rule or it's a collection
@@ -114,13 +130,13 @@ async function indexRules(repoPath: string) {
 
                     // Basic rule parsing
                     const rule = {
-                        id: yamlContent.id || "",
-                        title: yamlContent.title || "",
-                        description: yamlContent.description || "",
-                        status: yamlContent.status || "",
-                        author: yamlContent.author || "",
+                        id: yamlContent.id || '',
+                        title: yamlContent.title || '',
+                        description: yamlContent.description || '',
+                        status: yamlContent.status || '',
+                        author: yamlContent.author || '',
                         tags: yamlContent.tags || [],
-                        level: yamlContent.level || "",
+                        level: yamlContent.level || '',
                         path: relativePath,
                         logsource: yamlContent.logsource || {},
                     };

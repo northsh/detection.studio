@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {Badge} from '@/components/ui/badge';
-import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
+import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 import {useSigmaRulesStore} from '@/stores/SigmaBrowserStore';
 import {getLevelBadgeClass} from './utils';
 

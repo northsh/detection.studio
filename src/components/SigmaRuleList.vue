@@ -11,10 +11,10 @@
                     @input="onSearch"
                 />
                 <Search class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                <Button 
+                <Button
                     v-if="searchQuery"
-                    variant="ghost" 
-                    size="icon" 
+                    variant="ghost"
+                    size="icon"
                     class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     @click="clearSearch"
                 >
@@ -169,7 +169,7 @@
         </div>
 
         <!-- Results list -->
-        <div v-else class="grow overflow-hidden">
+        <ScrollArea v-else class="grow overflow-hidden">
             <div v-if="allRules.length === 0"
                  class="text-center py-16 flex flex-col items-center justify-center h-full">
                 <div class="bg-muted/30 rounded-lg p-6 max-w-md">
@@ -189,7 +189,7 @@
             <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
                 No rules found matching your criteria.
             </div>
-            <div v-else ref="containerRef" class="h-full overflow-auto">
+            <div v-else ref="containerRef" class="">
                 <div :style="{ height: `${totalHeight}px` }" class="relative">
                     <div
                         v-for="(group, groupIndex) in visibleGroups"
@@ -255,7 +255,8 @@
                     </div>
                 </div>
             </div>
-        </div>
+            <ScrollBar />
+        </ScrollArea>
     </div>
 </template>
 
@@ -283,6 +284,7 @@ import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
 import {Check, ChevronDown, Search, XCircle} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
+import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
 
 // Accept initial rule ID from parent component
 const props = defineProps<{
@@ -378,11 +380,11 @@ const productOptionsCache = ref({
 // Get unique logsource options (products, categories, services) from rules with caching
 const productOptions = computed(() => {
     // Only recompute if the rules array has changed
-    if (productOptionsCache.value.rulesLength === allRules.value.length && 
+    if (productOptionsCache.value.rulesLength === allRules.value.length &&
         productOptionsCache.value.options.length > 0) {
         return productOptionsCache.value.options;
     }
-    
+
     const options = new Set<string>();
 
     allRules.value.forEach(rule => {
@@ -398,13 +400,13 @@ const productOptions = computed(() => {
     });
 
     const sortedOptions = Array.from(options).sort();
-    
+
     // Update cache
     productOptionsCache.value = {
         rulesLength: allRules.value.length,
         options: sortedOptions
     };
-    
+
     return sortedOptions;
 });
 
@@ -426,7 +428,7 @@ function onProductSearch(event: Event) {
     if (productSearchTimeout) {
         clearTimeout(productSearchTimeout);
     }
-    
+
     productSearchTimeout = window.setTimeout(() => {
         productSearchQuery.value = (event.target as HTMLInputElement).value;
         productSearchTimeout = null;
@@ -451,51 +453,51 @@ const lastFilters = ref({
 // Filter rules based on search and filters with memoization
 const filteredRules = computed(() => {
     // Check if search results or filters have changed
-    const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
-    const statusFiltersChanged = Object.entries(statusFilters).some(
-        ([key, value]) => lastFilters.value.statusFilters[key] !== value
-    );
-    const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
-    
-    // If nothing has changed, return the cached results
-    if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
-        return lastFilters.value.searchResult;
-    }
-    
+    // const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
+    // const statusFiltersChanged = Object.entries(statusFilters).some(
+    //     ([key, value]) => lastFilters.value.statusFilters[key] !== value
+    // );
+    // const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
+    //
+    // // If nothing has changed, return the cached results
+    // if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
+    //     return lastFilters.value.searchResult;
+    // }
+
     // First apply the text search
     let rules = sigmaRulesStore.filteredRules;
 
     // Then apply status filters
-    rules = rules.filter(rule => {
-        // If rule has no status, include it only if at least one filter is enabled
-        if (!rule.status) return Object.values(statusFilters).some(value => value);
-
-        // Otherwise, check if the rule's status is in the enabled filters
-        return statusFilters[rule.status.toLowerCase()] === true;
-    });
+    // rules = rules.filter(rule => {
+    //     // If rule has no status, include it only if at least one filter is enabled
+    //     if (!rule.status) return Object.values(statusFilters).some(value => value);
+    //
+    //     // Otherwise, check if the rule's status is in the enabled filters
+    //     return statusFilters[rule.status.toLowerCase()] === true;
+    // });
 
     // Apply product filter if selected
-    if (selectedProduct.value) {
-        // Check if the selected product might actually be a category or service
-        const selected = selectedProduct.value.toLowerCase();
-        
-        rules = rules.filter(rule => {
-            const logsource = rule.logsource || {};
-            const product = logsource.product?.toLowerCase() || '';
-            const category = logsource.category?.toLowerCase() || '';
-            const service = logsource.service?.toLowerCase() || '';
-
-            return product === selected || category === selected || service === selected;
-        });
-    }
+    // if (selectedProduct.value) {
+    //     // Check if the selected product might actually be a category or service
+    //     const selected = selectedProduct.value.toLowerCase();
+    //
+    //     rules = rules.filter(rule => {
+    //         const logsource = rule.logsource || {};
+    //         const product = logsource.product?.toLowerCase() || '';
+    //         const category = logsource.category?.toLowerCase() || '';
+    //         const service = logsource.service?.toLowerCase() || '';
+    //
+    //         return product === selected || category === selected || service === selected;
+    //     });
+    // }
 
     // Update the cached values
-    lastFilters.value = {
-        searchResult: rules,
-        searchQuery: sigmaRulesStore.searchQuery,
-        statusFilters: {...statusFilters},
-        selectedProduct: selectedProduct.value
-    };
+    // lastFilters.value = {
+    //     searchResult: rules,
+    //     searchQuery: sigmaRulesStore.searchQuery,
+    //     statusFilters: {...statusFilters},
+    //     selectedProduct: selectedProduct.value
+    // };
 
     return rules;
 });
@@ -516,12 +518,12 @@ const groupedRules = computed(() => {
         statusFilters: Object.entries(statusFilters).filter(([_, v]) => v).map(([k]) => k).join(','),
         product: selectedProduct.value
     });
-    
+
     // If cache is valid, return cached result
     if (groupedRulesCache.value.key === cacheKey && groupedRulesCache.value.result.length > 0) {
         return groupedRulesCache.value.result;
     }
-    
+
     const rules = filteredRules.value;
     const groups: Record<string, SigmaRule[]> = {};
 
@@ -550,13 +552,13 @@ const groupedRules = computed(() => {
             expanded: true
         }))
         .sort((a, b) => a.label.localeCompare(b.label));
-        
+
     // Update cache
     groupedRulesCache.value = {
         key: cacheKey,
         result
     };
-    
+
     return result;
 });
 
@@ -592,13 +594,13 @@ const allGroupPositions = computed(() => {
         groupCount: groupedRules.value.length,
         itemCounts: groupedRules.value.map(g => g.rules.length).join(',')
     });
-    
+
     // Return cached result if valid
-    if (groupPositionsCache.value.key === cacheKey && 
+    if (groupPositionsCache.value.key === cacheKey &&
         groupPositionsCache.value.positions.length > 0) {
         return groupPositionsCache.value.positions;
     }
-    
+
     const positions: GroupInfo[] = [];
     let currentOffset = 0;
 
@@ -615,7 +617,7 @@ const allGroupPositions = computed(() => {
 
         currentOffset += groupHeight + 24; // Add margin between groups
     });
-    
+
     // Update cache
     groupPositionsCache.value = {
         key: cacheKey,
@@ -699,16 +701,16 @@ let searchTimeout: number | null = null;
 
 // Handle search input with debouncing
 function onSearch() {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-    
+    // if (searchTimeout) {
+    //     clearTimeout(searchTimeout);
+    // }
+
     // Only perform search after 300ms of inactivity
-    searchTimeout = window.setTimeout(() => {
-        sigmaRulesStore.searchRules(searchQuery.value);
-        resetScroll();
-        searchTimeout = null;
-    }, 300);
+    // searchTimeout = window.setTimeout(() => {
+    sigmaRulesStore.searchRules(searchQuery.value);
+    resetScroll();
+    searchTimeout = null;
+    // }, 300);
 }
 
 // Apply filters and reset scroll
