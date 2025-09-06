@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/combobox';
 import {Check, ChevronDown, Search} from 'lucide-vue-next';
 import {cn} from '@/lib/utils';
-import type {SigmaRule} from '@/lib/sigma/SigmaRepoService';
+import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 import {extractLogsourceOptions, generateLogsourceMapping, STATUS_OPTIONS} from './utils';
 
 // Component props

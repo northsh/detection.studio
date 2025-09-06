@@ -95,7 +95,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         async function convert(
             rule: string,
             target: string,
-            pipeline: string[],
+            _pipeline: string[],
             pipelineYmls: string[],
             filterYml: string,
         ): Promise<string | undefined> {

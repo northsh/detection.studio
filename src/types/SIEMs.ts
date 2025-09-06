@@ -70,7 +70,7 @@ export const supportedSiems: Array<Siem> = [
     {id: "log_scale", name: "CrowdStrike Logscale", icon: null, backend: 'pysigma-backend-crowdstrike'},
     {id: "datadog", name: "DataDog", icon: null, backend: 'pysigma-backend-datadog'},
     {id: "kusto", name: "KQL (Kusto)", icon: null, backend: 'pysigma-backend-kusto'},
-    {id: "logpoint", name: "LogPoint", icon: null, backend: 'pysigma-backend-logpoint'},
+    // {id: "logpoint", name: "LogPoint", icon: null, backend: 'pysigma-backend-logpoint'},
     {id: "net_witness", name: "NetWitness", icon: null, backend: 'pysigma-backend-netwitness'},
     {id: "panther", name: "Panther", icon: null, backend: 'pysigma-backend-panther'},
     {id: "quickwit", name: "QuickWit", icon: null, backend: 'pysigma-backend-quickwit'},
@@ -79,7 +79,7 @@ export const supportedSiems: Array<Siem> = [
     // {id: "sentinel_one_pq", name: "Sentinel One - PowerQuery", icon: null, backend: 'pysigma-backend-sentinelone'}, // Disabled due to non-operational backaned
     {id: "sqlite", name: "SQLite", icon: null, backend: 'pysigma-backend-sqlite'},
     {id: "surreal_ql", name: "SurrealQL", icon: null, backend: 'pysigma-backend-surrealql'},
-    {id: "tql", name: "Trellix TQL", icon: null, backend: 'pysigma-backend-trellix'},
+    // {id: "tql", name: "Trellix TQL", icon: null, backend: 'pysigma-backend-trellix'},
     {id: "uberagent", name: "uberAgent", icon: null, backend: 'pysigma-backend-uberagent'},
 ];
 

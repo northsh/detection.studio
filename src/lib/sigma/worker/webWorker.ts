@@ -7,7 +7,7 @@ import type {ConversionParams, WorkerStatus} from "./workerApi";
 let pyodide: PyodideInterface | null = null;
 let installedBackends = new Set<string>();
 let pythonModuleLoaded = false;
-let sigmaNamespace = null;
+let sigmaNamespace: any = null;
 
 // Keep track of the initialization state
 let initializationState: WorkerStatus = {

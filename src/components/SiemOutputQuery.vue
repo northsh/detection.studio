@@ -36,8 +36,8 @@ const isReady = computed(() => {
  * Loading messages
  */
 const loadingMessages = [
-    "Finding Attackers...",
-    "Crafting next-gen Sigma rules...",
+    // "Finding Attackers...",
+    "Crafting \"next-gen\" Sigma rules...",
     "Hunting APT groups...",
     "Correlating suspicious events...",
     "Decoding obfuscated PowerShell...",
@@ -46,17 +46,24 @@ const loadingMessages = [
     "Investigating suspicious DNS queries...",
     "Scanning memory for IOCs...",
     "Chasing false positives away...",
+    "Finding the next APT group...",
+    "Decoding the latest Cobalt Strike...",
+    "Hunting for the elusive \"Red Team\"...",
+    "Searching for the next \"big\" threat...",
+    "Going through the Sigma rule PR backlog...",
+    "Sending Florian Roth an angry tweet...",
+
+
 ];
 
-const currentLoadingMessage = ref(loadingMessages[0]);
+const index = ref(Math.floor(Math.random() * loadingMessages.length));
+const currentLoadingMessage = computed(() => loadingMessages[index.value]);
 let messageInterval: number | null = null;
 
 // Cycle through messages every 3 seconds
 onMounted(() => {
-    let index = 0;
     messageInterval = window.setInterval(() => {
-        index = (index + 1) % loadingMessages.length;
-        currentLoadingMessage.value = loadingMessages[index];
+        index.value = (index.value + 1) % loadingMessages.length;
     }, 3000);
 });
 

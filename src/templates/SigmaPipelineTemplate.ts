@@ -16,7 +16,7 @@ class SigmaPipeline {
         fields: object,
         logsource: object
     ) {
-        delete logsource['definition'];
+        delete (logsource as any)['definition'];
 
         this.transformations.push({
             id: id || uuid(),
@@ -36,7 +36,7 @@ class SigmaPipeline {
         source: string,
         logsource: object
     ) {
-        delete logsource['definition'];
+        delete (logsource as any)['definition'];
 
         this.transformations.push({
             id: id || uuid(),
@@ -57,7 +57,7 @@ class SigmaPipeline {
         mapping: object,
         logsource: object
     ) {
-        delete logsource['definition'];
+        delete (logsource as any)['definition'];
 
         this.transformations.push({
             id: id || uuid(),
@@ -91,7 +91,7 @@ export default function sigmaPipelineTemplate(
      * Parse Sigma Rule
      */
     const rule: Sigma | object = yaml.loadAll(file.content)[0] ?? {};
-    const logsource: any = rule?.logsource || {};
+    const logsource: any = (rule as any)?.logsource || {};
 
     const pipeline = new SigmaPipeline();
 
