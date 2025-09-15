@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.2.6",
-    "@pinia/colada": "^0.17.3",
+    "@pinia/colada": "^0.17.5",
     "@radix-icons/vue": "^1.0.0",
     "@sentry/vite-plugin": "^4.3.0",
     "@sentry/vue": "^10.10.0",
