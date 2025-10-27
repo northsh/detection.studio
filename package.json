@@ -63,7 +63,7 @@
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.3.1",
-    "@typescript/native-preview": "^7.0.0-dev.20250906.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251027.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "oxlint": "^1.14.0",
