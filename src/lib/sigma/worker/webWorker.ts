@@ -46,6 +46,7 @@ const pyodideReadyPromise = (async () => {
         const micropip = pyodide?.pyimport("micropip");
 
         // Install sigma-cli
+        // We use a specific older wheel URL to avoid conflicts with newer PyYAML versions
         await micropip.install('https://files.pythonhosted.org/packages/6c/96/2da0acf4ded16ef746782a95f2c4ec5dd41ab02667df35a4e68adb8b69b1/pysigma-0.11.23-py3-none-any.whl');
 
         updateStatus({ pyodideReady: true });
@@ -107,7 +108,16 @@ async function installBackend(target: string) {
         updateStatus({ ready: false });
         
         const micropip = pyodide?.pyimport("micropip");
-        await micropip.install(targetInfo.backend);
+        
+        // FIX: Check if backend is a package name and pin it to <2.0.0
+        // This ensures compatibility with pysigma 0.11.23 and avoids the "PyYAML" crash.
+        let backendPackage = targetInfo.backend;
+        if (!backendPackage.includes('/') && !backendPackage.includes('.whl') && !backendPackage.includes('==') && !backendPackage.includes('<')) {
+             console.log(`[Worker] Pinning backend ${backendPackage} to <2.0.0 for compatibility`);
+             backendPackage = backendPackage + "<2.0.0";
+        }
+
+        await micropip.install(backendPackage);
         installedBackends.add(target);
 
         // Reset the Python module loaded flag to reload the module
