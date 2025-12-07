@@ -1,17 +1,16 @@
-import { ref, onUnmounted, getCurrentInstance } from "vue";
-import type { SigmaRule } from "../stores/SigmaBrowserStore";
+import { ref, onUnmounted, getCurrentInstance } from 'vue';
+import type { SigmaRule } from '../stores/SigmaBrowserStore';
 
 interface SearchMessage {
-    type: "search" | "init" | "load";
+    type: 'search' | 'init';
     query?: string;
     rules?: SigmaRule[];
     options?: any;
 }
 
 interface SearchResponse {
-    type: "result" | "ready" | "error" | "loaded";
+    type: 'result' | 'ready' | 'error';
     results?: SigmaRule[];
-    rules?: SigmaRule[];
     error?: string;
 }
 
@@ -28,59 +27,48 @@ export function useSearchWorker() {
         }
 
         try {
-            worker.value = new Worker(new URL("../workers/searchWorker.ts", import.meta.url), {
-                type: "module",
-            });
+            worker.value = new Worker(
+                new URL('../workers/searchWorker.ts', import.meta.url),
+                { type: 'module' }
+            );
 
             worker.value.onmessage = handleWorkerMessage;
             worker.value.onerror = handleWorkerError;
         } catch (error) {
-            console.error("Failed to initialize search worker:", error);
-            searchError.value = "Failed to initialize search worker";
+            console.error('Failed to initialize search worker:', error);
+            searchError.value = 'Failed to initialize search worker';
         }
     }
 
-    let loadCallback: ((rules: SigmaRule[]) => void) | null = null;
-
     // Handle messages from the worker
     function handleWorkerMessage(event: MessageEvent<SearchResponse>) {
-        const { type, results, rules, error } = event.data;
+        const { type, results, error } = event.data;
 
-        if (type === "ready") {
+        if (type === 'ready') {
             isReady.value = true;
-            console.log("Search worker initialized");
-        } else if (type === "loaded") {
-            if (loadCallback && rules) {
-                loadCallback(rules);
-                loadCallback = null;
-            }
-        } else if (type === "result") {
+            console.log('Search worker initialized');
+        } else if (type === 'result') {
             isSearching.value = false;
             if (searchCallback) {
                 searchCallback(results || []);
             }
-        } else if (type === "error") {
+        } else if (type === 'error') {
             isSearching.value = false;
-            searchError.value = error || "Unknown error";
-            console.error("Search worker error:", error);
-
-            // Handle load errors
-            if (loadCallback) {
-                loadCallback = null;
-            }
+            searchError.value = error || 'Unknown error';
+            console.error('Search worker error:', error);
         }
     }
 
     // Handle worker errors
     function handleWorkerError(error: ErrorEvent) {
-        console.error("Search worker error:", error);
+        console.error('Search worker error:', error);
         searchError.value = error.message;
         isSearching.value = false;
     }
 
     let searchCallback: ((results: SigmaRule[]) => void) | null = null;
 
-    // Initialize the search index (builds index from rules in the worker)
+    // Initialize the search index with rules
     function initializeIndex(rules: SigmaRule[]): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!worker.value) {
@@ -88,52 +76,28 @@ export function useSearchWorker() {
             }
 
             if (!worker.value) {
-                reject(new Error("Failed to initialize worker"));
+                reject(new Error('Failed to initialize worker'));
                 return;
             }
 
             const onReady = (event: MessageEvent<SearchResponse>) => {
-                if (event.data.type === "ready") {
-                    worker.value?.removeEventListener("message", onReady);
+                if (event.data.type === 'ready') {
+                    worker.value?.removeEventListener('message', onReady);
                     resolve();
-                } else if (event.data.type === "error") {
-                    worker.value?.removeEventListener("message", onReady);
+                } else if (event.data.type === 'error') {
+                    worker.value?.removeEventListener('message', onReady);
                     reject(new Error(event.data.error));
                 }
             };
 
-            worker.value.addEventListener("message", onReady);
+            worker.value.addEventListener('message', onReady);
 
             // Serialize rules to plain objects to avoid DataCloneError
             const serializedRules = JSON.parse(JSON.stringify(rules));
 
             const message: SearchMessage = {
-                type: "init",
+                type: 'init',
                 rules: serializedRules,
-            };
-
-            worker.value.postMessage(message);
-        });
-    }
-
-    // Load rules from the worker
-    function loadRules(): Promise<SigmaRule[]> {
-        return new Promise((resolve, reject) => {
-            if (!worker.value) {
-                initWorker();
-            }
-
-            if (!worker.value) {
-                reject(new Error("Failed to initialize worker"));
-                return;
-            }
-
-            loadCallback = (rules: SigmaRule[]) => {
-                resolve(rules);
-            };
-
-            const message: SearchMessage = {
-                type: "load",
             };
 
             worker.value.postMessage(message);
@@ -144,7 +108,7 @@ export function useSearchWorker() {
     function search(query: string): Promise<SigmaRule[]> {
         return new Promise((resolve, reject) => {
             if (!worker.value || !isReady.value) {
-                reject(new Error("Worker not ready"));
+                reject(new Error('Worker not ready'));
                 return;
             }
 
@@ -157,7 +121,7 @@ export function useSearchWorker() {
             };
 
             const message: SearchMessage = {
-                type: "search",
+                type: 'search',
                 query,
             };
 
@@ -184,7 +148,6 @@ export function useSearchWorker() {
     return {
         initWorker,
         initializeIndex,
-        loadRules,
         search,
         terminateWorker,
         isReady,
@@ -192,3 +155,4 @@ export function useSearchWorker() {
         searchError,
     };
 }
+
