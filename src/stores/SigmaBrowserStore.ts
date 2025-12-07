@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia';
-import {computed, ref, shallowRef} from 'vue';
-import {useFuse} from '@vueuse/integrations/useFuse';
+import {ref} from 'vue';
+import {useSearchWorker} from '../composables/useSearchWorker';
 
 export interface SigmaLogsource {
     category?: string;
@@ -30,19 +30,15 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
     const isLoadingIndividualRule = ref(false);
     const currentRule = ref<SigmaRule | null>(null);
     const currentRuleContent = ref<string>('');
-    const searchQuery = shallowRef('');
+    const searchQuery = ref('');
+    const searchResults = ref<SigmaRule[]>([]);
     const error = ref<string | null>(null);
 
     const allRules = ref<SigmaRule[]>([]);
     const isRulesLoaded = ref(false);
 
-
-    const {results: searchResults} = useFuse(searchQuery, rules, {});
-
-    const filteredRules = computed(() => {
-        if (!searchQuery.value) return rules.value;
-        return searchResults.value.map(result => result.item);
-    });
+    // Initialize the search worker
+    const searchWorker = useSearchWorker();
 
     async function loadRulesIndex(): Promise<void> {
         if (isRulesLoaded.value) return;
@@ -88,6 +84,15 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
             }
             rules.value = allRules.value;
             console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
+
+            // Initialize the search worker with the rules
+            try {
+                await searchWorker.initializeIndex(rules.value);
+                console.log('SigmaRulesStore: Search worker initialized');
+            } catch (err) {
+                console.error('SigmaRulesStore: Failed to initialize search worker:', err);
+                // Don't throw - allow the app to work without search
+            }
         } catch (err) {
             console.error('Error fetching sigma rules:', err);
             error.value = err instanceof Error ? err.message : 'Failed to fetch rules';
@@ -123,7 +128,31 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
 
     async function searchRules(query: string) {
         searchQuery.value = query;
+
+        // If query is empty, clear search results
+        if (!query || query.trim() === '') {
+            searchResults.value = [];
+            return;
+        }
+
+        try {
+            // Perform search using the Web Worker
+            const results = await searchWorker.search(query);
+            searchResults.value = results;
+            console.log(`SigmaRulesStore: Search completed, found ${results.length} results`);
+        } catch (err) {
+            console.error('SigmaRulesStore: Search error:', err);
+            searchResults.value = [];
+        }
     }
+
+    // Computed property to get filtered rules (either search results or all rules)
+    const filteredRules = () => {
+        if (!searchQuery.value || searchQuery.value.trim() === '') {
+            return rules.value;
+        }
+        return searchResults.value;
+    };
 
     return {
         rules,
@@ -132,8 +161,10 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
         currentRule,
         currentRuleContent,
         searchQuery,
+        searchResults,
         error,
         filteredRules,
+        isSearching: searchWorker.isSearching,
         fetchRules,
         fetchRuleContent,
         setCurrentRule,

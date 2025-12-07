@@ -192,7 +192,7 @@
             <div v-else ref="containerRef" class="">
                 <div :style="{ height: `${totalHeight}px` }" class="relative">
                     <div
-                        v-for="(group, groupIndex) in visibleGroups"
+                        v-for="group in visibleGroups"
                         :key="group.label"
                         class="mb-6"
                     >
@@ -300,6 +300,7 @@ const searchQuery = ref('');
 const isLoading = computed(() => sigmaRulesStore.isLoading);
 const error = computed(() => sigmaRulesStore.error);
 const allRules = computed(() => sigmaRulesStore.rules);
+const localError = ref<string | null>(null);
 
 // Filter options
 const statusOptions = ['stable', 'test', 'experimental', 'deprecated', 'unsupported'];
@@ -437,67 +438,45 @@ function onProductSearch(event: Event) {
 
 // Clear search input and reset search results
 function clearSearch() {
+    // Clear any pending search timeout to prevent redundant calls
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+        searchTimeout = null;
+    }
+
     searchQuery.value = '';
     sigmaRulesStore.searchRules('');
     resetScroll();
 }
 
-// Memoize the filter results to avoid recomputing for the same inputs
-const lastFilters = ref({
-    searchResult: [] as SigmaRule[],
-    searchQuery: '',
-    statusFilters: {...statusFilters},
-    selectedProduct: ''
-});
-
 // Filter rules based on search and filters with memoization
 const filteredRules = computed(() => {
-    // Check if search results or filters have changed
-    // const searchChanged = lastFilters.value.searchQuery !== sigmaRulesStore.searchQuery;
-    // const statusFiltersChanged = Object.entries(statusFilters).some(
-    //     ([key, value]) => lastFilters.value.statusFilters[key] !== value
-    // );
-    // const productChanged = lastFilters.value.selectedProduct !== selectedProduct.value;
-    //
-    // // If nothing has changed, return the cached results
-    // if (!searchChanged && !statusFiltersChanged && !productChanged && lastFilters.value.searchResult.length > 0) {
-    //     return lastFilters.value.searchResult;
-    // }
-
-    // First apply the text search
-    let rules = sigmaRulesStore.filteredRules;
+    // First apply the text search - call the function from the store
+    let rules = sigmaRulesStore.filteredRules();
 
     // Then apply status filters
-    // rules = rules.filter(rule => {
-    //     // If rule has no status, include it only if at least one filter is enabled
-    //     if (!rule.status) return Object.values(statusFilters).some(value => value);
-    //
-    //     // Otherwise, check if the rule's status is in the enabled filters
-    //     return statusFilters[rule.status.toLowerCase()] === true;
-    // });
+    rules = rules.filter(rule => {
+        // If rule has no status, include it only if at least one filter is enabled
+        if (!rule.status) return Object.values(statusFilters).some(value => value);
+
+        // Otherwise, check if the rule's status is in the enabled filters
+        return statusFilters[rule.status.toLowerCase()] === true;
+    });
 
     // Apply product filter if selected
-    // if (selectedProduct.value) {
-    //     // Check if the selected product might actually be a category or service
-    //     const selected = selectedProduct.value.toLowerCase();
-    //
-    //     rules = rules.filter(rule => {
-    //         const logsource = rule.logsource || {};
-    //         const product = logsource.product?.toLowerCase() || '';
-    //         const category = logsource.category?.toLowerCase() || '';
-    //         const service = logsource.service?.toLowerCase() || '';
-    //
-    //         return product === selected || category === selected || service === selected;
-    //     });
-    // }
+    if (selectedProduct.value) {
+        // Check if the selected product might actually be a category or service
+        const selected = selectedProduct.value.toLowerCase();
 
-    // Update the cached values
-    // lastFilters.value = {
-    //     searchResult: rules,
-    //     searchQuery: sigmaRulesStore.searchQuery,
-    //     statusFilters: {...statusFilters},
-    //     selectedProduct: selectedProduct.value
-    // };
+        rules = rules.filter(rule => {
+            const logsource = rule.logsource || {};
+            const product = logsource.product?.toLowerCase() || '';
+            const category = logsource.category?.toLowerCase() || '';
+            const service = logsource.service?.toLowerCase() || '';
+
+            return product === selected || category === selected || service === selected;
+        });
+    }
 
     return rules;
 });
@@ -686,7 +665,7 @@ onMounted(async () => {
         updateScroll();
     } catch (err) {
         console.error('SigmaRulesBrowser: Error during initialization:', err);
-        error.value = err instanceof Error ? err.message : 'Failed to initialize rules browser';
+        localError.value = err instanceof Error ? err.message : 'Failed to initialize rules browser';
     }
 });
 
@@ -701,16 +680,16 @@ let searchTimeout: number | null = null;
 
 // Handle search input with debouncing
 function onSearch() {
-    // if (searchTimeout) {
-    //     clearTimeout(searchTimeout);
-    // }
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
 
     // Only perform search after 300ms of inactivity
-    // searchTimeout = window.setTimeout(() => {
-    sigmaRulesStore.searchRules(searchQuery.value);
-    resetScroll();
-    searchTimeout = null;
-    // }, 300);
+    searchTimeout = window.setTimeout(() => {
+        sigmaRulesStore.searchRules(searchQuery.value);
+        resetScroll();
+        searchTimeout = null;
+    }, 300);
 }
 
 // Apply filters and reset scroll
@@ -728,7 +707,7 @@ function toggleLogSourceSorting(pressed: boolean) {
 
 // Retry loading rules if there was an error
 async function retryLoadRules() {
-    error.value = null;
+    localError.value = null;
 
     try {
         console.log('SigmaRulesBrowser: Retrying fetch rules...');
@@ -742,7 +721,7 @@ async function retryLoadRules() {
         updateScroll();
     } catch (err) {
         console.error('SigmaRulesBrowser: Error during retry:', err);
-        error.value = err instanceof Error ? err.message : 'Failed to load rules';
+        localError.value = err instanceof Error ? err.message : 'Failed to load rules';
     }
 }
 

@@ -338,7 +338,7 @@ describe('SigmaConverter', () => {
     });
 
     it('should handle empty rule string', async () => {
-      const result = await converter.convert('', 'splunk');
+      await converter.convert('', 'splunk');
       
       expect(mockWorkerApi.convert).toHaveBeenCalledWith(expect.objectContaining({
         rule: ''
@@ -348,7 +348,7 @@ describe('SigmaConverter', () => {
     it('should handle null/undefined backend options', async () => {
       mockStatusListener(mockReadyStatus);
       
-      const result = await converter.convert('rule', 'splunk', [], [], '', '', '', undefined as any);
+      await converter.convert('rule', 'splunk', [], [], '', '', '', undefined as any);
       
       expect(mockWorkerApi.convert).toHaveBeenCalledWith(expect.objectContaining({
         backendOptions: {}

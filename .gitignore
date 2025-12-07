@@ -34,3 +34,4 @@ dist-ssr
 /playwright-report/
 public/sigma-rules-index.json
 /.vite-ssg-temp/
+/.playwright-mcp/

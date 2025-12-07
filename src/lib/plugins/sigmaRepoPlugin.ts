@@ -2,8 +2,7 @@
 import path from "path";
 import git from "isomorphic-git";
 import http from "isomorphic-git/http/node";
-
-import * as fs from 'fs-extra';
+import * as fsNode from "fs";
 
 export default function sigmaRepoPlugin() {
     const REPO_URL = 'https://github.com/SigmaHQ/sigma.git';
@@ -18,12 +17,12 @@ export default function sigmaRepoPlugin() {
                 const repoPath = path.resolve(LOCAL_REPO_PATH);
 
                 // Check if repo already exists
-                if (fs.existsSync(path.join(repoPath, '.git'))) {
+                if (fsNode.existsSync(path.join(repoPath, '.git'))) {
                     console.log('Repo exists, updating...');
 
                     // Fetch the latest changes
                     await git.fetch({
-                        fs,
+                        fs: fsNode,
                         http,
                         dir: repoPath,
                         url: REPO_URL,
@@ -34,14 +33,14 @@ export default function sigmaRepoPlugin() {
 
                     // Get current branch name
                     const currentBranch = await git.currentBranch({
-                        fs,
+                        fs: fsNode,
                         dir: repoPath,
                         fullname: false
                     });
 
                     // Get latest remote commit
                     const remoteInfo = await git.fetch({
-                        fs,
+                        fs: fsNode,
                         http,
                         dir: repoPath,
                         url: REPO_URL,
@@ -56,7 +55,7 @@ export default function sigmaRepoPlugin() {
 
                     // Force checkout to that commit
                     await git.checkout({
-                        fs,
+                        fs: fsNode,
                         dir: repoPath,
                         ref: latestCommitSha || undefined,
                         force: true
@@ -67,11 +66,11 @@ export default function sigmaRepoPlugin() {
                     console.log('Repo does not exist, cloning...');
 
                     // Ensure parent directory exists
-                    fs.ensureDirSync(repoPath);
+                    fsNode.mkdirSync(repoPath, { recursive: true });
 
                     // Clone the repository
                     await git.clone({
-                        fs,
+                        fs: fsNode,
                         http,
                         dir: repoPath,
                         url: REPO_URL,
@@ -84,8 +83,10 @@ export default function sigmaRepoPlugin() {
                 }
 
                 // Generate an index file with metadata of all rules
-                const indexData = await indexRules(repoPath);
-                fs.writeJSONSync(path.join('public', 'sigma-rules-index.json'), indexData, {spaces: 2});
+                const indexData = await indexRules(repoPath, fsNode);
+                const indexPath = path.join('public', 'sigma-rules-index.json');
+                fsNode.mkdirSync(path.dirname(indexPath), { recursive: true });
+                fsNode.writeFileSync(indexPath, JSON.stringify(indexData, null, 2));
                 console.log('Sigma rules index generated successfully.');
             } catch (error) {
                 console.error('Error in sigma-repo-plugin:', error);
@@ -97,12 +98,12 @@ export default function sigmaRepoPlugin() {
 
 
 // Function to index all Sigma rules and generate metadata
-async function indexRules(repoPath: string) {
+async function indexRules(repoPath: string, fs: any) {
     const rulesPath = path.join(repoPath, 'rules');
     const rules: any[] = [];
 
     async function processDirectory(dirPath: string) {
-        const entries = await fs.readdir(dirPath, { withFileTypes: true });
+        const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
 
         for (const entry of entries) {
             const fullPath = path.join(dirPath, entry.name);
@@ -113,7 +114,7 @@ async function indexRules(repoPath: string) {
             } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
                 // Process YAML files
                 try {
-                    const content = await fs.readFile(fullPath, 'utf-8');
+                    const content = await fs.promises.readFile(fullPath, 'utf-8');
                     const yaml = await import('js-yaml');
                     const yamlContent = yaml.load(content) as any;
 

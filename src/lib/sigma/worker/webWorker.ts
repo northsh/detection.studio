@@ -38,7 +38,7 @@ const pyodideReadyPromise = (async () => {
         updateStatus({ ready: false, pyodideReady: false });
         
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.2/full/",
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/",
             convertNullToNone: true,
         });
 
