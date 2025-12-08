@@ -28,11 +28,7 @@ export default defineConfig({
         },
     },
     build: {
-        sourcemap: true,
-        target: "esnext",
-    },
-    worker: {
-        format: "es",
+        sourcemap: true
     },
     ssgOptions: {
         script: "async",

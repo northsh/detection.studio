@@ -24,7 +24,7 @@ function updateStatus(status: Partial<WorkerStatus>) {
         ...status,
         installedBackends: Array.from(installedBackends),
     };
-    
+
     // Send the update to the main thread
     self.postMessage({
         type: 'status_update',
@@ -35,8 +35,8 @@ function updateStatus(status: Partial<WorkerStatus>) {
 // Initialize Pyodide in the background
 const pyodideReadyPromise = (async () => {
     try {
-        updateStatus({ ready: false, pyodideReady: false });
-        
+        updateStatus({ready: false, pyodideReady: false});
+
         pyodide = await loadPyodide({
             indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/",
             convertNullToNone: true,
@@ -46,18 +46,19 @@ const pyodideReadyPromise = (async () => {
         const micropip = pyodide?.pyimport("micropip");
 
         // Install sigma-cli
-        // We use a specific older wheel URL to avoid conflicts with newer PyYAML versions
-        await micropip.install('https://files.pythonhosted.org/packages/6c/96/2da0acf4ded16ef746782a95f2c4ec5dd41ab02667df35a4e68adb8b69b1/pysigma-0.11.23-py3-none-any.whl');
+        // await micropip.install('https://www.piwheels.org/simple/pyyaml/pyyaml-6.0.3-cp311-cp311-linux_armv6l.whl#sha256=96a9c0d2b473b1e98e6a3896d2c006a194d7d1992d0cf1db4f45beb413cb7494');
 
-        updateStatus({ pyodideReady: true });
+        await micropip.install('https://files.pythonhosted.org/packages/b4/da/700a842a18c0d2153e7d07a7843f1129ab1daa6bbc41e04c133c8b17d40f/pysigma-1.0.2-py3-none-any.whl', {keep_going: true});
+
+        updateStatus({pyodideReady: true});
         await loadPythonModule();
-        updateStatus({ ready: true });
-        
+        updateStatus({ready: true});
+
         return pyodide;
     } catch (error) {
         console.error('Error initializing Pyodide:', error);
-        updateStatus({ 
-            ready: false, 
+        updateStatus({
+            ready: false,
             pyodideReady: false,
             error: error instanceof Error ? error.message : String(error)
         });
@@ -84,7 +85,7 @@ async function loadPythonModule() {
         return true;
     } catch (error) {
         console.error('Error loading Python module:', error);
-        updateStatus({ 
+        updateStatus({
             error: `Error loading Python module: ${error instanceof Error ? error.message : String(error)}`
         });
         return false;
@@ -105,31 +106,30 @@ async function installBackend(target: string) {
     }
 
     try {
-        updateStatus({ ready: false });
-        
+        updateStatus({ready: false});
+
         const micropip = pyodide?.pyimport("micropip");
-        
-        // FIX: Check if backend is a package name and pin it to <2.0.0
-        // This ensures compatibility with pysigma 0.11.23 and avoids the "PyYAML" crash.
-        let backendPackage = targetInfo.backend;
-        if (!backendPackage.includes('/') && !backendPackage.includes('.whl') && !backendPackage.includes('==') && !backendPackage.includes('<')) {
-             console.log(`[Worker] Pinning backend ${backendPackage} to <2.0.0 for compatibility`);
-             backendPackage = backendPackage + "<2.0.0";
-        }
+
+        const backendPackage = targetInfo.backend;
+
+        // Use constraints to ensure the backend is compatible with pySigma < 1.0
+        // This prevents installing backend versions that require pySigma >= 1.0
+        // const constraints = pyodide?.toPy(['pysigma<1.0']);
 
         await micropip.install(backendPackage);
+
         installedBackends.add(target);
 
         // Reset the Python module loaded flag to reload the module
         pythonModuleLoaded = false;
         await loadPythonModule();
-        
-        updateStatus({ ready: true });
+
+        updateStatus({ready: true});
 
         return {success: true};
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
-        updateStatus({ 
+        updateStatus({
             error: `Error installing backend ${target}: ${errorMsg}`
         });
         return {
@@ -217,17 +217,17 @@ registerPromiseWorker(async (message) => {
         switch (type) {
             case 'convert':
                 return await convertRule(message.conversionParams);
-                
+
             case 'install':
                 return await installBackend(message.target);
-                
+
             case 'status':
                 // Return the current initialization state
                 return {
                     ...initializationState,
                     installedBackends: Array.from(installedBackends)
                 };
-                
+
             default:
                 throw new Error(`Unknown message type: ${type}`);
         }

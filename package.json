@@ -21,7 +21,7 @@
     "@sentry/vue": "^10.29.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/vue-table": "^8.21.3",
-    "@tanstack/vue-virtual": "^3.13.12",
+    "@tanstack/vue-virtual": "^3.13.13",
     "@types/js-yaml": "^4.0.9",
     "@unhead/vue": "^2.0.19",
     "@vueuse/core": "^13.9.0",
@@ -63,14 +63,17 @@
     "@types/bun": "latest",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.10.1",
-    "@typescript/native-preview": "^7.0.0-dev.20251207.1",
+    "@typescript/native-preview": "^7.0.0-dev.20251208.1",
     "@vitejs/plugin-vue": "^6.0.2",
     "@vue/tsconfig": "^0.8.1",
-    "oxlint": "^1.31.0",
+    "oxlint": "^1.32.0",
     "playwright": "^1.57.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.6",
+    "vite": "^8.0.0-beta.0",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.1.7"
+  },
+  "overrides": {
+    "vite": "8.0.0-beta.0"
   }
 }
