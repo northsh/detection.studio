@@ -8,6 +8,10 @@ export default function sigmaRepoPlugin() {
     const REPO_URL = 'https://github.com/SigmaHQ/sigma.git';
     const LOCAL_REPO_PATH = '.sigma-repo';
 
+    if (import.meta.env?.SSR) {
+        return
+    }
+
     return {
         name: 'sigma-repo-plugin',
         buildStart: async () => {

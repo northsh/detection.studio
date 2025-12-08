@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "WebFetch(domain:packaging.python.org)",
+      "WebSearch",
+      "WebFetch(domain:pyodide.org)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "shadcnVue",
+    "playwright"
+  ]
+}
