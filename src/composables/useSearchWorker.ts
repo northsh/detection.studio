@@ -80,19 +80,13 @@ export function useSearchWorker() {
                 return;
             }
 
-            // Add timeout to prevent infinite hanging
-            const timeout = setTimeout(() => {
-                worker.value?.removeEventListener('message', onReady);
-                reject(new Error('Worker initialization timeout'));
-            }, 200); // 5 second timeout
-
             const onReady = (event: MessageEvent<SearchResponse>) => {
                 if (event.data.type === 'ready') {
-                    clearTimeout(timeout);
+
                     worker.value?.removeEventListener('message', onReady);
                     resolve();
                 } else if (event.data.type === 'error') {
-                    clearTimeout(timeout);
+
                     worker.value?.removeEventListener('message', onReady);
                     reject(new Error(event.data.error));
                 }
