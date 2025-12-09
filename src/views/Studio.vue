@@ -64,7 +64,7 @@ const isCompactView = computed(() => width.value < 768 || height.value < 600);
 
                 <div class="flex items-center gap-3">
                     <SIEMSelector/>
-                    <PipelineSelector v-if="false"/>
+                    <PipelineSelector/>
                 </div>
                 <div class="grow"></div>
                 <div class="flex items-center gap-1 md:gap-2">

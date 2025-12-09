@@ -137,7 +137,8 @@ export class SigmaConverter {
             }
 
             // Convert the rule using all configured parameters
-            const result = await convert({
+            // Deep clone to remove all Vue reactivity proxies for worker serialization
+            const params = {
                 rule,
                 target,
                 pipelines: pipeline,
@@ -146,7 +147,12 @@ export class SigmaConverter {
                 format,
                 correlationMethod,
                 backendOptions
-            });
+            };
+
+            // Use JSON.parse(JSON.stringify()) to deeply clone and strip all proxies
+            const plainParams = JSON.parse(JSON.stringify(params));
+
+            const result = await convert(plainParams);
 
             if (result.error) {
                 return {

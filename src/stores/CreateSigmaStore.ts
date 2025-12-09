@@ -95,7 +95,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         async function convert(
             rule: string,
             target: string,
-            _pipeline: string[],
+            pipeline: string[],
             pipelineYmls: string[],
             filterYml: string,
         ): Promise<string | undefined> {
@@ -103,7 +103,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
                 const result = await sigmaConverter.value.convert(
                     rule,
                     target,
-                    [],
+                    pipeline,
                     pipelineYmls,
                     filterYml
                 );

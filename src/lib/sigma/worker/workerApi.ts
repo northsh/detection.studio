@@ -118,3 +118,12 @@ export function getWorkerStatus(): Promise<WorkerStatus> {
         type: 'status',
     });
 }
+
+/**
+ * Get available pipelines from installed plugins
+ */
+export function getAvailablePipelines(): Promise<{ success: boolean; pipelines: string[]; error?: string }> {
+    return getWorker().postMessage<{ success: boolean; pipelines: string[]; error?: string }, WorkerMessage>({
+        type: 'get_pipelines',
+    });
+}

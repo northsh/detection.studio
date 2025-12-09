@@ -116,16 +116,13 @@ async function installBackend(target: string) {
 
         const backendPackage = targetInfo.backend;
 
-        // Use constraints to ensure the backend is compatible with pySigma < 1.0
-        // This prevents installing backend versions that require pySigma >= 1.0
-        // const constraints = pyodide?.toPy(['pysigma<1.0']);
-
+        console.log(`Installing backend ${backendPackage} for target ${target}...`);
         await micropip.install(backendPackage);
 
         installedBackends.add(target);
 
-        // Reset the Python module loaded flag to reload the module
-        pythonModuleLoaded = false;
+        // Reload the Python module to pick up the newly installed backend
+        // This re-runs plugin autodiscovery which will find the new backend
         await loadPythonModule();
 
         updateStatus({ready: true});
@@ -167,16 +164,17 @@ async function convertRule(params: ConversionParams) {
     }
 
     try {
-        // Create a namespace with parameters directly
+        // Convert JavaScript parameters to Python, ensuring proper types
+        // Use empty list for arrays, but null for optional string parameters
         const pythonParams = {
             rule,
             target,
-            pipeline_names: pipelines || null,
-            pipeline_ymls: pipelineYmls || null,
+            pipeline_names: pipelines || [],
+            pipeline_ymls: pipelineYmls || [],
             filter_yml: filterYml || null,
             format,
             correlation_method: correlationMethod || null,
-            backend_options: backendOptions || null,
+            backend_options: backendOptions || {},
         };
 
         // Set parameters in namespace using toPy
@@ -231,6 +229,25 @@ registerPromiseWorker(async (message) => {
                     ...initializationState,
                     installedBackends: Array.from(installedBackends)
                 };
+
+            case 'get_pipelines':
+                // Get available pipelines from Python
+                if (!pythonModuleLoaded) {
+                    await loadPythonModule();
+                }
+                try {
+                    const pipelines = pyodide?.runPython('get_available_pipelines()', {globals: sigmaNamespace});
+                    return {
+                        success: true,
+                        pipelines: pipelines?.toJs() || []
+                    };
+                } catch (error) {
+                    return {
+                        success: false,
+                        error: error instanceof Error ? error.message : String(error),
+                        pipelines: []
+                    };
+                }
 
             default:
                 throw new Error(`Unknown message type: ${type}`);

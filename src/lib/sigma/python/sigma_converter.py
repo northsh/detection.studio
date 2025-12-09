@@ -2,6 +2,7 @@ import json
 import pathlib
 import textwrap
 from typing import Sequence, List, Dict, Any, Union, Optional
+import sys
 import yaml
 
 # Pyodide compatibility: PyYAML in Pyodide doesn't have CSafeLoader
@@ -18,14 +19,92 @@ from sigma.exceptions import (
     SigmaPipelineNotAllowedForBackendError,
     SigmaPipelineNotFoundError,
 )
-from sigma.plugins import InstalledSigmaPlugins
 from sigma.processing.pipeline import ProcessingPipeline
 from sigma.rule import SigmaRule
-import yaml
 
+# Pyodide compatibility: Mock MITRE ATT&CK data loading BEFORE importing plugins
+# The elasticsearch backend tries to load MITRE ATT&CK data using urllib which doesn't work in Pyodide
+import sigma.data.mitre_attack
+# Monkey-patch the _load_mitre_attack_data function to return mock data
+def _mock_load_mitre_attack_data():
+    return {
+        'techniques': {},
+        'tactics': {},
+        'groups': {},
+        'software': {}
+    }
+sigma.data.mitre_attack._load_mitre_attack_data = _mock_load_mitre_attack_data
+sigma.data.mitre_attack._cached_data = None  # Reset cache so it uses our mock function
+
+# Also create the module-level attributes that backends try to import
+sigma.data.mitre_attack.mitre_attack_tactics = {}
+sigma.data.mitre_attack.mitre_attack_techniques = {}
+sigma.data.mitre_attack.mitre_attack_groups = {}
+sigma.data.mitre_attack.mitre_attack_software = {}
+
+from sigma.plugins import InstalledSigmaPlugins
+from sigma.processing.resolver import ProcessingPipelineResolver
+
+# Discover plugins at module level (like sigma-cli does)
 plugins = InstalledSigmaPlugins.autodiscover()
 backends = plugins.backends
-pipelines = plugins.pipelines
+
+def get_available_pipelines():
+    """
+    Get a list of all available pipeline names.
+    Since plugins aren't discovered until backends are installed, we return
+    a list of commonly available pipeline names from sigma backends.
+    """
+    try:
+        # Return commonly available pipeline names from sigma backend packages
+        # These are the standard pipelines that ship with various sigma backends
+        return [
+            # ECS/Elasticsearch pipelines
+            'ecs_windows',
+            'ecs_windows_old',
+            'ecs_zeek_beats',
+            'ecs_zeek_corelight',
+            'ecs_kubernetes',
+            'elasticsearch_windows',
+            'elasticsearch_windows_sysmon',
+
+            # Splunk pipelines
+            'splunk_windows',
+            'splunk_windows_sysmon_acceleration',
+            'splunk_cim_dm',
+
+            # Microsoft Sentinel / Azure
+            'azure_monitor',
+            'azure_monitor_windows',
+            'microsoft_365_defender',
+            'microsoft_xdr',
+
+            # Loki
+            'loki_grafana_logfmt',
+            'loki_promtail_sysmon',
+
+            # QRadar
+            'qradar_fields',
+            'qradar_payload',
+
+            # CrowdStrike
+            'crowdstrike_fdr',
+
+            # Carbon Black
+            'carbonblack',
+
+            # SentinelOne
+            'sentinelone',
+
+            # Datadog
+            'datadog',
+        ]
+    except Exception as e:
+        import sys
+        import traceback
+        print(f"Error getting pipelines: {e}", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        return []
 
 def convert_rule(
     rule_yaml: str, 
@@ -73,6 +152,24 @@ def convert_rule(
     
     # Initialize processing pipeline if specified
     processing_pipeline = None
+
+    # First, load built-in pipelines by name if provided
+    if pipeline_names and len(pipeline_names) > 0:
+        try:
+            # Ensure pipeline_names is a list
+            if isinstance(pipeline_names, str):
+                pipeline_names = [pipeline_names]
+
+            # Create the resolver inside the function to avoid serialization issues
+            pipeline_resolver = ProcessingPipelineResolver(plugins.pipelines)
+
+            # The resolve() method expects a list of pipeline specs and returns a resolved pipeline
+            # Pass the entire list at once instead of iterating
+            processing_pipeline = pipeline_resolver.resolve(pipeline_names)
+        except Exception as e:
+            raise SigmaError(f"Error loading built-in pipelines {pipeline_names}: {str(e)}")
+
+    # Then, add custom pipelines from YAML if provided
     if pipeline_ymls and len(pipeline_ymls) > 0:
         try:
             # Process each pipeline YAML separately and chain them
@@ -80,23 +177,14 @@ def convert_rule(
                 if pipeline_yml:
                     # Load custom pipeline definitions directly from YAML
                     custom_pipeline = ProcessingPipeline.from_yaml(pipeline_yml)
-                    
+
                     if processing_pipeline is None:
                         processing_pipeline = custom_pipeline
                     else:
                         # Chain the pipelines
                         processing_pipeline = processing_pipeline + custom_pipeline
-            
-            if pipeline_names:
-                # If both pipeline_ymls and pipeline_names are provided,
-                # log a warning that we're only using the YAML content
-                print(f"Warning: Both pipeline_ymls and pipeline_names provided. Using pipelines from YAML content.")
         except Exception as e:
             raise SigmaError(f"Error processing custom pipeline: {str(e)}")
-    elif pipeline_names:
-        # If only pipeline_names are provided but no YAML content, 
-        # this is an error since we don't use pipeline_resolver anymore
-        raise SigmaError("Pipeline names provided without YAML content. Please provide pipeline_ymls content.")
     
     # Initialize backend
     backend_class = backends[target]
