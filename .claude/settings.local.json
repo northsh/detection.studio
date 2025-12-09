@@ -4,7 +4,20 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:packaging.python.org)",
       "WebSearch",
-      "WebFetch(domain:pyodide.org)"
+      "WebFetch(domain:pyodide.org)",
+      "Bash(curl:*)",
+      "Bash(tar:*)",
+      "Bash(pip install:*)",
+      "Bash(pyenv versions:*)",
+      "Bash(pyenv install:*)",
+      "Bash(pyenv local:*)",
+      "Bash(pyodide build:*)",
+      "Bash(pyodide config:*)",
+      "Bash(./emsdk install:*)",
+      "Bash(./emsdk activate:*)",
+      "Bash(source:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_console_messages"
     ]
   },
   "enabledMcpjsonServers": [
