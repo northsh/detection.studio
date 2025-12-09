@@ -2,6 +2,14 @@ import json
 import pathlib
 import textwrap
 from typing import Sequence, List, Dict, Any, Union, Optional
+import yaml
+
+# Pyodide compatibility: PyYAML in Pyodide doesn't have CSafeLoader
+# Add it as an alias to SafeLoader if it doesn't exist
+if not hasattr(yaml, 'CSafeLoader'):
+    yaml.CSafeLoader = yaml.SafeLoader
+if not hasattr(yaml, 'CDumper'):
+    yaml.CDumper = yaml.Dumper
 
 from sigma.collection import SigmaCollection
 from sigma.conversion.base import Backend

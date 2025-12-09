@@ -38,17 +38,19 @@ const pyodideReadyPromise = (async () => {
         updateStatus({ready: false, pyodideReady: false});
 
         pyodide = await loadPyodide({
-            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.28.3/full/",
+            indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.0/full/",
             convertNullToNone: true,
         });
 
         await pyodide?.loadPackage("micropip");
         const micropip = pyodide?.pyimport("micropip");
 
-        // Install sigma-cli
-        // await micropip.install('https://www.piwheels.org/simple/pyyaml/pyyaml-6.0.3-cp311-cp311-linux_armv6l.whl#sha256=96a9c0d2b473b1e98e6a3896d2c006a194d7d1992d0cf1db4f45beb413cb7494');
+        // Install custom PyYAML 6.0.3 wheel for PySigma 2.x compatibility
+        const wheelUrl = new URL('/wheels/pyyaml-6.0.3-cp313-cp313-pyodide_2025_0_wasm32.whl', self.location.origin).href;
+        await micropip.install(wheelUrl);
 
-        await micropip.install('https://files.pythonhosted.org/packages/b4/da/700a842a18c0d2153e7d07a7843f1129ab1daa6bbc41e04c133c8b17d40f/pysigma-1.0.2-py3-none-any.whl', {keep_going: true});
+        // Install PySigma (now compatible with PyYAML 6.0.3+)
+        await micropip.install('pysigma');
 
         updateStatus({pyodideReady: true});
         await loadPythonModule();
@@ -75,8 +77,10 @@ async function loadPythonModule() {
         const sigmaConverterModule = await import('/src/lib/sigma/python/sigma_converter.py?raw');
         const pythonCode = sigmaConverterModule.default;
 
-        // Create a namespace for our Python module
-        sigmaNamespace = pyodide?.globals.get("dict")();
+        // Create a namespace for our Python module only if it doesn't exist
+        if (!sigmaNamespace) {
+            sigmaNamespace = pyodide?.globals.get("dict")();
+        }
 
         // Run the module code to define the functions in our namespace
         pyodide?.runPython(pythonCode, {globals: sigmaNamespace});
