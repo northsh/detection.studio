@@ -1,39 +1,84 @@
 <script lang="ts" setup>
-import {computed, ref} from "vue";
+import {computed, watch, ref, onMounted} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {getAvailablePipelines} from "@/lib/sigma/worker/workerApi";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select";
-import {Badge} from "@/components/ui/badge";
-import {Plus, X} from "lucide-vue-next";
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuCheckboxItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {Button} from "@/components/ui/button";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {Filter, Check} from "lucide-vue-next";
 import type {FileItem} from "@/types/types";
+
+const isDropdownOpen = ref(false);
 
 const workspace = useWorkspaceStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
-// Default built-in pipelines
-const defaultPipelines = [
-    'splunk_windows',
-    'splunk_linux',
-    'splunk_web',
-    'splunk_network',
-    'elasticsearch_windows',
-    'elasticsearch_linux',
-    'elasticsearch_web',
-    'elasticsearch_network'
-];
+// All available pipelines from plugins
+const allPipelines = ref<string[]>([]);
 
-// Get available pipelines from pipeline files
+// Load available pipelines from worker on mount
+onMounted(async () => {
+    try {
+        console.log('Fetching available pipelines from worker...');
+        const result = await getAvailablePipelines();
+        console.log('Pipeline fetch result:', result);
+        if (result.success && result.pipelines) {
+            allPipelines.value = result.pipelines;
+            console.log('Loaded pipelines:', allPipelines.value);
+        } else {
+            console.warn('Failed to get pipelines:', result.error);
+        }
+    } catch (error) {
+        console.error('Failed to load available pipelines:', error);
+    }
+});
+
+// Filter pipelines by backend prefix
+function getPipelinesForBackend(backend: string): string[] {
+    if (!backend || allPipelines.value.length === 0) {
+        return allPipelines.value;
+    }
+
+    // Map backend names to their pipeline prefixes
+    const backendPrefixes: Record<string, string[]> = {
+        'splunk': ['splunk'],
+        'esql': ['ecs', 'elasticsearch'],
+        'lucene': ['ecs', 'elasticsearch'],
+        'eql': ['ecs', 'elasticsearch'],
+        'loki': ['loki'],
+        'kusto': ['azure', 'microsoft'],
+        'qradar': ['qradar'],
+        'carbonblack': ['carbonblack'],
+        'crowdstrike': ['crowdstrike'],
+        'sentinel': ['azure', 'microsoft'],
+    };
+
+    const prefixes = backendPrefixes[backend] || [];
+
+    // Filter pipelines that start with any of the backend's prefixes
+    return allPipelines.value.filter(pipeline =>
+        prefixes.some(prefix => pipeline.startsWith(prefix))
+    );
+}
+
+// Get available pipelines filtered by selected backend
 const availablePipelines = computed(() => {
-    const pipelines: string[] = [...defaultPipelines];
+    const selectedBackend = sigma.value?.selected_siem;
+
+    // Start with backend-specific pipelines if available, otherwise all pipelines
+    const basePipelines = selectedBackend
+        ? getPipelinesForBackend(selectedBackend)
+        : allPipelines.value;
+
+    const pipelines: string[] = [...basePipelines];
 
     // Add custom pipelines from files
     const pipelineFiles = fs.value?.files.filter((f: FileItem) => f.type === "pipeline") || [];
@@ -43,7 +88,6 @@ const availablePipelines = computed(() => {
         const content = file.content || '';
 
         // Look for name patterns in YAML
-        // This is a simple approach - the backend uses pipeline_resolver.py for proper parsing
         const pipelines_in_file = [
             // Look for name: value format
             ...content.split('\n')
@@ -63,70 +107,124 @@ const availablePipelines = computed(() => {
     return [...new Set(pipelines)].sort(); // Remove duplicates and sort
 });
 
-// Handle pipeline selection
-const selectedPipeline = ref('');
-
-function addPipeline() {
-    if (!selectedPipeline.value ||
-        sigma.value.selected_pipelines.includes(selectedPipeline.value)) {
-        return;
-    }
-
-    const newPipelines = [...sigma.value.selected_pipelines, selectedPipeline.value];
-    sigma.value.updateSelectedPipelines(newPipelines);
-    selectedPipeline.value = '';
-}
-
-function removePipeline(pipeline: string) {
-    const newPipelines = sigma.value.selected_pipelines.filter(p => p !== pipeline);
-    sigma.value.updateSelectedPipelines(newPipelines);
-}
-
 const selectedPipelines = computed(() => sigma.value?.selected_pipelines || []);
+
+// Toggle pipeline selection
+function togglePipeline(pipeline: string, checked: boolean) {
+    if (!sigma.value) return;
+
+    const currentPipelines = sigma.value.selected_pipelines || [];
+
+    if (checked) {
+        // Add pipeline if not already selected
+        if (!currentPipelines.includes(pipeline)) {
+            const newPipelines = [...currentPipelines, pipeline];
+            sigma.value.updateSelectedPipelines(newPipelines);
+        }
+    } else {
+        // Remove pipeline
+        const newPipelines = currentPipelines.filter(p => p !== pipeline);
+        sigma.value.updateSelectedPipelines(newPipelines);
+    }
+}
+
+// Watch for backend changes and clear incompatible pipelines
+watch(() => sigma.value?.selected_siem, (newBackend) => {
+    if (!newBackend || !sigma.value) return;
+
+    const compatiblePipelines = getPipelinesForBackend(newBackend);
+    const currentPipelines = sigma.value.selected_pipelines || [];
+
+    // Remove pipelines that are not compatible with the new backend
+    const filteredPipelines = currentPipelines.filter(pipeline => {
+        // Keep pipelines that are compatible with the backend
+        return compatiblePipelines.includes(pipeline);
+    });
+
+    // Update if pipelines were filtered out
+    if (filteredPipelines.length !== currentPipelines.length) {
+        sigma.value.updateSelectedPipelines(filteredPipelines);
+    }
+});
+
+// Computed label for the button
+const buttonLabel = computed(() => {
+    const count = selectedPipelines.value.length;
+    if (count === 0) return 'Pipelines';
+    if (count === 1) return '1 Pipeline';
+    return `${count} Pipelines`;
+});
+
+// Convert to Title Case, minus the underscores
+function toTitleCase(str: string): string {
+    return str
+        .toLowerCase()
+        .split(/[_\s]+/)
+        .map(word => {
+            if (word === 'ecs') return 'ECS';
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(' ');
+}
 </script>
 
 <template>
-    <div class="flex flex-col gap-2">
-        <div class="flex gap-2 items-center">
-            <Select v-model="selectedPipeline">
-                <SelectTrigger class="h-8 w-[200px]">
-                    <SelectValue placeholder="Select pipeline"/>
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectLabel class="m-0 pt-2 pb-0 px-3">Pipelines</SelectLabel>
-                    <SelectGroup>
-                        <div class="grid grid-cols-1 gap-1 p-2">
-                            <template v-for="pipeline in availablePipelines" :key="pipeline">
-                                <SelectItem :value="pipeline">
-                                    {{ pipeline }}
-                                </SelectItem>
-                            </template>
-                        </div>
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
-
+    <DropdownMenu v-model:open="isDropdownOpen">
+        <DropdownMenuTrigger as-child>
             <Button
-                class="h-8 w-8"
-                size="icon"
                 variant="outline"
-                @click="addPipeline">
-                <Plus class="h-4 w-4"/>
-            </Button>
-        </div>
-
-        <div class="flex flex-wrap gap-2 mt-1">
-            <Badge
-                v-for="pipeline in selectedPipelines"
-                :key="pipeline"
-                class="flex items-center gap-1"
-                variant="secondary"
+                size="sm"
+                class="h-8 gap-2"
+                :class="selectedPipelines.length > 0 ? 'border-primary' : ''"
             >
-                {{ pipeline }}
-                <button class="ml-1 p-0" @click="removePipeline(pipeline)">
-                    <X class="h-3 w-3"/>
-                </button>
-            </Badge>
-        </div>
-    </div>
+                <Filter class="h-3.5 w-3.5"/>
+                <span>{{ toTitleCase(buttonLabel) }}</span>
+                <Check v-if="selectedPipelines.length > 0" class="h-3.5 w-3.5 text-primary"/>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent class="w-[280px]" align="start">
+            <DropdownMenuLabel>
+                <div class="flex flex-col gap-1">
+                    <span>Pipelines</span>
+                    <span class="text-xs font-normal text-muted-foreground">
+                        Compatible with {{ sigma?.selected_siem || 'current backend' }}
+                    </span>
+                </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator/>
+
+            <ScrollArea class="h-[280px]">
+                <div class="px-1">
+                    <DropdownMenuCheckboxItem
+                        v-for="pipeline in availablePipelines"
+                        :key="pipeline"
+                        :checked="selectedPipelines.includes(pipeline)"
+                        @select.prevent
+                        @update:checked="(checked) => togglePipeline(pipeline, checked)"
+                    >
+                        {{ toTitleCase(pipeline) }}
+                    </DropdownMenuCheckboxItem>
+
+                    <div v-if="availablePipelines.length === 0" class="px-2 py-6 text-center text-sm text-muted-foreground">
+                        No pipelines available for this backend
+                    </div>
+                </div>
+            </ScrollArea>
+
+            <template v-if="selectedPipelines.length > 0">
+                <DropdownMenuSeparator/>
+                <div class="px-2 py-2 flex items-center justify-between">
+                    <span class="text-xs text-muted-foreground">{{ selectedPipelines.length }} selected</span>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-6 px-2 text-xs"
+                        @click="sigma?.updateSelectedPipelines([]); isDropdownOpen = false"
+                    >
+                        Clear all
+                    </Button>
+                </div>
+            </template>
+        </DropdownMenuContent>
+    </DropdownMenu>
 </template>

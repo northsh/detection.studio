@@ -17,7 +17,18 @@
       "Bash(./emsdk activate:*)",
       "Bash(source:*)",
       "mcp__playwright__browser_navigate",
-      "mcp__playwright__browser_console_messages"
+      "mcp__playwright__browser_console_messages",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__shadcnVue__search_items_in_registries",
+      "mcp__shadcnVue__view_items_in_registries",
+      "mcp__shadcnVue__get_item_examples_from_registries",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_press_key",
+      "mcp__playwright__browser_run_code",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_wait_for"
     ]
   },
   "enabledMcpjsonServers": [

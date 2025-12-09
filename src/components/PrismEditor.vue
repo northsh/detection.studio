@@ -7,7 +7,6 @@ import {cursorPosition} from "prism-code-editor/cursor"
 import {copyButton} from "prism-code-editor/copy-button"
 import {matchTags} from "prism-code-editor/match-tags"
 import {highlightBracketPairs} from "prism-code-editor/highlight-brackets"
-import {indentGuides} from "prism-code-editor/guides";
 import {createEditor} from "prism-code-editor";
 import {autoComplete, fuzzyFilter} from "prism-code-editor/autocomplete";
 
@@ -79,7 +78,6 @@ onMounted(() => {
         matchTags(),
         highlightBracketPairs(),
         cursorPosition(),
-        indentGuides(),
     ];
 
     // Add autocomplete extension if enabled
