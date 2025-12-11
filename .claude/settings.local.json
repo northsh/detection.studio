@@ -28,7 +28,9 @@
       "mcp__playwright__browser_press_key",
       "mcp__playwright__browser_run_code",
       "mcp__playwright__browser_network_requests",
-      "mcp__playwright__browser_wait_for"
+      "mcp__playwright__browser_wait_for",
+      "WebFetch(domain:sinn.io)",
+      "Bash(npm run type-check:*)"
     ]
   },
   "enabledMcpjsonServers": [

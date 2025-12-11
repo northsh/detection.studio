@@ -18,11 +18,14 @@ import {
     SidebarRail,
     SidebarSeparator,
 } from "@/components/ui/sidebar";
-import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles,} from "lucide-vue-next";
+import {BookOpen, ChevronRight, GlobeIcon, PaletteIcon, Settings2, Sparkles, FileText,} from "lucide-vue-next";
 import {Card} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
 
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import WorkspaceSelection from "@/components/WorkspaceSelection.vue";
+import ChangelogDialog from "@/components/ChangelogDialog.vue";
+import {ref} from "vue";
 
 // This is sample data.
 const data = {
@@ -102,6 +105,11 @@ const data = {
  */
 
 const workStore = useWorkspaceStore();
+const changelogDialogRef = ref<InstanceType<typeof ChangelogDialog>>();
+
+function openChangelog() {
+    changelogDialogRef.value?.openDialog();
+}
 
 </script>
 
@@ -130,9 +138,10 @@ const workStore = useWorkspaceStore();
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom to="/">
-                                <SidebarMenuButton :active="isActive" class="[active=true]/text-white" @click="navigate" :class="{
+                                <SidebarMenuButton :active="isActive" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }">
+                                }" class="[active=true]/text-white"
+                                                   @click="navigate">
                                     <PaletteIcon/>
                                     <span>Studio</span>
                                 </SidebarMenuButton>
@@ -141,9 +150,9 @@ const workStore = useWorkspaceStore();
 
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom to="/browser">
-                                <SidebarMenuButton :active="isActive" @click="navigate" :class="{
+                                <SidebarMenuButton :active="isActive" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }">
+                                }" @click="navigate">
                                     <GlobeIcon/>
                                     <span>Browser</span>
                                 </SidebarMenuButton>
@@ -152,9 +161,9 @@ const workStore = useWorkspaceStore();
 
                         <SidebarMenuItem>
                             <router-link v-slot="{ isActive, navigate }" custom disabled to="/settings">
-                                <SidebarMenuButton :active="isActive" disabled @click="navigate" :class="{
+                                <SidebarMenuButton :active="isActive" :class="{
                                     'text-primary bg-primary/10': isActive,
-                                }">
+                                }" disabled @click="navigate">
                                     <Settings2/>
                                     <span>Settings</span>
                                 </SidebarMenuButton>
@@ -196,12 +205,23 @@ const workStore = useWorkspaceStore();
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
+                        <SidebarMenuButton class="relative" tooltip="Changelog" @click="openChangelog">
+                            <FileText/>
+                            <span>What's New</span>
+                            <div class="relative flex size-3">
+                                <div
+                                    class="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></div>
+                                <div class="relative inline-flex size-3 rounded-full bg-sky-500"></div>
+                            </div>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
                         <Transition>
                             <Card v-if="workStore.sidebarOpen"
                                   class="text-xs text-muted-foreground p-2 flex items-center gap-2">
                                 Powered by
                                 <Sparkles class="text-primary h-4 w-4"/>
-                                <a href="https://north.sh/" target="_blank" class="text-primary font-semibold">
+                                <a class="text-primary font-semibold" href="https://north.sh/" target="_blank">
                                     north.sh
                                 </a>
                             </Card>
@@ -215,4 +235,7 @@ const workStore = useWorkspaceStore();
             <router-view class="h-full w-full overflow-hidden"></router-view>
         </SidebarInset>
     </SidebarProvider>
+
+    <!-- Changelog Dialog with auto-show for new releases -->
+    <ChangelogDialog ref="changelogDialogRef" :auto-show="true"/>
 </template>
