@@ -30,7 +30,10 @@
       "mcp__playwright__browser_network_requests",
       "mcp__playwright__browser_wait_for",
       "WebFetch(domain:sinn.io)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(bun add:*)",
+      "Bash(npm run build:*)",
+      "Bash(bun -b run build)"
     ]
   },
   "enabledMcpjsonServers": [

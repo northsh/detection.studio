@@ -27,6 +27,9 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    worker: {
+        format: 'es', // Use ES module format for workers (required for Vite 7/Rollup)
+    },
     build: {
         sourcemap: true
     },

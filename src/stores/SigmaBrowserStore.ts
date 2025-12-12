@@ -85,7 +85,7 @@ export const useSigmaRulesStore = defineStore('sigmaRules', () => {
             rules.value = allRules.value;
             console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
 
-            // Initialize the search worker with the rules
+            // Initialize the search worker with the rules data
             try {
                 await searchWorker.initializeIndex(rules.value);
                 console.log('SigmaRulesStore: Search worker initialized');
