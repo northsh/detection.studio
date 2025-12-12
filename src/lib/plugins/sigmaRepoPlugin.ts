@@ -1,8 +1,7 @@
 // Function to clone or update the Sigma repository at build time
 import path from "path";
-import git from "isomorphic-git";
-import http from "isomorphic-git/http/node";
-import * as fsNode from "fs";
+import simpleGit from "simple-git";
+import { mkdir } from "fs/promises";
 
 export default function sigmaRepoPlugin() {
     const REPO_URL = 'https://github.com/SigmaHQ/sigma.git';
@@ -19,78 +18,44 @@ export default function sigmaRepoPlugin() {
 
             try {
                 const repoPath = path.resolve(LOCAL_REPO_PATH);
+                const gitDirPath = path.join(repoPath, '.git');
 
                 // Check if repo already exists
-                if (fsNode.existsSync(path.join(repoPath, '.git'))) {
+                const repoExists = await Bun.file(gitDirPath).exists();
+
+                if (repoExists) {
                     console.log('Repo exists, updating...');
 
+                    const git = simpleGit(repoPath);
+
                     // Fetch the latest changes
-                    await git.fetch({
-                        fs: fsNode,
-                        http,
-                        dir: repoPath,
-                        url: REPO_URL,
-                        depth: 1,
-                        singleBranch: true,
-                        tags: false
-                    });
+                    await git.fetch(['--depth', '1']);
 
                     // Get current branch name
-                    const currentBranch = await git.currentBranch({
-                        fs: fsNode,
-                        dir: repoPath,
-                        fullname: false
-                    });
+                    const branch = await git.branch();
+                    const currentBranch = branch.current || 'master';
 
-                    // Get latest remote commit
-                    const remoteInfo = await git.fetch({
-                        fs: fsNode,
-                        http,
-                        dir: repoPath,
-                        url: REPO_URL,
-                        ref: currentBranch || 'master',
-                        depth: 1,
-                        singleBranch: true,
-                        tags: false
-                    });
-
-                    // Get the latest commit SHA
-                    const latestCommitSha = remoteInfo.fetchHead;
-
-                    // Force checkout to that commit
-                    await git.checkout({
-                        fs: fsNode,
-                        dir: repoPath,
-                        ref: latestCommitSha || undefined,
-                        force: true
-                    });
+                    // Pull latest changes (fetch + merge)
+                    await git.pull('origin', currentBranch, ['--depth', '1']);
 
                     console.log('Repository updated successfully.');
                 } else {
                     console.log('Repo does not exist, cloning...');
 
                     // Ensure parent directory exists
-                    fsNode.mkdirSync(repoPath, { recursive: true });
+                    await mkdir(repoPath, { recursive: true });
 
                     // Clone the repository
-                    await git.clone({
-                        fs: fsNode,
-                        http,
-                        dir: repoPath,
-                        url: REPO_URL,
-                        depth: 1,
-                        singleBranch: true,
-                        ref: 'master'
-                    });
+                    await simpleGit().clone(REPO_URL, repoPath, ['--depth', '1', '--single-branch', '--branch', 'master']);
 
                     console.log('Repository cloned successfully.');
                 }
 
                 // Generate an index file with metadata of all rules
-                const indexData = await indexRules(repoPath, fsNode);
+                const indexData = await indexRules(repoPath);
                 const indexPath = path.join('public', 'sigma-rules-index.json');
-                fsNode.mkdirSync(path.dirname(indexPath), { recursive: true });
-                fsNode.writeFileSync(indexPath, JSON.stringify(indexData, null, 2));
+                await mkdir(path.dirname(indexPath), { recursive: true });
+                await Bun.write(indexPath, JSON.stringify(indexData, null, 2));
                 console.log('Sigma rules index generated successfully.');
             } catch (error) {
                 console.error('Error in sigma-repo-plugin:', error);
@@ -102,12 +67,14 @@ export default function sigmaRepoPlugin() {
 
 
 // Function to index all Sigma rules and generate metadata
-async function indexRules(repoPath: string, fs: any) {
+async function indexRules(repoPath: string) {
     const rulesPath = path.join(repoPath, 'rules');
     const rules: any[] = [];
 
     async function processDirectory(dirPath: string) {
-        const entries = await fs.promises.readdir(dirPath, { withFileTypes: true });
+        const entries = await Array.fromAsync(
+            Bun.readDir(dirPath, { withFileTypes: true })
+        );
 
         for (const entry of entries) {
             const fullPath = path.join(dirPath, entry.name);
@@ -118,7 +85,7 @@ async function indexRules(repoPath: string, fs: any) {
             } else if (entry.isFile() && (entry.name.endsWith('.yml') || entry.name.endsWith('.yaml'))) {
                 // Process YAML files
                 try {
-                    const content = await fs.promises.readFile(fullPath, 'utf-8');
+                    const content = await Bun.file(fullPath).text();
                     const yaml = await import('js-yaml');
                     const yamlContent = yaml.load(content) as any;
 

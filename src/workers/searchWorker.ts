@@ -1,5 +1,6 @@
 import FlexSearch from 'flexsearch';
 import type { SigmaRule } from '../stores/SigmaBrowserStore';
+import * as Flexsearch from "flexsearch";
 
 interface SearchMessage {
     type: 'search' | 'init';
@@ -13,7 +14,7 @@ interface SearchResponse {
     error?: string;
 }
 
-let index: FlexSearch.Document<any> | null = null;
+let index: Flexsearch.Document<any> | null = null;
 let rulesMap: Map<string, SigmaRule> = new Map();
 
 // Listen for messages from the main thread
