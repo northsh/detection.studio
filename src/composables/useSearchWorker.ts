@@ -68,7 +68,7 @@ export function useSearchWorker() {
 
     let searchCallback: ((results: SigmaRule[]) => void) | null = null;
 
-    // Initialize the search index with rules
+    // Initialize the search index (builds index from rules in the worker)
     function initializeIndex(rules: SigmaRule[]): Promise<void> {
         return new Promise((resolve, reject) => {
             if (!worker.value) {
@@ -82,11 +82,9 @@ export function useSearchWorker() {
 
             const onReady = (event: MessageEvent<SearchResponse>) => {
                 if (event.data.type === 'ready') {
-
                     worker.value?.removeEventListener('message', onReady);
                     resolve();
                 } else if (event.data.type === 'error') {
-
                     worker.value?.removeEventListener('message', onReady);
                     reject(new Error(event.data.error));
                 }

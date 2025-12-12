@@ -456,11 +456,12 @@ const filteredRules = computed(() => {
 
     // Then apply status filters
     rules = rules.filter(rule => {
-        // If rule has no status, include it only if at least one filter is enabled
-        if (!rule.status) return Object.values(statusFilters).some(value => value);
+        // If rule has no status, exclude it (rules should have a status to be included)
+        if (!rule.status) return false;
 
-        // Otherwise, check if the rule's status is in the enabled filters
-        return statusFilters[rule.status.toLowerCase()] === true;
+        // Check if the rule's status is in the enabled filters
+        const normalizedStatus = rule.status.toLowerCase();
+        return statusFilters[normalizedStatus] === true;
     });
 
     // Apply product filter if selected
