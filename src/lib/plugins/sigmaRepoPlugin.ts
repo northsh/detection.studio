@@ -14,7 +14,6 @@ export default function sigmaRepoPlugin() {
 
     return {
         name: 'sigma-repo-plugin',
-        apply: 'build', // Only run during production builds, not dev server
         buildStart: async function() {
             console.log('Cloning or updating SigmaHQ repository...');
 
