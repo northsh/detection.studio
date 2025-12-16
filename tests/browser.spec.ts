@@ -8,9 +8,9 @@ test.describe("Conversion", () => {
     await page.getByRole("button", { name: "Close" }).first().click();
     await page.getByRole("button", { name: "Browser" }).click();
     await page.getByRole("textbox", { name: "Search across rules..." }).click();
-    await page.getByRole("textbox", { name: "Search across rules..." }).fill("AWS ROOT");
+    await page.getByRole("textbox", { name: "Search across rules..." }).fill("AWS Root");
     await page
-      .getByText("AWS Root CredentialsmediumtestDetects AWS root account usageawscloudtrail")
+      .getByText("AWS Root Credentials")
       .click();
     await page.getByRole("button", { name: "Import to Studio" }).click();
     await expect(page.locator("#siem-query-editor")).toContainText(
