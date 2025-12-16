@@ -6,6 +6,9 @@ import kql from "@/images/kql.svg";
 import secops from "@/images/secops.svg";
 import crowdstrike from "@/images/crowdstrike.svg";
 import panther from "@/images/panther.svg";
+import sqlite from "@/images/sqlite.svg";
+
+
 export type Siem = {
     id: string;
     name: string;
@@ -86,7 +89,7 @@ export const supportedSiems: Array<Siem> = [
     {id: "secops", name: "Google SecOps", icon: secops, backend: "pysigma-backend-secops"},
     {id: "sentinel_one", name: "Sentinel One", icon: null, backend: "pysigma-backend-sentinelone"},
     // {id: "sentinel_one_pq", name: "Sentinel One - PowerQuery", icon: null, backend: 'pysigma-backend-sentinelone'}, // Disabled due to non-operational backaned
-    {id: "sqlite", name: "SQLite", icon: null, backend: "pysigma-backend-sqlite"},
+    {id: "sqlite", name: "SQLite", icon: sqlite, backend: "pysigma-backend-sqlite"},
     {id: "surreal_ql", name: "SurrealQL", icon: null, backend: "pysigma-backend-surrealql"},
     // {id: "tql", name: "Trellix TQL", icon: null, backend: 'pysigma-backend-trellix'},
     {id: "uberagent", name: "uberAgent", icon: null, backend: "pysigma-backend-uberagent"},
