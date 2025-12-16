@@ -33,8 +33,14 @@
       "Bash(npm run type-check:*)",
       "Bash(bun add:*)",
       "Bash(npm run build:*)",
-      "Bash(bun -b run build)"
+      "Bash(bun -b run build)",
+      "Bash(bun:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ]
   },
-  "enabledMcpjsonServers": ["shadcnVue", "playwright"]
+  "enabledMcpjsonServers": [
+    "shadcnVue",
+    "playwright"
+  ]
 }
