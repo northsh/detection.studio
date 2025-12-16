@@ -50,7 +50,7 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
       - name: Run Playwright tests for ${{ matrix.browser }}
-        run: bunx playwright test --project=${{ matrix.browser }}
+        run: bun run test --project=${{ matrix.browser }}
 
   build-and-deploy:
     runs-on: ubuntu-latest
