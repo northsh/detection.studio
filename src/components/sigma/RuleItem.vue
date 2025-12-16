@@ -27,22 +27,22 @@ function selectRule() {
 </script>
 
 <template>
-  <div 
+  <div
     class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs my-2"
     :class="{'border-primary/50 bg-primary/5': isSelected(rule)}"
     @click="selectRule"
   >
     <h3 class="font-medium">{{ rule.title }}</h3>
     <div class="flex gap-1.5 mt-1">
-      <Badge 
-        v-if="rule.level" 
+      <Badge
+        v-if="rule.level"
         :class="getLevelBadgeClass(rule.level)"
         class="uppercase font-semibold text-[10px] tracking-wider"
       >
         {{ rule.level }}
       </Badge>
-      <Badge 
-        v-if="rule.status" 
+      <Badge
+        v-if="rule.status"
         variant="outline"
         class="uppercase font-semibold text-[10px] tracking-wider"
       >

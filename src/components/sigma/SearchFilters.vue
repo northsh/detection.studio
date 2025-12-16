@@ -112,18 +112,20 @@ function toggleLogSourceSorting(pressed: boolean) {
             <h3 class="text-sm font-medium">Filters</h3>
             <Badge variant="outline" class="text-xs">{{ getActiveFiltersCount() }}</Badge>
           </div>
-          <ChevronDown class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180" />
+          <ChevronDown
+            class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"
+          />
         </div>
       </CollapsibleTrigger>
-      
+
       <CollapsibleContent class="pt-2">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- Status filter -->
           <div class="space-y-2">
             <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
             <div class="flex flex-wrap gap-1.5">
-              <Badge 
-                v-for="status in STATUS_OPTIONS" 
+              <Badge
+                v-for="status in STATUS_OPTIONS"
                 :key="status"
                 variant="outline"
                 :class="[
@@ -141,15 +143,12 @@ function toggleLogSourceSorting(pressed: boolean) {
           <!-- Logsource filter with combobox for search -->
           <div class="space-y-2">
             <h3 class="text-xs font-medium text-muted-foreground">Filter by Logsource</h3>
-            <Combobox 
-              :model-value="selectedProduct"
-              @update:model-value="updateSelectedProduct"
-            >
+            <Combobox :model-value="selectedProduct" @update:model-value="updateSelectedProduct">
               <ComboboxAnchor>
                 <div class="relative w-full items-center">
-                  <ComboboxInput 
+                  <ComboboxInput
                     class="pl-9 w-full"
-                    placeholder="Search product/category/service..." 
+                    placeholder="Search product/category/service..."
                     @input="onProductSearch"
                     :display-value="(val) => val"
                   />
@@ -158,16 +157,14 @@ function toggleLogSourceSorting(pressed: boolean) {
                   </span>
                 </div>
               </ComboboxAnchor>
-              
+
               <ComboboxList class="w-full">
-                <ComboboxEmpty>
-                  No matches found
-                </ComboboxEmpty>
+                <ComboboxEmpty> No matches found </ComboboxEmpty>
 
                 <ComboboxGroup>
-                  <ComboboxItem 
-                    v-for="option in filteredProductOptions" 
-                    :key="option" 
+                  <ComboboxItem
+                    v-for="option in filteredProductOptions"
+                    :key="option"
                     :value="option"
                     class="flex items-center justify-between"
                   >
@@ -187,7 +184,7 @@ function toggleLogSourceSorting(pressed: boolean) {
             </Combobox>
           </div>
         </div>
-        
+
         <!-- Logsource sorting toggle -->
         <div class="mt-4">
           <div class="flex items-center justify-between mb-2">
@@ -195,8 +192,8 @@ function toggleLogSourceSorting(pressed: boolean) {
           </div>
           <div class="flex items-center space-x-2">
             <span class="text-xs text-muted-foreground">Product</span>
-            <Toggle 
-              :pressed="logsourceSortingStyle === 'category-product-service'" 
+            <Toggle
+              :pressed="logsourceSortingStyle === 'category-product-service'"
               @update:pressed="toggleLogSourceSorting"
               size="sm"
             />

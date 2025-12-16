@@ -36,8 +36,5 @@
       "Bash(bun -b run build)"
     ]
   },
-  "enabledMcpjsonServers": [
-    "shadcnVue",
-    "playwright"
-  ]
+  "enabledMcpjsonServers": ["shadcnVue", "playwright"]
 }

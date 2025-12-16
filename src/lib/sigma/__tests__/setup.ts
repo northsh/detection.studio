@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock Worker API types
 export interface WorkerStatus {
@@ -37,18 +37,18 @@ export const mockWorkerApi = {
 };
 
 // Setup global mocks
-vi.mock('@/lib/sigma/worker/workerApi', () => mockWorkerApi);
+vi.mock("@/lib/sigma/worker/workerApi", () => mockWorkerApi);
 
-vi.mock('@/types/SIEMs', () => ({
-  SIGMA_TARGETS: new Set(['splunk', 'elastic', 'qradar', 'sentinel'])
+vi.mock("@/types/SIEMs", () => ({
+  SIGMA_TARGETS: new Set(["splunk", "elastic", "qradar", "sentinel"]),
 }));
 
 // Mock global Worker for SSR tests
-Object.defineProperty(global, 'Worker', {
+Object.defineProperty(global, "Worker", {
   writable: true,
   value: class MockWorker {
     constructor() {}
     postMessage() {}
     terminate() {}
-  }
+  },
 });

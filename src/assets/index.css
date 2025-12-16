@@ -1,233 +1,240 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-
 :root {
-    /* Default background color of <body />...etc */
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(222.2 47.4% 11.2%);
+  /* Default background color of <body />...etc */
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.19 0.044 266);
 
-    /* Muted backgrounds such as <TabsList />, <Skeleton /> and <Switch /> */
-    --muted: hsl(230 20% 94%);
-    --muted-foreground: hsl(215.4 16.3% 46.9%);
+  /* Muted backgrounds such as <TabsList />, <Skeleton /> and <Switch /> */
+  --muted: oklch(0.98 0.008 277);
+  --muted-foreground: oklch(0.58 0.045 257);
 
-    /* Background color for <Card /> */
-    --card: hsl(230 40% 98.5%);
-    --card-foreground: hsl(222.2 47.4% 15%);
+  /* Background color for <Card /> */
+  --card: oklch(0.98 0.004 277);
+  --card-foreground: oklch(0.22 0.056 265);
 
-    /* Background color for popovers such as <DropdownMenu />, <HoverCard />, <Popover /> */
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(222.2 47.4% 11.2%);
+  /* Background color for popovers such as <DropdownMenu />, <HoverCard />, <Popover /> */
+  --popover: oklch(0.98 0 0);
+  --popover-foreground: oklch(0.19 0.044 266);
 
-    /* Default border color */
-    --border: hsl(214.3 31.8% 93%);
+  /* Default border color */
+  --border: oklch(0.98 0.014 256);
 
-    /* Border color for inputs such as <Input />, <Select />, <Textarea /> */
-    --input: hsl(214.3 31.8% 91%);
+  /* Border color for inputs such as <Input />, <Select />, <Textarea /> */
+  --input: oklch(0.97 0.014 256);
 
-    /* Primary colors for <Button /> */
-    --primary: hsl(241 70% 66%);
-    --primary-foreground: hsl(210 40% 98%);
+  /* Primary colors for <Button /> */
+  --primary: oklch(0.62 0.197 280);
+  --primary-foreground: oklch(0.98 0.004 248);
 
-    /* Secondary colors for <Button /> */
-    --secondary: hsl(210 40% 92.1%);
-    --secondary-foreground: hsl(222.2 47.4% 11.2%);
+  /* Secondary colors for <Button /> */
+  --secondary: oklch(0.98 0.015 248);
+  --secondary-foreground: oklch(0.19 0.044 266);
 
-    /* Used for accents such as hover effects on <DropdownMenuItem>, <SelectItem>...etc */
-    --accent: hsl(210 40% 96.1%);
-    --accent-foreground: hsl(222.2 47.4% 11.2%);
+  /* Used for accents such as hover effects on <DropdownMenuItem>, <SelectItem>...etc */
+  --accent: oklch(0.98 0.007 248);
+  --accent-foreground: oklch(0.19 0.044 266);
 
-    /* Used for destructive actions such as <Button variant="destructive"> */
-    --destructive: hsl(0 87.2% 58.2%);
-    --destructive-foreground: hsl(0 0% 98%);
+  /* Used for destructive actions such as <Button variant="destructive"> */
+  --destructive: oklch(0.66 0.243 26);
+  --destructive-foreground: oklch(0.98 0 0);
 
-    /* Used for focus ring */
-    --ring: hsl(215 20.2% 65.1%);
+  /* Used for focus ring */
+  --ring: oklch(0.75 0.039 257);
 
-    /* Border radius for card, input and buttons */
-    --radius: 0.5rem;
+  /* Border radius for card, input and buttons */
+  --radius: 0.5rem;
 
-    /*--background: hsl(0 0% 100%);*/
-    /*--foreground: hsl(240 10% 3.9%);*/
+  /*--background: hsl(0 0% 100%);*/
+  /*--foreground: hsl(240 10% 3.9%);*/
 
-    /*--card: hsl(0 0% 100%);*/
-    /*--card-foreground: hsl(240 10% 3.9%);*/
+  /*--card: hsl(0 0% 100%);*/
+  /*--card-foreground: hsl(240 10% 3.9%);*/
 
-    /*--popover: hsl(0 0% 100%);*/
-    /*--popover-foreground: hsl(240 10% 3.9%);*/
+  /*--popover: hsl(0 0% 100%);*/
+  /*--popover-foreground: hsl(240 10% 3.9%);*/
 
-    /*--primary: hsl(240 35.9% 50%);*/
-    /*--primary-foreground: hsl(0 0% 98%);*/
+  /*--primary: hsl(240 35.9% 50%);*/
+  /*--primary-foreground: hsl(0 0% 98%);*/
 
-    /*--secondary: hsl(240 4.8% 95.9%);*/
-    /*--secondary-foreground: hsl(240 5.9% 10%);*/
+  /*--secondary: hsl(240 4.8% 95.9%);*/
+  /*--secondary-foreground: hsl(240 5.9% 10%);*/
 
-    /*--muted: hsl(240 40% 98%);*/
-    /*--muted-foreground: hsl(240 3.8% 46.1%);*/
+  /*--muted: hsl(240 40% 98%);*/
+  /*--muted-foreground: hsl(240 3.8% 46.1%);*/
 
-    /*--accent: hsl(240 4.8% 95.9%);*/
-    /*--accent-foreground: hsl(240 5.9% 10%);*/
+  /*--accent: hsl(240 4.8% 95.9%);*/
+  /*--accent-foreground: hsl(240 5.9% 10%);*/
 
-    /*--destructive: hsl(0 84.2% 60.2%);*/
-    /*--destructive-foreground: hsl(0 0% 98%);*/
+  /*--destructive: hsl(0 84.2% 60.2%);*/
+  /*--destructive-foreground: hsl(0 0% 98%);*/
 
-    /*--border:240 5.9% 90%;*/
-    /*--input:240 5.9% 90%;*/
-    /*--ring:240 5.9% 10%;*/
-    /*--radius: 0.5rem;*/
+  /*--border:240 5.9% 90%;*/
+  /*--input:240 5.9% 90%;*/
+  /*--ring:240 5.9% 10%;*/
+  /*--radius: 0.5rem;*/
 
-    --vis-tooltip-background-color: none !important;
-    --vis-tooltip-border-color: none !important;
-    --vis-tooltip-text-color: none !important;
-    --vis-tooltip-shadow-color: none !important;
-    --vis-tooltip-backdrop-filter: none !important;
-    --vis-tooltip-padding: none !important;
+  --vis-tooltip-background-color: none !important;
+  --vis-tooltip-border-color: none !important;
+  --vis-tooltip-text-color: none !important;
+  --vis-tooltip-shadow-color: none !important;
+  --vis-tooltip-backdrop-filter: none !important;
+  --vis-tooltip-padding: none !important;
 
-    --vis-primary-color: var(--primary);
-    /* change to any hsl value you want */
-    --vis-secondary-color: hsl(160 81% 40%);
-    --vis-text-color: var(--muted-foreground);
+  --vis-primary-color: var(--primary);
+  /* change to any hsl value you want */
+  --vis-secondary-color: oklch(0.73 0.162 163);
+  --vis-text-color: var(--muted-foreground);
 
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(240 5.9% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(240 4.8% 95.9%);
-    --sidebar-accent-foreground: hsl(240 5.9% 40%);
-    --sidebar-border: hsl(220 13% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --sidebar-background: oklch(0.98 0 0);
+  --sidebar-foreground: oklch(0.34 0.013 286);
+  --sidebar-primary: oklch(0.19 0.006 286);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.98 0.001 286);
+  --sidebar-accent-foreground: oklch(0.45 0.021 286);
+  --sidebar-border: oklch(0.97 0.006 265);
+  --sidebar-ring: oklch(0.65 0.207 260);
+  --sidebar: oklch(0.98 0 0);
 }
 
 .dark {
-    --background: hsl(245 29% 7%);
-    --foreground: hsl(0 0% 98%);
+  --background: oklch(0.15 0.024 288);
+  --foreground: oklch(0.98 0 0);
 
-    --muted: hsl(245 23.7% 15.9%);
-    --muted-foreground: hsl(240 19% 55%);
+  --muted: oklch(0.25 0.037 287);
+  --muted-foreground: oklch(0.61 0.073 284);
 
-    --popover: hsl(245 32% 8%);
-    --popover-foreground: hsl(0 0% 98%);
+  --popover: oklch(0.16 0.03 287);
+  --popover-foreground: oklch(0.98 0 0);
 
-    --card: hsl(245 25% 9%);
-    --card-foreground: hsl(240 80% 90%);
+  --card: oklch(0.17 0.026 288);
+  --card-foreground: oklch(0.92 0.062 285);
 
-    --border: hsl(245 23.7% 15%);
-    --input: hsl(245 23.7% 20%);
+  --border: oklch(0.23 0.038 287);
+  --input: oklch(0.26 0.048 287);
 
-    --primary: hsl(241 98% 73%);
-    --primary-foreground: hsl(245 5.9% 98%);
+  --primary: oklch(0.67 0.215 280);
+  --primary-foreground: oklch(0.98 0.001 290);
 
-    --secondary: hsl(245 23.7% 18.9%);
-    --secondary-foreground: hsl(0 0% 98%);
+  --secondary: oklch(0.25 0.046 287);
+  --secondary-foreground: oklch(0.98 0 0);
 
-    --accent: hsl(245 33.7% 15.9%);
-    --accent-foreground: hsl(0 0% 98%);
+  --accent: oklch(0.22 0.056 286);
+  --accent-foreground: oklch(0.98 0 0);
 
-    --destructive: hsl(0 57% 47%);
-    --destructive-foreground: hsl(0 0% 98%);
+  --destructive: oklch(0.56 0.191 25);
+  --destructive-foreground: oklch(0.98 0 0);
 
-    --ring: hsl(241 98% 73%);
+  --ring: oklch(0.67 0.215 280);
 
-    --sidebar-background: hsl(245 29% 7%);
-    --sidebar-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-primary: hsl(241 98% 73%);
-    --sidebar-primary-foreground: hsl(245 5.9% 98%);
-    --sidebar-accent: hsl(240 21.7% 14%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(245 23.7% 15%);
-    --sidebar-ring: hsl(241 98% 73%);
+  --sidebar-background: oklch(0.15 0.024 288);
+  --sidebar-foreground: oklch(0.98 0.001 286);
+  --sidebar-primary: oklch(0.67 0.215 280);
+  --sidebar-primary-foreground: oklch(0.98 0.001 290);
+  --sidebar-accent: oklch(0.22 0.033 284);
+  --sidebar-accent-foreground: oklch(0.98 0.001 286);
+  --sidebar-border: oklch(0.22 0.038 287);
+  --sidebar-ring: oklch(0.67 0.215 280);
 
-    /**
+  /**
         Studio
      */
 
-    --editor__bg-highlight: transparent;
+  --editor__bg-highlight: transparent;
 
+  --sidebar: oklch(0.19 0.006 286);
 }
-
 
 @theme inline {
-    --font-sans: DM Sans Variable;
+  --font-sans: DM Sans Variable;
 
-    --color-border: var(--border);
-    --color-input: var(--input);
-    --color-ring: var(--ring);
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
 
-    --color-secondary: var(--secondary);
-    --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-    --color-destructive: var(--destructive);
-    --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
-    --color-muted: var(--muted);
-    --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-    --color-accent: var(--accent);
-    --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-    --color-popover: var(--popover);
-    --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
 
-    --color-card: var(--card);
-    --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 
-    --color-sidebar: var(--sidebar-background);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 
-    --color-linear-100: #bcbfd4;
-    --color-linear-200: #8f91a1;
-    --color-linear-300: #757685;
-    --color-linear-400: #4a4a56;
-    --color-linear-500: #4d4e5c;
-    --color-linear-600: #323242;
-    --color-linear-700: #212233;
-    --color-linear-800: #171726;
-    --color-linear-900: #090a1d;
+  --color-linear-100: #bcbfd4;
+  --color-linear-200: #8f91a1;
+  --color-linear-300: #757685;
+  --color-linear-400: #4a4a56;
+  --color-linear-500: #4d4e5c;
+  --color-linear-600: #323242;
+  --color-linear-700: #212233;
+  --color-linear-800: #171726;
+  --color-linear-900: #090a1d;
 
-    --color-north-50: color(display-p3 0.894 0.886 0.953);
-    --color-north-100: color(display-p3 0.827 0.82 0.922);
-    --color-north-200: color(display-p3 0.714 0.698 0.863);
-    --color-north-300: color(display-p3 0.584 0.565 0.796);
-    --color-north-400: color(display-p3 0.475 0.451 0.729);
-    --color-north-500: color(display-p3 0.361 0.333 0.647);
-    --color-north-600: color(display-p3 0.31 0.282 0.576);
-    --color-north-700: color(display-p3 0.259 0.235 0.502);
-    --color-north-800: color(display-p3 0.208 0.188 0.412);
-    --color-north-900: color(display-p3 0.161 0.145 0.333);
-    --color-north-950: color(display-p3 0.137 0.125 0.298);
+  --color-north-50: color(display-p3 0.894 0.886 0.953);
+  --color-north-100: color(display-p3 0.827 0.82 0.922);
+  --color-north-200: color(display-p3 0.714 0.698 0.863);
+  --color-north-300: color(display-p3 0.584 0.565 0.796);
+  --color-north-400: color(display-p3 0.475 0.451 0.729);
+  --color-north-500: color(display-p3 0.361 0.333 0.647);
+  --color-north-600: color(display-p3 0.31 0.282 0.576);
+  --color-north-700: color(display-p3 0.259 0.235 0.502);
+  --color-north-800: color(display-p3 0.208 0.188 0.412);
+  --color-north-900: color(display-p3 0.161 0.145 0.333);
+  --color-north-950: color(display-p3 0.137 0.125 0.298);
 
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
 
-    --animate-accordion-down: accordion-down 0.2s ease-out;
-    --animate-accordion-up: accordion-up 0.2s ease-out;
-    --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
-    --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
-
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
+  --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
 }
 
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
 @layer base {
-    * {
-        @apply border-border;
-    }
-
-    body {
-        @apply bg-background text-foreground;
-    }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

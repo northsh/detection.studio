@@ -1,7 +1,7 @@
-import {v4 as uuid} from "uuid";
+import { v4 as uuid } from "uuid";
 
 export default function sigmaTemplate() {
-    return `title: Example Sigma Rule
+  return `title: Example Sigma Rule
 id: ${uuid()}
 description: Detects suspicious activity
 status: experimental

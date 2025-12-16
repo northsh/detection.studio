@@ -146,12 +146,19 @@ defineExpose({
               }"
             >
               <div class="flex items-center justify-between mb-1">
-                <div class="text-sm font-bold" :class="{
+                <div
+                  class="text-sm font-bold"
+                  :class="{
                   'text-primary': selectedVersion === release.version,
-                }">
+                }"
+                >
                   {{ release.version }}
                 </div>
-                <Badge v-if="isLatestRelease(release.version)" variant="secondary" class="text-xs px-2 py-0">
+                <Badge
+                  v-if="isLatestRelease(release.version)"
+                  variant="secondary"
+                  class="text-xs px-2 py-0"
+                >
                   NEW
                 </Badge>
               </div>
@@ -183,9 +190,7 @@ defineExpose({
       </div>
 
       <div class="flex justify-end gap-2 pt-4 border-t">
-        <Button variant="outline" @click="closeDialog">
-          Close
-        </Button>
+        <Button variant="outline" @click="closeDialog"> Close </Button>
       </div>
     </DialogContent>
   </Dialog>

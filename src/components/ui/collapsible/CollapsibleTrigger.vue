@@ -1,12 +1,12 @@
-<script lang="ts" setup>
-import type {CollapsibleTriggerProps} from 'radix-vue'
-import {CollapsibleTrigger} from 'radix-vue'
+<script setup lang="ts">
+import type { CollapsibleTriggerProps } from "reka-ui"
+import { CollapsibleTrigger } from "reka-ui"
 
 const props = defineProps<CollapsibleTriggerProps>()
 </script>
 
 <template>
-    <CollapsibleTrigger v-bind="props">
-        <slot/>
-    </CollapsibleTrigger>
+  <CollapsibleTrigger v-bind="props">
+    <slot />
+  </CollapsibleTrigger>
 </template>

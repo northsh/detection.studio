@@ -1,7 +1,7 @@
-import {v4 as uuid} from "uuid";
+import { v4 as uuid } from "uuid";
 
 export default function sigmaCorrelationTemplate() {
-    return `title: Windows Failed Logon Event
+  return `title: Windows Failed Logon Event
 id: ${uuid()}
 name: failed_logon # Rule Reference
 description: Detects failed logon events on Windows systems.

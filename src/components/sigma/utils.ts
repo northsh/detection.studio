@@ -1,4 +1,4 @@
-import type {SigmaRule} from '@/stores/SigmaBrowserStore';
+import type { SigmaRule } from "@/stores/SigmaBrowserStore";
 
 /**
  * Get badge class based on rule level
@@ -8,13 +8,13 @@ import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 export function getLevelBadgeClass(level: string): string {
   const lowerLevel = level.toLowerCase();
 
-  if (lowerLevel === 'critical') return 'bg-red-600 hover:bg-red-600';
-  if (lowerLevel === 'high') return 'bg-red-500 hover:bg-red-500';
-  if (lowerLevel === 'medium') return 'bg-amber-500 hover:bg-amber-500';
-  if (lowerLevel === 'low') return 'bg-blue-500 hover:bg-blue-500';
-  if (lowerLevel === 'informational') return 'bg-green-500 hover:bg-green-500';
+  if (lowerLevel === "critical") return "bg-red-600 hover:bg-red-600";
+  if (lowerLevel === "high") return "bg-red-500 hover:bg-red-500";
+  if (lowerLevel === "medium") return "bg-amber-500 hover:bg-amber-500";
+  if (lowerLevel === "low") return "bg-blue-500 hover:bg-blue-500";
+  if (lowerLevel === "informational") return "bg-green-500 hover:bg-green-500";
 
-  return 'bg-gray-500 hover:bg-gray-500';
+  return "bg-gray-500 hover:bg-gray-500";
 }
 
 /**
@@ -22,20 +22,22 @@ export function getLevelBadgeClass(level: string): string {
  * @param rules List of sigma rules
  * @returns Mapping of logsource components
  */
-export function generateLogsourceMapping(rules: SigmaRule[]): Record<string, { type: string, items: Set<string> }> {
-  const mapping: Record<string, { type: string, items: Set<string> }> = {};
+export function generateLogsourceMapping(
+  rules: SigmaRule[],
+): Record<string, { type: string; items: Set<string> }> {
+  const mapping: Record<string, { type: string; items: Set<string> }> = {};
 
-  rules.forEach(rule => {
+  rules.forEach((rule) => {
     if (rule.logsource?.product) {
       if (!mapping[rule.logsource.product]) {
-        mapping[rule.logsource.product] = { type: 'product', items: new Set() };
+        mapping[rule.logsource.product] = { type: "product", items: new Set() };
       }
 
       if (rule.logsource.category) {
         mapping[rule.logsource.product].items.add(rule.logsource.category);
 
         if (!mapping[rule.logsource.category]) {
-          mapping[rule.logsource.category] = { type: 'category', items: new Set() };
+          mapping[rule.logsource.category] = { type: "category", items: new Set() };
         }
       }
 
@@ -43,7 +45,7 @@ export function generateLogsourceMapping(rules: SigmaRule[]): Record<string, { t
         mapping[rule.logsource.product].items.add(rule.logsource.service);
 
         if (!mapping[rule.logsource.service]) {
-          mapping[rule.logsource.service] = { type: 'service', items: new Set() };
+          mapping[rule.logsource.service] = { type: "service", items: new Set() };
         }
       }
     }
@@ -60,7 +62,7 @@ export function generateLogsourceMapping(rules: SigmaRule[]): Record<string, { t
 export function extractLogsourceOptions(rules: SigmaRule[]): string[] {
   const options = new Set<string>();
 
-  rules.forEach(rule => {
+  rules.forEach((rule) => {
     if (rule.logsource?.product) {
       options.add(rule.logsource.product);
     }
@@ -78,7 +80,7 @@ export function extractLogsourceOptions(rules: SigmaRule[]): string[] {
 /**
  * Available status options for Sigma rules
  */
-export const STATUS_OPTIONS = ['stable', 'test', 'experimental', 'deprecated', 'unsupported'];
+export const STATUS_OPTIONS = ["stable", "test", "experimental", "deprecated", "unsupported"];
 
 /**
  * Default status filter settings
@@ -88,5 +90,5 @@ export const DEFAULT_STATUS_FILTERS = {
   test: true,
   experimental: true,
   deprecated: false,
-  unsupported: false
+  unsupported: false,
 };

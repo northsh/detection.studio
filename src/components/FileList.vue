@@ -24,9 +24,9 @@ import {ScrollArea} from "@/components/ui/scroll-area";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
 import FileListItem from "./FileListItem.vue";
 import type {FileType} from "@/types/types.ts";
-import {DropdownMenuPortal} from "radix-vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import SigmaLogo from '@/images/sigma.svg?component'
+import {DropdownMenuPortal} from "reka-ui";
 
 /**
  * Editing Focus
@@ -72,137 +72,154 @@ const groupedFiles = computed(function () {
 </script>
 
 <template>
-    <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full">
+    <div class="space-y-2">
+      <div class="flex bg-background pt-1 pl-2.5 pb-0 mb-0.5">
+        <TooltipProvider>
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Button class="h-6 w-6" data-test-id="new-sigma-rule" size="icon">
+                    <Plus class="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent align="start" side="bottom">
+                  <p>Add to library</p>
+                </TooltipContent>
+              </Tooltip>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="bottom">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Rule Type</DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuItem class="flex gap-2 items-center" @click="newFile('sigma')">
+                <SigmaLogo class="h-4 w-4" />
+                Sigma Rule
+              </DropdownMenuItem>
+              <!--                            <DropdownMenuSub>-->
+              <!--                                <DropdownMenuSubTrigger class="flex gap-2 items-center">-->
+              <!--                                    <SigmaLogo class="h-4 w-4"/>-->
+              <!--                                    <span>Sigma Rule</span>-->
+              <!--                                </DropdownMenuSubTrigger>-->
+              <!--                                <DropdownMenuPortal>-->
+              <!--                                    <DropdownMenuSubContent>-->
+              <!--                                        <DropdownMenuItem @click="newFile('sigma')">Sigma</DropdownMenuItem>-->
+              <!--                                    </DropdownMenuSubContent>-->
+              <!--                                </DropdownMenuPortal>-->
+              <!--                            </DropdownMenuSub>-->
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger class="flex gap-2 items-center">
+                  <SigmaLogo class="h-4 w-4" />
+                  <span>Sigma Correlation Rule</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('correlation', 'eventCount')"
+                    >
+                      Event Count
+                      <p class="text-muted-foreground">
+                        Count the number of events in a time window
+                      </p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('correlation', 'valueCount')"
+                    >
+                      Value Count
+                      <p class="text-muted-foreground">
+                        Count the number of individual values in a time window
+                      </p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('correlation', 'temporal')"
+                    >
+                      Temporal
+                      <p class="text-muted-foreground">
+                        Multiple different events close together in time
+                      </p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>Ordered Temporal</DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem @click="newFile('filter')">Sigma Filter</DropdownMenuItem>
+              <DropdownMenuItem @click="newFile('pipeline')">Sigma Pipeline</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-        <div class="space-y-2">
-            <div class="flex bg-background pt-1 pl-2.5 pb-0 mb-0.5">
-                <TooltipProvider>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <Button class="h-6 w-6" data-test-id="new-sigma-rule" size="icon">
-                                        <Plus class="h-4 w-4"/>
-                                    </Button>
-                                </TooltipTrigger>
-                                <TooltipContent align="start" side="bottom">
-                                    <p>Add to library</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" side="bottom">
-                            <DropdownMenuGroup>
-                                <DropdownMenuLabel>Rule Type</DropdownMenuLabel>
-                            </DropdownMenuGroup>
-                            <DropdownMenuItem class="flex gap-2 items-center" @click="newFile('sigma')">
-                                <SigmaLogo class="h-4 w-4"/>
-                                Sigma Rule
-                            </DropdownMenuItem>
-                            <!--                            <DropdownMenuSub>-->
-                            <!--                                <DropdownMenuSubTrigger class="flex gap-2 items-center">-->
-                            <!--                                    <SigmaLogo class="h-4 w-4"/>-->
-                            <!--                                    <span>Sigma Rule</span>-->
-                            <!--                                </DropdownMenuSubTrigger>-->
-                            <!--                                <DropdownMenuPortal>-->
-                            <!--                                    <DropdownMenuSubContent>-->
-                            <!--                                        <DropdownMenuItem @click="newFile('sigma')">Sigma</DropdownMenuItem>-->
-                            <!--                                    </DropdownMenuSubContent>-->
-                            <!--                                </DropdownMenuPortal>-->
-                            <!--                            </DropdownMenuSub>-->
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger class="flex gap-2 items-center">
-                                    <SigmaLogo class="h-4 w-4"/>
-                                    <span>Sigma Correlation Rule</span>
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation', 'eventCount')">
-                                            Event Count
-                                            <p class="text-muted-foreground">
-                                                Count the number of events in a time window
-                                            </p>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation', 'valueCount')">
-                                            Value Count
-                                            <p class="text-muted-foreground">
-                                                Count the number of individual values in a time window
-                                            </p>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem class="flex flex-col items-start gap-1"
-                                                          @click="newFile('correlation', 'temporal')">
-                                            Temporal
-                                            <p class="text-muted-foreground">
-                                                Multiple different events close together in time
-                                            </p>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem disabled>Ordered Temporal</DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-                            <DropdownMenuSeparator/>
-                            <DropdownMenuItem @click="newFile('filter')">Sigma Filter</DropdownMenuItem>
-                            <DropdownMenuItem @click="newFile('pipeline')">Sigma Pipeline</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                class="h-6 w-6"
+                size="icon"
+                variant="ghost"
+                @click="fs.startRename(fs.currentlyOpenFileId)"
+              >
+                <TextCursor class="text-muted-foreground h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent align="start" side="bottom">
+              <p>Rename File</p>
+            </TooltipContent>
+          </Tooltip>
 
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button class="h-6 w-6" size="icon" variant="ghost"
-                                    @click="fs.startRename(fs.currentlyOpenFileId)">
-                                <TextCursor class="text-muted-foreground h-4 w-4"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent align="start" side="bottom">
-                            <p>Rename File</p>
-                        </TooltipContent>
-                    </Tooltip>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                class="h-6 w-6"
+                size="icon"
+                variant="ghost"
+                @click="fs.duplicateFile(fs.currentlyOpenFileId)"
+              >
+                <Files class="text-muted-foreground h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent align="start" side="bottom">
+              <p>Duplicate</p>
+            </TooltipContent>
+          </Tooltip>
 
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button class="h-6 w-6" size="icon" variant="ghost"
-                                    @click="fs.duplicateFile(fs.currentlyOpenFileId)">
-                                <Files class="text-muted-foreground h-4 w-4"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent align="start" side="bottom">
-                            <p>Duplicate</p>
-                        </TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button class="h-6 w-6" size="icon" variant="ghost"
-                                    @click="fs.deleteFile(fs.currentlyOpenFileId)">
-                                <Trash class="text-muted-foreground h-4 w-4"/>
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent align="start" side="bottom">
-                            <p>Delete File(s)</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </div>
-            <div class="min-h-0">
-                <ScrollArea class="h-full">
-                    <div class="space-y-1 p-2">
-                        <template v-for="(files, type) in groupedFiles" :key="type">
-                            <template v-if="files.length">
-                                <div>
-                                    <Button class="w-full justify-start h-7 px-2 hover:bg-muted/50" variant="ghost">
-                                        <Folder class="mr-2 text-muted-foreground h-4 w-4"/>
-                                        <span class="truncate">{{ type }}</span>
-                                    </Button>
-                                </div>
-                                <FileListItem v-for="file in files" :key="file.id" :file="file"/>
-                            </template>
-                        </template>
-                    </div>
-                </ScrollArea>
-            </div>
-        </div>
+          <Tooltip>
+            <TooltipTrigger>
+              <Button
+                class="h-6 w-6"
+                size="icon"
+                variant="ghost"
+                @click="fs.deleteFile(fs.currentlyOpenFileId)"
+              >
+                <Trash class="text-muted-foreground h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent align="start" side="bottom">
+              <p>Delete File(s)</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      <div class="min-h-0">
+        <ScrollArea class="h-full">
+          <div class="space-y-1 p-2">
+            <template v-for="(files, type) in groupedFiles" :key="type">
+              <template v-if="files.length">
+                <div>
+                  <Button class="w-full justify-start h-7 px-2 hover:bg-muted/50" variant="ghost">
+                    <Folder class="mr-2 text-muted-foreground h-4 w-4" />
+                    <span class="truncate">{{ type }}</span>
+                  </Button>
+                </div>
+                <FileListItem v-for="file in files" :key="file.id" :file="file" />
+              </template>
+            </template>
+          </div>
+        </ScrollArea>
+      </div>
     </div>
+  </div>
 </template>
 
 <style scoped>
