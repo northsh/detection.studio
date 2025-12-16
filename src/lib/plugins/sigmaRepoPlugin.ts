@@ -1,7 +1,8 @@
 // Function to clone or update the Sigma repository at build time
 import path from "path";
 import simpleGit from "simple-git";
-import { mkdir } from "fs/promises";
+import { mkdir, access, writeFile, readdir, readFile } from "fs/promises";
+import { constants } from "fs";
 
 export default function sigmaRepoPlugin() {
   const REPO_URL = "https://github.com/SigmaHQ/sigma.git";
@@ -21,7 +22,13 @@ export default function sigmaRepoPlugin() {
         const gitDirPath = path.join(repoPath, ".git");
 
         // Check if repo already exists
-        const repoExists = await Bun.file(gitDirPath).exists();
+        let repoExists = false;
+        try {
+          await access(gitDirPath, constants.F_OK);
+          repoExists = true;
+        } catch {
+          repoExists = false;
+        }
 
         if (repoExists) {
           console.log("Repo exists, updating...");
@@ -61,7 +68,7 @@ export default function sigmaRepoPlugin() {
         const indexData = await indexRules(repoPath);
         const indexPath = path.join("public", "sigma-rules-index.json");
         await mkdir(path.dirname(indexPath), { recursive: true });
-        await Bun.write(indexPath, JSON.stringify(indexData, null, 2));
+        await writeFile(indexPath, JSON.stringify(indexData, null, 2), "utf-8");
         console.log("Sigma rules index generated successfully.");
       } catch (error) {
         console.error("Error in sigma-repo-plugin:", error);
@@ -76,7 +83,7 @@ async function indexRules(repoPath: string) {
   const rules: any[] = [];
 
   async function processDirectory(dirPath: string) {
-    const entries = await Array.fromAsync(Bun.readDir(dirPath, { withFileTypes: true }));
+    const entries = await readdir(dirPath, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(dirPath, entry.name);
@@ -87,7 +94,7 @@ async function indexRules(repoPath: string) {
       } else if (entry.isFile() && (entry.name.endsWith(".yml") || entry.name.endsWith(".yaml"))) {
         // Process YAML files
         try {
-          const content = await Bun.file(fullPath).text();
+          const content = await readFile(fullPath, "utf-8");
           const yaml = await import("js-yaml");
           const yamlContent = yaml.load(content) as any;
 
