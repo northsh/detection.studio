@@ -68,12 +68,12 @@ export const createApp = ViteSSG(
       replaysOnErrorSampleRate: 1.0, // If you're not already sampling the entire session, change the sample rate to 100% when sampling sessions where errors occur.
     });
 
-    const pinia = createPinia().use(PiniaUndo).use(piniaPluginPersistedState);
+    let pinia = createPinia();
 
+    pinia = pinia.use(PiniaUndo).use(piniaPluginPersistedState);
     // Initialize stores
+    app.use(pinia).use(PiniaColada, {});
     useSigmaRulesStore(pinia);
     useSettingsStore(pinia);
-
-    app.use(pinia).use(PiniaColada, {}).use(router);
   },
 );

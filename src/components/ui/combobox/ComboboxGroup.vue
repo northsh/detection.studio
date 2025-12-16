@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import type {ComboboxGroupProps} from 'reka-ui'
-import {ComboboxGroup, ComboboxLabel} from 'reka-ui'
-import {cn} from '@/lib/utils'
-import {computed, type HTMLAttributes} from 'vue'
+import type { ComboboxGroupProps } from "reka-ui"
+import type { HTMLAttributes } from "vue"
+import { reactiveOmit } from "@vueuse/core"
+import { ComboboxGroup, ComboboxLabel } from "reka-ui"
+import { cn } from "@/lib/utils"
 
 const props = defineProps<ComboboxGroupProps & {
-  class?: HTMLAttributes['class']
+  class?: HTMLAttributes["class"]
   heading?: string
 }>()
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
+const delegatedProps = reactiveOmit(props, "class")
 </script>
 
 <template>

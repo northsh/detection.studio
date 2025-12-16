@@ -1,4 +1,4 @@
-import * as yaml from 'js-yaml';
+import * as yaml from "js-yaml";
 
 export interface ValidationResult {
   valid: boolean;
@@ -13,15 +13,15 @@ export interface ValidationResult {
 export function validateSigmaRule(ruleContent: string): ValidationResult {
   const result: ValidationResult = {
     valid: true,
-    errors: []
+    errors: [],
   };
 
   // Try parsing the YAML first
   try {
     const yamlContent = yaml.load(ruleContent) as Record<string, any>;
-    
+
     // Check for required fields
-    const requiredFields = ['title', 'logsource', 'detection'];
+    const requiredFields = ["title", "logsource", "detection"];
     for (const field of requiredFields) {
       if (!yamlContent[field]) {
         result.valid = false;
@@ -37,7 +37,9 @@ export function validateSigmaRule(ruleContent: string): ValidationResult {
       }
 
       // Check that at least one search identifier is defined (not just condition)
-      const hasSearchIdentifier = Object.keys(yamlContent.detection).some(key => key !== 'condition');
+      const hasSearchIdentifier = Object.keys(yamlContent.detection).some(
+        (key) => key !== "condition",
+      );
       if (!hasSearchIdentifier) {
         result.valid = false;
         result.errors.push("At least one search identifier is required in the detection section");
@@ -45,20 +47,23 @@ export function validateSigmaRule(ruleContent: string): ValidationResult {
 
       // Validate condition syntax (simple check)
       const condition = yamlContent.detection.condition;
-      if (condition && typeof condition === 'string') {
+      if (condition && typeof condition === "string") {
         // Get all search identifiers in detection section
-        const searchIdentifiers = Object.keys(yamlContent.detection).filter(key => key !== 'condition');
-        
+        const searchIdentifiers = Object.keys(yamlContent.detection).filter(
+          (key) => key !== "condition",
+        );
+
         // Check that condition references existing search identifiers
         const conditionTokens = condition.split(/\s+/);
         const wildcardPattern = /\*/;
-        
+
         // Filter out known keywords and check if remaining tokens reference existing search identifiers
-        const conditionIdentifiers = conditionTokens.filter(token => 
-          !['and', 'or', 'not', '1', 'all', 'of', 'them', '(', ')'].includes(token) && 
-          !wildcardPattern.test(token)
+        const conditionIdentifiers = conditionTokens.filter(
+          (token) =>
+            !["and", "or", "not", "1", "all", "of", "them", "(", ")"].includes(token) &&
+            !wildcardPattern.test(token),
         );
-        
+
         for (const id of conditionIdentifiers) {
           if (!searchIdentifiers.includes(id)) {
             result.valid = false;
@@ -74,22 +79,33 @@ export function validateSigmaRule(ruleContent: string): ValidationResult {
       // At least one of category, product, or service should be defined
       if (!logsource.category && !logsource.product && !logsource.service) {
         result.valid = false;
-        result.errors.push("Logsource section should specify at least one of: category, product, or service");
+        result.errors.push(
+          "Logsource section should specify at least one of: category, product, or service",
+        );
       }
     }
 
     // Check level values
-    if (yamlContent.level && !['informational', 'low', 'medium', 'high', 'critical'].includes(yamlContent.level)) {
+    if (
+      yamlContent.level &&
+      !["informational", "low", "medium", "high", "critical"].includes(yamlContent.level)
+    ) {
       result.valid = false;
-      result.errors.push(`Invalid level value: ${yamlContent.level}. Expected one of: informational, low, medium, high, critical`);
+      result.errors.push(
+        `Invalid level value: ${yamlContent.level}. Expected one of: informational, low, medium, high, critical`,
+      );
     }
 
     // Check status values
-    if (yamlContent.status && !['stable', 'test', 'experimental', 'deprecated', 'unsupported'].includes(yamlContent.status)) {
+    if (
+      yamlContent.status &&
+      !["stable", "test", "experimental", "deprecated", "unsupported"].includes(yamlContent.status)
+    ) {
       result.valid = false;
-      result.errors.push(`Invalid status value: ${yamlContent.status}. Expected one of: stable, test, experimental, deprecated, unsupported`);
+      result.errors.push(
+        `Invalid status value: ${yamlContent.status}. Expected one of: stable, test, experimental, deprecated, unsupported`,
+      );
     }
-
   } catch (error) {
     result.valid = false;
     result.errors.push(`YAML parsing error: ${(error as Error).message}`);
