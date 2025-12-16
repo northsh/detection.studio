@@ -164,23 +164,23 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 </script>
 
 <template>
-    <TooltipProvider>
-        <Tooltip>
-            <TooltipTrigger>
-                <Button
-                    :disabled="!fs?.files.length"
-                    class="hidden h-8 md:flex gap-1 md:gap-2"
-                    size="sm"
-                    variant="secondary"
-                    @click="exportFiles"
-                >
-                    <Download class="h-3.5 w-3.5"/>
-                    Export
-                </Button>
-            </TooltipTrigger>
-            <TooltipContent align="end" side="bottom">
-                <p>Export files as ZIP archive</p>
-            </TooltipContent>
-        </Tooltip>
-    </TooltipProvider>
+  <TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger>
+        <Button
+          :disabled="!fs?.files.length"
+          class="hidden h-8 md:flex gap-1 md:gap-2"
+          size="sm"
+          variant="secondary"
+          @click="exportFiles"
+        >
+          <Download class="h-3.5 w-3.5" />
+          Export
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent align="end" side="bottom">
+        <p>Export files as ZIP archive</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 </template>

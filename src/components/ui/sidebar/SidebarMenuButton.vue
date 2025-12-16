@@ -1,49 +1,44 @@
-<script lang="ts" setup>
-import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip'
-import {type Component, computed} from 'vue'
-import SidebarMenuButtonChild, {type SidebarMenuButtonProps} from './SidebarMenuButtonChild.vue'
-import {useSidebar} from './utils'
+<script setup lang="ts">
+import type { Component } from "vue"
+import type { SidebarMenuButtonProps } from "./SidebarMenuButtonChild.vue"
+import { reactiveOmit } from "@vueuse/core"
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import SidebarMenuButtonChild from "./SidebarMenuButtonChild.vue"
+import { useSidebar } from "./utils"
 
 defineOptions({
-    inheritAttrs: false,
+  inheritAttrs: false,
 })
 
 const props = withDefaults(defineProps<SidebarMenuButtonProps & {
-    tooltip?: string | Component
+  tooltip?: string | Component
 }>(), {
-    as: 'button',
-    variant: 'default',
-    size: 'default',
+  as: "button",
+  variant: "default",
+  size: "default",
 })
 
-const {isMobile, state} = useSidebar()
+const { isMobile, state } = useSidebar()
 
-const delegatedProps = computed(() => {
-    const {tooltip, ...delegated} = props
-    return delegated
-})
+const delegatedProps = reactiveOmit(props, "tooltip")
 </script>
 
 <template>
-    <SidebarMenuButtonChild v-if="!tooltip" v-bind="{ ...delegatedProps, ...$attrs }">
-        <slot/>
-    </SidebarMenuButtonChild>
+  <SidebarMenuButtonChild v-if="!tooltip" v-bind="{ ...delegatedProps, ...$attrs }">
+    <slot />
+  </SidebarMenuButtonChild>
 
-    <Tooltip v-else>
-        <TooltipTrigger as-child>
-            <SidebarMenuButtonChild v-bind="{ ...delegatedProps, ...$attrs }">
-                <slot/>
-            </SidebarMenuButtonChild>
-        </TooltipTrigger>
-        <TooltipContent
-            :hidden="state !== 'collapsed' || isMobile"
-            align="center"
-            side="right"
-        >
-            <template v-if="typeof tooltip === 'string'">
-                {{ tooltip }}
-            </template>
-            <component :is="tooltip" v-else/>
-        </TooltipContent>
-    </Tooltip>
+  <Tooltip v-else>
+    <TooltipTrigger as-child>
+      <SidebarMenuButtonChild v-bind="{ ...delegatedProps, ...$attrs }">
+        <slot />
+      </SidebarMenuButtonChild>
+    </TooltipTrigger>
+    <TooltipContent side="right" align="center" :hidden="state !== 'collapsed' || isMobile">
+      <template v-if="typeof tooltip === 'string'">
+        {{ tooltip }}
+      </template>
+      <component :is="tooltip" v-else />
+    </TooltipContent>
+  </Tooltip>
 </template>

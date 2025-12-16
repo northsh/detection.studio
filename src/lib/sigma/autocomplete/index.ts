@@ -135,10 +135,7 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
     // and not inside another field's value
     if (lineBefore.trim() === "" || lineBefore.trim().endsWith(":")) {
       // Check if we're at the top level by checking indentation
-      if (
-        indent.length === 0 ||
-        (lineBefore.trim() === "" && before.trim() === "")
-      ) {
+      if (indent.length === 0 || (lineBefore.trim() === "" && before.trim() === "")) {
         return {
           from: context.pos - lineBefore.trim().length,
           options: optionsFromKeys(sigmaFields, "property"),
@@ -153,10 +150,7 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
   (context, _) => {
     const { lineBefore, inLogsource } = context;
 
-    if (
-      inLogsource &&
-      (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))
-    ) {
+    if (inLogsource && (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))) {
       return {
         from: context.pos - lineBefore.trim().length,
         options: optionsFromKeys(logsourceFields, "property"),
@@ -280,10 +274,7 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
   (context, _) => {
     const { before, lineBefore, inDetection } = context;
 
-    if (
-      inDetection &&
-      (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))
-    ) {
+    if (inDetection && (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))) {
       // Exclude top-level "condition" field from suggestions unless we haven't provided it yet
       const hasCondition = before.includes("condition:");
       const options = optionsFromKeys(detectionFields, "property");
@@ -309,9 +300,7 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
     const { lineBefore } = context;
 
     // Check if we're in a position to offer modifiers (after a | character)
-    const modifierMatch = lineBefore.match(
-      /([a-zA-Z0-9_]+)(\|[a-zA-Z0-9_]+)*\|$/,
-    );
+    const modifierMatch = lineBefore.match(/([a-zA-Z0-9_]+)(\|[a-zA-Z0-9_]+)*\|$/);
     if (modifierMatch) {
       return {
         from: context.pos,

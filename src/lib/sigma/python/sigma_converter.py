@@ -49,60 +49,30 @@ from sigma.processing.resolver import ProcessingPipelineResolver
 plugins = InstalledSigmaPlugins.autodiscover()
 backends = plugins.backends
 
-def get_available_pipelines():
+def get_available_pipelines(backend: str = ""):
     """
     Get a list of all available pipeline names.
-    Since plugins aren't discovered until backends are installed, we return
-    a list of commonly available pipeline names from sigma backends.
+    If backend is specified, only return pipelines that are compatible with that backend.
     """
     try:
-        # Return commonly available pipeline names from sigma backend packages
-        # These are the standard pipelines that ship with various sigma backends
-        return [
-            # ECS/Elasticsearch pipelines
-            'ecs_windows',
-            'ecs_windows_old',
-            'ecs_zeek_beats',
-            'ecs_zeek_corelight',
-            'ecs_kubernetes',
-            'elasticsearch_windows',
-            'elasticsearch_windows_sysmon',
+        available_pipelines = ProcessingPipelineResolver(InstalledSigmaPlugins.autodiscover().pipelines).list_pipelines()
 
-            # Splunk pipelines
-            'splunk_windows',
-            'splunk_windows_sysmon_acceleration',
-            'splunk_cim_dm',
-
-            # Microsoft Sentinel / Azure
-            'azure_monitor',
-            'azure_monitor_windows',
-            'microsoft_365_defender',
-            'microsoft_xdr',
-
-            # Loki
-            'loki_grafana_logfmt',
-            'loki_promtail_sysmon',
-
-            # QRadar
-            'qradar_fields',
-            'qradar_payload',
-
-            # CrowdStrike
-            'crowdstrike_fdr',
-
-            # Carbon Black
-            'carbonblack',
-
-            # SentinelOne
-            'sentinelone',
-
-            # Datadog
-            'datadog',
-        ]
+        if backend:
+            # Filter pipelines by backend compatibility
+            # Each pipeline tuple is (name, pipeline_object)
+            # pipeline_object has an allowed_backends attribute (frozenset)
+            filtered_pipelines = [
+                p[0] for p in available_pipelines
+                if not p[1].allowed_backends or backend in p[1].allowed_backends
+            ]
+            return filtered_pipelines
+        else:
+            # Return all pipeline names
+            return [p[0] for p in available_pipelines]
     except Exception as e:
         import sys
         import traceback
-        print(f"Error getting pipelines: {e}", file=sys.stderr)
+        print(f"Error getting pipelines: {e}")
         traceback.print_exc(file=sys.stderr)
         return []
 
@@ -187,7 +157,10 @@ def convert_rule(
             raise SigmaError(f"Error processing custom pipeline: {str(e)}")
     
     # Initialize backend
-    backend_class = backends[target]
+    try:
+        backend_class = backends[target]
+    except KeyError:
+        raise SigmaError(f"Backend '{target}' is not installed or does not exist.")
     backend_options = backend_options or {}
     
     try:

@@ -1,7 +1,7 @@
-import {v4 as uuid} from "uuid";
+import { v4 as uuid } from "uuid";
 
 export default function sigmaCorrelationTemplate() {
-    return `
+  return `
 title: Suspicious Scheduled Task Creation
 id: ${uuid()}
 name: suspicious_schtask_creation

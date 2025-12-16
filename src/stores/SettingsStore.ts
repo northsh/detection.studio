@@ -1,36 +1,40 @@
-import {defineStore} from 'pinia'
-import {ref} from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export const useSettingsStore = defineStore('settings', () => {
+export const useSettingsStore = defineStore(
+  "settings",
+  () => {
     // State
-    const defaultAuthor = ref('')
-    const defaultSIEM = ref('splunk')
-    const defaultTemplate = ref('default')
+    const defaultAuthor = ref("");
+    const defaultSIEM = ref("splunk");
+    const defaultTemplate = ref("default");
 
     // Actions
     function setDefaultAuthor(author: string) {
-        defaultAuthor.value = author
+      defaultAuthor.value = author;
     }
 
     function setDefaultSIEM(siem: string) {
-        defaultSIEM.value = siem
+      defaultSIEM.value = siem;
     }
 
     function setDefaultTemplate(template: string) {
-        defaultTemplate.value = template
+      defaultTemplate.value = template;
     }
 
     return {
-        // State
-        defaultAuthor,
-        defaultSIEM,
-        defaultTemplate,
+      // State
+      defaultAuthor,
+      defaultSIEM,
+      defaultTemplate,
 
-        // Actions
-        setDefaultAuthor,
-        setDefaultSIEM,
-        setDefaultTemplate
-    }
-}, {
-    persist: true
-})
+      // Actions
+      setDefaultAuthor,
+      setDefaultSIEM,
+      setDefaultTemplate,
+    };
+  },
+  {
+    persist: true,
+  },
+);

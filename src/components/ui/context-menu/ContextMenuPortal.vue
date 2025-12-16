@@ -1,12 +1,12 @@
-<script lang="ts" setup>
-import type {ContextMenuPortalProps} from 'radix-vue'
-import {ContextMenuPortal} from 'radix-vue'
+<script setup lang="ts">
+import type { ContextMenuPortalProps } from "reka-ui"
+import { ContextMenuPortal } from "reka-ui"
 
 const props = defineProps<ContextMenuPortalProps>()
 </script>
 
 <template>
-    <ContextMenuPortal v-bind="props">
-        <slot/>
-    </ContextMenuPortal>
+  <ContextMenuPortal v-bind="props">
+    <slot />
+  </ContextMenuPortal>
 </template>

@@ -157,8 +157,7 @@ watch(
 </script>
 
 <template>
-    <div ref="prism-editor-ref" :class="props.class" class="prism-editor-ref"></div>
+  <div ref="prism-editor-ref" :class="props.class" class="prism-editor-ref"></div>
 </template>
 
-<style>
-</style>
+<style></style>
