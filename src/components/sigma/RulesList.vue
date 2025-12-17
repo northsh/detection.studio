@@ -4,6 +4,7 @@ import {Badge} from '@/components/ui/badge';
 import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 import {defaultRangeExtractor, useVirtualizer} from '@tanstack/vue-virtual';
 import RuleItem from './RuleItem.vue';
+import SearchFilters from './SearchFilters.vue';
 
 // Props
 const props = defineProps<{
@@ -11,12 +12,19 @@ const props = defineProps<{
         label: string,
         rules: SigmaRule[],
         expanded: boolean
-    }[]
+    }[],
+    statusFilters: Record<string, boolean>,
+    selectedProduct: string,
+    logsourceSortingStyle: string,
+    allRules: SigmaRule[]
 }>();
 
 // Emits
 const emit = defineEmits<{
-    'select-rule': [rule: SigmaRule]
+    'select-rule': [rule: SigmaRule],
+    'update:statusFilters': [filters: Record<string, boolean>],
+    'update:selectedProduct': [product: string],
+    'update:logsourceSorting': [style: string]
 }>();
 
 // Constants for virtualizer
@@ -111,52 +119,68 @@ function resetScroll() {
 </script>
 
 <template>
-    <div ref="parentRef" class="h-full overflow-auto">
-        <div
-            :style="{
-        height: `${totalSize}px`,
-        width: '100%',
-        position: 'relative',
-      }"
-        >
-            <div
-                v-for="virtualRow in virtualRows"
-                :key="virtualRow.index"
-                :class="[
-          'px-4',
-          isGroupHeader(virtualRow.index) ? 'sticky bg-background border-b z-10' : ''
-        ]"
-                :style="{
-          position: isActiveGroupHeader(virtualRow.index) ? 'sticky' : 'absolute',
-          top: 0,
-          left: 0,
-          width: 'calc(100% - 16px)',
-          height: `${virtualRow.size}px`,
-          transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
-        }"
-            >
-                <!-- Group Header -->
-                <template v-if="isGroupHeader(virtualRow.index)">
-                    <div class="flex items-center justify-between py-2 mb-2">
-                        <h3
-                            class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
-                        >
-                            {{ flattenedItems[virtualRow.index].label }}
-                        </h3>
-                        <Badge class="text-xs" variant="outline"
-                            >{{ flattenedItems[virtualRow.index].rules.length }}
-                            rules
-                        </Badge>
-                    </div>
-                </template>
+    <div class="flex flex-col h-full">
+        <!-- Search Filters -->
+        <div class="flex-shrink-0 px-4">
+            <SearchFilters
+                :status-filters="statusFilters"
+                :selected-product="selectedProduct"
+                :logsource-sorting-style="logsourceSortingStyle"
+                :all-rules="allRules"
+                @update:status-filters="emit('update:statusFilters', $event)"
+                @update:selected-product="emit('update:selectedProduct', $event)"
+                @update:logsource-sorting="emit('update:logsourceSorting', $event)"
+            />
+        </div>
 
-                <!-- Rule Item -->
-                <template v-else>
-                    <RuleItem
-                        :rule="flattenedItems[virtualRow.index].rule"
-                        @select-rule="handleSelectRule"
-                    />
-                </template>
+        <!-- Virtualized Rules List -->
+        <div ref="parentRef" class="flex-1 overflow-auto">
+            <div
+                :style="{
+            height: `${totalSize}px`,
+            width: '100%',
+            position: 'relative',
+          }"
+            >
+                <div
+                    v-for="virtualRow in virtualRows"
+                    :key="virtualRow.index"
+                    :class="[
+              'px-4',
+              isGroupHeader(virtualRow.index) ? 'sticky bg-background border-b z-10' : ''
+            ]"
+                    :style="{
+              position: isActiveGroupHeader(virtualRow.index) ? 'sticky' : 'absolute',
+              top: 0,
+              left: 0,
+              width: 'calc(100% - 16px)',
+              height: `${virtualRow.size}px`,
+              transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
+            }"
+                >
+                    <!-- Group Header -->
+                    <template v-if="isGroupHeader(virtualRow.index)">
+                        <div class="flex items-center justify-between py-2 mb-2">
+                            <h3
+                                class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                                {{ flattenedItems[virtualRow.index].label }}
+                            </h3>
+                            <Badge class="text-xs" variant="outline"
+                                >{{ flattenedItems[virtualRow.index].rules.length }}
+                                rules
+                            </Badge>
+                        </div>
+                    </template>
+
+                    <!-- Rule Item -->
+                    <template v-else>
+                        <RuleItem
+                            :rule="flattenedItems[virtualRow.index].rule"
+                            @select-rule="handleSelectRule"
+                        />
+                    </template>
+                </div>
             </div>
         </div>
     </div>
@@ -164,7 +188,7 @@ function resetScroll() {
 
 <style scoped>
 /* Fix for virtual scroll overlapping */
-.h-full.overflow-auto {
+.flex-1.overflow-auto {
     position: relative;
     max-width: 100%;
     overflow-x: hidden; /* Prevent horizontal overflow */

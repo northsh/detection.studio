@@ -7,6 +7,8 @@ import secops from "@/images/secops.svg";
 import crowdstrike from "@/images/crowdstrike.svg";
 import panther from "@/images/panther.svg";
 import sqlite from "@/images/sqlite.svg";
+import opensearch from "@/images/opensearch.svg";
+
 
 export type Siem = {
     id: string;
@@ -78,11 +80,29 @@ export const supportedSiems: Array<Siem> = [
         backend: "pysigma-backend-carbonblack",
     },
     // {id: "cortex_xdr", name: "Cortex XDR", icon: null, backend: 'pysigma-backend-cortexxdr'}, // Disabled due to non-operational backend
+    // {
+    //     id: "golangexpr",
+    //     name: "GoLang Expr",
+    //     icon: null,
+    //     backend: "pySigma-backend-golangexpr",
+    // },  // TODO: Blocked behind pysigma 1.0.0
+    // {
+    //     id: "powershell",
+    //     name: "Powershell",
+    //     icon: null,
+    //     backend: "pySigma-backend-powershell",
+    // }, // Only supports Git package installation
     {
         id: "log_scale",
         name: "CrowdStrike Logscale",
         icon: crowdstrike,
         backend: "pysigma-backend-crowdstrike",
+    },
+    {
+        id: "opensearch_lucene",
+        name: "OpenSearch",
+        icon: opensearch,
+        backend: "pysigma-backend-opensearch",
     },
     { id: "datadog", name: "DataDog", icon: null, backend: "pysigma-backend-datadog" },
     { id: "kusto", name: "KQL (Kusto)", icon: kql, backend: "pysigma-backend-kusto" },

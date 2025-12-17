@@ -40,40 +40,6 @@ export const useSigmaRulesStore = defineStore("sigmaRules", () => {
     // Initialize the search worker
     const searchWorker = useSearchWorker();
 
-    async function loadRulesIndex(): Promise<void> {
-        if (isRulesLoaded.value) return;
-
-        try {
-            console.log("SigmaRulesStore: Loading rules index...");
-
-            const response = await fetch("/sigma-rules-index.json");
-
-            if (!response.ok) {
-                console.error(
-                    `Failed to load rules index: ${response.status} ${response.statusText}`,
-                );
-                throw new Error(
-                    `Failed to load rules index: ${response.status} ${response.statusText}`,
-                );
-            }
-
-            const data = await response.json();
-
-            if (!Array.isArray(data)) {
-                console.error("Rules index is not an array:", data);
-                throw new Error("Invalid rules index format");
-            }
-
-            allRules.value = data;
-            isRulesLoaded.value = true;
-            console.log(`SigmaRulesStore: Successfully loaded ${allRules.value.length} rules`);
-        } catch (error) {
-            console.error("Error loading rules index:", error);
-            allRules.value = [];
-            throw error;
-        }
-    }
-
     async function fetchRules(forceReload: boolean = false) {
         isLoading.value = true;
         error.value = null;
@@ -84,18 +50,19 @@ export const useSigmaRulesStore = defineStore("sigmaRules", () => {
             }
 
             if (!isRulesLoaded.value) {
-                await loadRulesIndex();
-            }
-            rules.value = allRules.value;
-            console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
+                console.log("SigmaRulesStore: Loading rules via worker...");
 
-            // Initialize the search worker with the rules data
-            try {
-                await searchWorker.initializeIndex(rules.value);
-                console.log("SigmaRulesStore: Search worker initialized");
-            } catch (err) {
-                console.error("SigmaRulesStore: Failed to initialize search worker:", err);
-                // Don't throw - allow the app to work without search
+                // Load rules using the worker
+                const loadedRules = await searchWorker.loadRules();
+
+                allRules.value = loadedRules;
+                rules.value = loadedRules;
+                isRulesLoaded.value = true;
+
+                console.log(`SigmaRulesStore: Loaded ${rules.value.length} rules via worker`);
+            } else {
+                rules.value = allRules.value;
+                console.log(`SigmaRulesStore: Using cached ${rules.value.length} rules`);
             }
         } catch (err) {
             console.error("Error fetching sigma rules:", err);

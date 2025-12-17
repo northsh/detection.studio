@@ -26,6 +26,7 @@ import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import WorkspaceSelection from "@/components/WorkspaceSelection.vue";
 import ChangelogDialog from "@/components/ChangelogDialog.vue";
 import {ref} from "vue";
+import Logo from "./images/logo.png"
 
 // This is sample data.
 const data = {
@@ -114,20 +115,33 @@ function openChangelog() {
 
 <template>
     <SidebarProvider v-model:open="workStore.sidebarOpen" class="flex min-h-screen">
-        <Sidebar collapsible="icon" variant="inset" class="-mr-1">
+        <Sidebar class="-mr-1" collapsible="icon" variant="inset">
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem
                         :class="{'mx-2': workStore.sidebarOpen}"
                         class="flex items-center gap-2"
                     >
-                        <div
-                            v-if="workStore.sidebarOpen"
-                            class="w-full font-semibold whitespace-nowrap"
+                        <Transition
+                            enter-active-class="transition-opacity duration-100"
+                            enter-from-class="opacity-0"
+                            enter-to-class="opacity-100"
+                            leave-active-class="transition-opacity duration-100"
+                            leave-from-class="opacity-100"
+                            leave-to-class="opacity-0"
+                            mode="out-in"
                         >
-                            Detection Studio
-                        </div>
-                        <div v-else class="pl-1 w-full font-semibold">D.S</div>
+                            <div
+                                v-if="workStore.sidebarOpen"
+                                key="label"
+                                class="w-full font-semibold whitespace-nowrap"
+                            >
+                                Detection Studio
+                            </div>
+                            <div v-else key="logo" class="pl-1 w-full font-semibold">
+                                <img alt="Logo" class="w-7.5 h-7.5" src="@/images/logo.png"/>
+                            </div>
+                        </Transition>
                     </SidebarMenuItem>
                 </SidebarMenu>
                 <SidebarSeparator
@@ -136,7 +150,7 @@ function openChangelog() {
                 />
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <WorkspaceSelection />
+                        <WorkspaceSelection/>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>
@@ -154,7 +168,7 @@ function openChangelog() {
                                         class="[active=true]/text-white"
                                         @click="navigate"
                                     >
-                                        <PaletteIcon />
+                                        <PaletteIcon/>
                                         <span>Studio</span>
                                     </SidebarMenuButton>
                                 </router-link>
@@ -169,7 +183,7 @@ function openChangelog() {
                                 }"
                                         @click="navigate"
                                     >
-                                        <GlobeIcon />
+                                        <GlobeIcon/>
                                         <span>Browser</span>
                                     </SidebarMenuButton>
                                 </router-link>
@@ -190,7 +204,7 @@ function openChangelog() {
                                         disabled
                                         @click="navigate"
                                     >
-                                        <Settings2 />
+                                        <Settings2/>
                                         <span>Settings</span>
                                     </SidebarMenuButton>
                                 </router-link>
@@ -201,7 +215,8 @@ function openChangelog() {
 
                 <SidebarGroup class="group-data-[collapsible=icon]:hidden">
                     <SidebarGroupLabel class="text-muted-foreground"
-                        >Documentation</SidebarGroupLabel
+                    >Documentation
+                    </SidebarGroupLabel
                     >
                     <SidebarGroupContent>
                         <SidebarMenu>
@@ -215,7 +230,7 @@ function openChangelog() {
                                 <SidebarMenuItem>
                                     <CollapsibleTrigger as-child>
                                         <SidebarMenuButton :tooltip="item.title">
-                                            <component :is="item.icon" />
+                                            <component :is="item.icon"/>
                                             <span>{{ item.title }}</span>
                                             <ChevronRight
                                                 class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
@@ -250,7 +265,7 @@ function openChangelog() {
                             tooltip="Changelog"
                             @click="openChangelog"
                         >
-                            <FileText />
+                            <FileText/>
                             <span>What's New</span>
                             <div class="relative flex size-3">
                                 <div
@@ -269,7 +284,7 @@ function openChangelog() {
                                 class="text-xs text-muted-foreground p-2 flex items-center gap-2"
                             >
                                 Powered by
-                                <Sparkles class="text-primary h-4 w-4" />
+                                <Sparkles class="text-primary h-4 w-4"/>
                                 <a
                                     class="text-primary font-semibold"
                                     href="https://north.sh/"
@@ -282,7 +297,7 @@ function openChangelog() {
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
-            <SidebarRail />
+            <SidebarRail/>
         </Sidebar>
         <SidebarInset class="bg-muted/30 flex-1 flex flex-col overflow-hidden">
             <router-view class="flex-1 w-full overflow-hidden"></router-view>
@@ -290,5 +305,5 @@ function openChangelog() {
     </SidebarProvider>
 
     <!-- Changelog Dialog with auto-show for new releases -->
-    <ChangelogDialog ref="changelogDialogRef" :auto-show="true" />
+    <ChangelogDialog ref="changelogDialogRef" :auto-show="true"/>
 </template>
