@@ -198,7 +198,7 @@
                 v-for="itemInfo in group.items"
                 :key="itemInfo.rule.id || itemInfo.rule.path"
                 :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
-                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs"
+                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-px hover:shadow-xs"
                 @click="selectRule(itemInfo.rule)"
               >
                 <div class="flex items-start justify-between">

@@ -39,8 +39,5 @@
       "Bash(gh run view:*)"
     ]
   },
-  "enabledMcpjsonServers": [
-    "shadcnVue",
-    "playwright"
-  ]
+  "enabledMcpjsonServers": ["shadcnVue", "playwright"]
 }

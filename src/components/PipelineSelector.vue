@@ -6,7 +6,8 @@ import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Separator} from "@/components/ui/separator";
-import {ChevronDown} from "lucide-vue-next";
+import {Skeleton} from "@/components/ui/skeleton";
+import {ChevronDown, Loader2} from "lucide-vue-next";
 import {
     Popover,
     PopoverContent,
@@ -19,13 +20,19 @@ const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 // Fetch available pipelines (already filtered by backend)
 const compatiblePipelines = ref<string[]>([]);
 const isDropdownOpen = ref(false);
+const isLoading = ref(false);
 
 async function loadPipelines() {
-    const result = await getAvailablePipelines(
-        sigma.value?.selected_siem || ""
-    );
-    if (result.success && result.pipelines) {
-        compatiblePipelines.value = result.pipelines;
+    isLoading.value = true;
+    try {
+        const result = await getAvailablePipelines(
+            sigma.value?.selected_siem || ""
+        );
+        if (result.success && result.pipelines) {
+            compatiblePipelines.value = result.pipelines;
+        }
+    } finally {
+        isLoading.value = false;
     }
 }
 
@@ -129,8 +136,16 @@ function toTitleCase(str: string): string {
       </div>
 
       <ScrollArea class="h-70">
+        <!-- Loading State -->
+        <div v-if="isLoading" class="p-2 space-y-2">
+          <div v-for="i in 3" :key="i" class="flex items-center space-x-2 px-2 py-1.5">
+            <Skeleton class="h-4 w-4 rounded" />
+            <Skeleton class="h-4 flex-1" />
+          </div>
+        </div>
+
         <!-- Compatible Pipelines Section -->
-        <div v-if="availableCompatiblePipelines.length > 0" class="p-2">
+        <div v-else-if="availableCompatiblePipelines.length > 0" class="p-2">
           <div
             v-for="pipeline in availableCompatiblePipelines"
             :key="pipeline"
@@ -138,14 +153,12 @@ function toTitleCase(str: string): string {
             @click="togglePipeline(pipeline, !selectedPipelines.includes(pipeline))"
           >
             <Checkbox
-              :id="pipeline"
               :model-value="selectedPipelines.includes(pipeline)"
-                @update:model-value="(checked: boolean) => togglePipeline(pipeline, checked)"
-              @click.prevent
+              class="pointer-events-none"
             />
-            <label :for="pipeline" class="flex-1 text-sm cursor-pointer">
+            <span class="flex-1 text-sm">
               {{ toTitleCase(pipeline) }}
-            </label>
+            </span>
           </div>
         </div>
 
@@ -166,14 +179,10 @@ function toTitleCase(str: string): string {
               class="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer opacity-60"
               @click="togglePipeline(pipeline, false)"
             >
-              <Checkbox
-                :id="`incompatible-${pipeline}`"
-                :model-value="true"
-                @update:model-value="() => togglePipeline(pipeline, false)"
-              />
-              <label :for="`incompatible-${pipeline}`" class="flex-1 text-sm cursor-pointer">
+              <Checkbox :model-value="true" class="pointer-events-none" />
+              <span class="flex-1 text-sm">
                 {{ toTitleCase(pipeline) }}
-              </label>
+              </span>
               <span class="text-xs text-destructive">⚠</span>
             </div>
           </div>

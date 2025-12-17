@@ -3,6 +3,7 @@ import {computed, ref} from 'vue';
 import {Badge} from '@/components/ui/badge';
 import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '@/components/ui/collapsible';
 import {Toggle} from '@/components/ui/toggle';
+import {Separator} from '@/components/ui/separator';
 import {
     Combobox,
     ComboboxAnchor,
@@ -103,35 +104,51 @@ function toggleLogSourceSorting(pressed: boolean) {
 </script>
 
 <template>
-  <div class="mt-4 space-y-4">
+  <div class="mt-4">
     <!-- Collapsible filters section -->
     <Collapsible>
       <CollapsibleTrigger asChild>
-        <div class="flex items-center justify-between cursor-pointer">
+        <button
+          class="flex w-full items-center justify-between rounded-lg border bg-card px-4 py-3 text-left hover:bg-accent/50 transition-colors"
+        >
           <div class="flex items-center gap-2">
-            <h3 class="text-sm font-medium">Filters</h3>
-            <Badge variant="outline" class="text-xs">{{ getActiveFiltersCount() }}</Badge>
+            <h3 class="text-sm font-semibold">Filters</h3>
+            <Badge
+              v-if="getActiveFiltersCount() !== '0'"
+              variant="secondary"
+              class="h-5 min-w-5 px-1.5 text-xs font-medium"
+            >
+              {{ getActiveFiltersCount() }}
+            </Badge>
           </div>
           <ChevronDown
-            class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"
+            class="h-4 w-4 text-muted-foreground transition-transform duration-200 ui-expanded:rotate-180"
           />
-        </div>
+        </button>
       </CollapsibleTrigger>
 
-      <CollapsibleContent class="pt-2">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CollapsibleContent class="pt-3">
+        <div class="space-y-4 rounded-lg border bg-card p-4">
           <!-- Status filter -->
-          <div class="space-y-2">
-            <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
-            <div class="flex flex-wrap gap-1.5">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Status
+              </h4>
+              <span class="text-xs text-muted-foreground">
+                {{ enabledStatusFilters.length }} selected
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-2">
               <Badge
                 v-for="status in STATUS_OPTIONS"
                 :key="status"
                 variant="outline"
                 :class="[
-                  statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' : 
-                  'bg-muted/50 text-muted-foreground hover:bg-muted',
-                  'cursor-pointer transition-colors'
+                  statusFilters[status]
+                    ? 'bg-primary/10 text-primary border-primary hover:bg-primary/20'
+                    : 'bg-background hover:bg-accent',
+                  'cursor-pointer transition-all select-none px-3 py-1.5'
                 ]"
                 @click="toggleStatusFilter(status)"
               >
@@ -140,15 +157,28 @@ function toggleLogSourceSorting(pressed: boolean) {
             </div>
           </div>
 
+          <Separator />
+
           <!-- Logsource filter with combobox for search -->
-          <div class="space-y-2">
-            <h3 class="text-xs font-medium text-muted-foreground">Filter by Logsource</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Logsource
+              </h4>
+              <button
+                v-if="selectedProduct"
+                @click="updateSelectedProduct('')"
+                class="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Clear
+              </button>
+            </div>
             <Combobox :model-value="selectedProduct" @update:model-value="updateSelectedProduct">
               <ComboboxAnchor>
-                <div class="relative w-full items-center">
+                <div class="relative w-full">
                   <ComboboxInput
-                    class="pl-9 w-full"
-                    placeholder="Search product/category/service..."
+                    class="pl-9 h-9 w-full"
+                    placeholder="Search product, category, or service..."
                     @input="onProductSearch"
                     :display-value="(val) => val"
                   />
@@ -158,46 +188,65 @@ function toggleLogSourceSorting(pressed: boolean) {
                 </div>
               </ComboboxAnchor>
 
-              <ComboboxList class="w-full">
-                <ComboboxEmpty> No matches found </ComboboxEmpty>
+              <ComboboxList class="w-full max-h-60">
+                <ComboboxEmpty class="py-6 text-center text-sm text-muted-foreground">
+                  No matches found
+                </ComboboxEmpty>
 
                 <ComboboxGroup>
                   <ComboboxItem
                     v-for="option in filteredProductOptions"
                     :key="option"
                     :value="option"
-                    class="flex items-center justify-between"
+                    class="flex items-center justify-between px-3 py-2"
                   >
                     <div class="flex items-center gap-2">
-                      <span>{{ option }}</span>
-                      <Badge v-if="getOptionType(option)" variant="outline" class="text-[10px]">
+                      <span class="text-sm">{{ option }}</span>
+                      <Badge
+                        v-if="getOptionType(option)"
+                        variant="secondary"
+                        class="text-[10px] px-1.5 py-0"
+                      >
                         {{ getOptionType(option) }}
                       </Badge>
                     </div>
 
                     <ComboboxItemIndicator>
-                      <Check :class="cn('ml-auto h-4 w-4')" />
+                      <Check :class="cn('h-4 w-4')" />
                     </ComboboxItemIndicator>
                   </ComboboxItem>
                 </ComboboxGroup>
               </ComboboxList>
             </Combobox>
           </div>
-        </div>
 
-        <!-- Logsource sorting toggle -->
-        <div class="mt-4">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
-          </div>
-          <div class="flex items-center space-x-2">
-            <span class="text-xs text-muted-foreground">Product</span>
-            <Toggle
-              :pressed="logsourceSortingStyle === 'category-product-service'"
-              @update:pressed="toggleLogSourceSorting"
-              size="sm"
-            />
-            <span class="text-xs text-muted-foreground">Category</span>
+          <Separator />
+
+          <!-- Logsource sorting toggle -->
+          <div class="space-y-3">
+            <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Group By
+            </h4>
+            <div class="flex items-center gap-3">
+              <span
+                class="text-sm"
+                :class="logsourceSortingStyle === 'product-category-service' ? 'font-medium text-foreground' : 'text-muted-foreground'"
+              >
+                Product
+              </span>
+              <Toggle
+                :pressed="logsourceSortingStyle === 'category-product-service'"
+                @update:pressed="toggleLogSourceSorting"
+                size="sm"
+                class="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              />
+              <span
+                class="text-sm"
+                :class="logsourceSortingStyle === 'category-product-service' ? 'font-medium text-foreground' : 'text-muted-foreground'"
+              >
+                Category
+              </span>
+            </div>
           </div>
         </div>
       </CollapsibleContent>

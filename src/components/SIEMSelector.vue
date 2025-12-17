@@ -51,7 +51,13 @@ const selectedSiem = computed(() => {
               :class="selectedSiem.colorClass"
             />
             <span class="truncate flex items-center">
-              {{ selectedSiem.name }} <Badge variant="outline" class="ml-2 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0" v-if="selectedSiem.correlation">Correlation</Badge>
+              {{ selectedSiem.name }}
+              <Badge
+                variant="outline"
+                class="ml-2 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0"
+                v-if="selectedSiem.correlation"
+                >Correlation</Badge
+              >
             </span>
           </span>
         </template>
@@ -67,10 +73,7 @@ const selectedSiem = computed(() => {
       </Button>
     </PopoverTrigger>
     <PopoverContent class="w-full p-1 rounded-xl" align="start">
-      <Combobox
-        :model-value="sigma?.selected_siem"
-        @update:model-value="updateSelectedSiem"
-      >
+      <Combobox :model-value="sigma?.selected_siem" @update:model-value="updateSelectedSiem">
         <!-- Header -->
         <div class="m-0 pt-2 pb-0 px-3 text-sm font-medium">
           SIEMs <span class="opacity-30 px-1">/</span> Log Engines
@@ -102,7 +105,15 @@ const selectedSiem = computed(() => {
                         :class="[siem.colorClass]"
                         class="h-4 w-4"
                       />
-                      <span class="flex items-center">{{ siem.name }} <Badge variant="outline" class="ml-1 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0" v-if="siem.correlation">Correlation</Badge></span>
+                      <span class="flex items-center"
+                        >{{ siem.name }}
+                        <Badge
+                          variant="outline"
+                          class="ml-1 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0"
+                          v-if="siem.correlation"
+                          >Correlation</Badge
+                        ></span
+                      >
                     </span>
                     <Check
                       v-if="siem.id === sigma?.selected_siem"
@@ -125,18 +136,14 @@ const selectedSiem = computed(() => {
               class="justify-start transition-colors duration-75 hover:bg-secondary"
               :class="[siem.id === sigma?.selected_siem ? 'bg-primary/10' : '']"
             >
-                <component
-                    v-if="siem.icon"
-                    :is="siem.icon as any"
-                    :class="[siem.colorClass]"
-                    class="h-4 w-4"
-                />
-              <span class="flex-1">{{ siem.name }}</span>
-              <Check
-                v-if="siem.id === sigma?.selected_siem"
-                :size="16"
-                class="text-primary"
+              <component
+                v-if="siem.icon"
+                :is="siem.icon as any"
+                :class="[siem.colorClass]"
+                class="h-4 w-4"
               />
+              <span class="flex-1">{{ siem.name }}</span>
+              <Check v-if="siem.id === sigma?.selected_siem" :size="16" class="text-primary" />
             </ComboboxItem>
           </template>
         </ComboboxGroup>
