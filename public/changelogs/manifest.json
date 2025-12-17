@@ -1,14 +1,14 @@
 {
-  "releases": [
-    {
-      "version": "December 2025 Release",
-      "date": "2025-12-11",
-      "file": "0.2.0.md"
-    },
-    {
-      "version": "Initial Release",
-      "date": "2025-03-05",
-      "file": "0.1.0.md"
-    }
-  ]
+    "releases": [
+        {
+            "version": "December 2025 Release",
+            "date": "2025-12-11",
+            "file": "0.2.0.md"
+        },
+        {
+            "version": "Initial Release",
+            "date": "2025-03-05",
+            "file": "0.1.0.md"
+        }
+    ]
 }

@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 
 export default function sigmaCorrelationTemplate() {
-  return `title: High-privilege group enumeration
+    return `title: High-privilege group enumeration
 name: privileged_group_enumeration
 id: ${uuid()}
 status: stable

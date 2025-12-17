@@ -102,92 +102,92 @@ function toTitleCase(str: string): string {
 </script>
 
 <template>
-  <Popover v-model:open="isDropdownOpen">
-    <PopoverTrigger as-child>
-      <Button
-        variant="outline"
-        role="combobox"
-        :aria-expanded="isDropdownOpen"
-        class="w-70! h-8 justify-between"
-        @click="loadPipelines"
-        :class="selectedPipelines.length > 0 ? 'border-primary bg-primary/10 hover:bg-primary/20' : 'bg-background text-muted-foreground hover:bg-background'"
-      >
-        {{ buttonLabel }}
-        <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    </PopoverTrigger>
-    <PopoverContent class="w-70 p-0" align="start">
-      <div class="flex items-center justify-between border-b px-3 py-2">
-        <div class="flex flex-col">
-          <span class="text-sm font-medium">Pipelines</span>
-          <span class="text-xs text-muted-foreground">
-            Compatible with {{ sigma?.selected_siem || 'current backend' }}
-          </span>
-        </div>
-        <Button
-          v-if="selectedPipelines.length > 0"
-          variant="ghost"
-          size="sm"
-          class="h-auto px-2 py-1 text-xs"
-          @click="clearAllPipelines"
-        >
-          Clear All
-        </Button>
-      </div>
-
-      <ScrollArea class="h-70">
-        <!-- Loading State -->
-        <div v-if="isLoading" class="p-2 space-y-2">
-          <div v-for="i in 3" :key="i" class="flex items-center space-x-2 px-2 py-1.5">
-            <Skeleton class="h-4 w-4 rounded" />
-            <Skeleton class="h-4 flex-1" />
-          </div>
-        </div>
-
-        <!-- Compatible Pipelines Section -->
-        <div v-else-if="availableCompatiblePipelines.length > 0" class="p-2">
-          <div
-            v-for="pipeline in availableCompatiblePipelines"
-            :key="pipeline"
-            class="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer"
-            @click="togglePipeline(pipeline, !selectedPipelines.includes(pipeline))"
-          >
-            <Checkbox
-              :model-value="selectedPipelines.includes(pipeline)"
-              class="pointer-events-none"
-            />
-            <span class="flex-1 text-sm">
-              {{ toTitleCase(pipeline) }}
-            </span>
-          </div>
-        </div>
-
-        <div v-else class="px-2 py-6 text-center text-sm text-muted-foreground">
-          No compatible pipelines available
-        </div>
-
-        <!-- Incompatible Pipelines Section -->
-        <div v-if="incompatiblePipelines.length > 0">
-          <Separator />
-          <div class="px-3 py-2 text-xs font-medium text-muted-foreground">
-            Incompatible (Selected but not compatible)
-          </div>
-          <div class="p-2">
-            <div
-              v-for="pipeline in incompatiblePipelines"
-              :key="pipeline"
-              class="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer opacity-60"
-              @click="togglePipeline(pipeline, false)"
+    <Popover v-model:open="isDropdownOpen">
+        <PopoverTrigger as-child>
+            <Button
+                variant="outline"
+                role="combobox"
+                :aria-expanded="isDropdownOpen"
+                class="w-70! h-8 justify-between"
+                @click="loadPipelines"
+                :class="selectedPipelines.length > 0 ? 'border-primary bg-primary/10 hover:bg-primary/20' : 'bg-background text-muted-foreground hover:bg-background'"
             >
-              <Checkbox :model-value="true" class="pointer-events-none" />
-              <span class="flex-1 text-sm">
-                {{ toTitleCase(pipeline) }}
-              </span>
-              <span class="text-xs text-destructive">⚠</span>
+                {{ buttonLabel }}
+                <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-70 p-0" align="start">
+            <div class="flex items-center justify-between border-b px-3 py-2">
+                <div class="flex flex-col">
+                    <span class="text-sm font-medium">Pipelines</span>
+                    <span class="text-xs text-muted-foreground">
+                        Compatible with {{ sigma?.selected_siem || 'current backend' }}
+                    </span>
+                </div>
+                <Button
+                    v-if="selectedPipelines.length > 0"
+                    variant="ghost"
+                    size="sm"
+                    class="h-auto px-2 py-1 text-xs"
+                    @click="clearAllPipelines"
+                >
+                    Clear All
+                </Button>
             </div>
-          </div>
-        </div>
-      </ScrollArea>
-    </PopoverContent>
-  </Popover>
+
+            <ScrollArea class="h-70">
+                <!-- Loading State -->
+                <div v-if="isLoading" class="p-2 space-y-2">
+                    <div v-for="i in 3" :key="i" class="flex items-center space-x-2 px-2 py-1.5">
+                        <Skeleton class="h-4 w-4 rounded" />
+                        <Skeleton class="h-4 flex-1" />
+                    </div>
+                </div>
+
+                <!-- Compatible Pipelines Section -->
+                <div v-else-if="availableCompatiblePipelines.length > 0" class="p-2">
+                    <div
+                        v-for="pipeline in availableCompatiblePipelines"
+                        :key="pipeline"
+                        class="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer"
+                        @click="togglePipeline(pipeline, !selectedPipelines.includes(pipeline))"
+                    >
+                        <Checkbox
+                            :model-value="selectedPipelines.includes(pipeline)"
+                            class="pointer-events-none"
+                        />
+                        <span class="flex-1 text-sm">
+                            {{ toTitleCase(pipeline) }}
+                        </span>
+                    </div>
+                </div>
+
+                <div v-else class="px-2 py-6 text-center text-sm text-muted-foreground">
+                    No compatible pipelines available
+                </div>
+
+                <!-- Incompatible Pipelines Section -->
+                <div v-if="incompatiblePipelines.length > 0">
+                    <Separator />
+                    <div class="px-3 py-2 text-xs font-medium text-muted-foreground">
+                        Incompatible (Selected but not compatible)
+                    </div>
+                    <div class="p-2">
+                        <div
+                            v-for="pipeline in incompatiblePipelines"
+                            :key="pipeline"
+                            class="flex items-center space-x-2 rounded-sm px-2 py-1.5 hover:bg-accent cursor-pointer opacity-60"
+                            @click="togglePipeline(pipeline, false)"
+                        >
+                            <Checkbox :model-value="true" class="pointer-events-none" />
+                            <span class="flex-1 text-sm">
+                                {{ toTitleCase(pipeline) }}
+                            </span>
+                            <span class="text-xs text-destructive">⚠</span>
+                        </div>
+                    </div>
+                </div>
+            </ScrollArea>
+        </PopoverContent>
+    </Popover>
 </template>

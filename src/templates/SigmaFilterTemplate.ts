@@ -4,26 +4,26 @@ import type { FileItem, Sigma } from "@/types/types.ts";
 import yaml from "js-yaml";
 
 export default function sigmaFilterTemplate(file: FileItem) {
-  if (!file?.content) {
-    return "";
-  }
+    if (!file?.content) {
+        return "";
+    }
 
-  let sigma_file = file.content;
-  // Yaml parse
+    let sigma_file = file.content;
+    // Yaml parse
 
-  const sigmaYaml = yaml.loadAll(sigma_file) as Sigma[];
-  let logsourceYaml = yaml.dump(sigmaYaml[0]?.logsource ?? "").trim();
-  const rule_id = sigmaYaml[0]?.id || uuid();
+    const sigmaYaml = yaml.loadAll(sigma_file) as Sigma[];
+    let logsourceYaml = yaml.dump(sigmaYaml[0]?.logsource ?? "").trim();
+    const rule_id = sigmaYaml[0]?.id || uuid();
 
-  logsourceYaml = indentString(dedentString(logsourceYaml), 4);
+    logsourceYaml = indentString(dedentString(logsourceYaml), 4);
 
-  return (
-    `title: Filter Out Domain Controllers
+    return (
+        `title: Filter Out Domain Controllers
 id: ${uuid()}
 description: Filter out events from Domain Controllers
 logsource:\n` +
-    logsourceYaml +
-    `
+        logsourceYaml +
+        `
 filter:
   rules:
     - ${rule_id}
@@ -31,5 +31,5 @@ filter:
     ComputerName|startswith: "DC-"
   condition: not selection
 `
-  );
+    );
 }

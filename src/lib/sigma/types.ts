@@ -7,6 +7,6 @@ export type { SigmaTarget };
  * Result of a Sigma conversion operation
  */
 export interface SigmaConversionResult {
-  query: string;
-  error?: string;
+    query: string;
+    error?: string;
 }

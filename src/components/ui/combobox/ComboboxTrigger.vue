@@ -13,7 +13,7 @@ const forwarded = useForwardProps(delegatedProps)
 </script>
 
 <template>
-  <ComboboxTrigger v-bind="forwarded" :class="cn('', props.class)" tabindex="0">
-    <slot />
-  </ComboboxTrigger>
+    <ComboboxTrigger v-bind="forwarded" :class="cn('', props.class)" tabindex="0">
+        <slot />
+    </ComboboxTrigger>
 </template>
