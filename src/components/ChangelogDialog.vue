@@ -112,7 +112,7 @@ defineExpose({
 
 <template>
   <Dialog v-model:open="isOpen">
-    <DialogContent class="max-w-5xl max-h-[85vh]">
+    <DialogContent class="max-w-5xl! max-h-[85vh]">
       <DialogHeader class="pb-4 bg-secondary/30 mb-4 -mt-6 -mx-6 p-6 rounded-b">
         <DialogTitle class="text-2xl font-bold flex items-center gap-2">
           <Sparkles class="h-6 w-6 text-muted-foreground" />

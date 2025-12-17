@@ -243,6 +243,7 @@ function formatBytes(bytes: number, decimals = 2) {
                                                     Math.round((sigma?.search_results.value?.stats?.totalMatches / sigma?.search_results.value?.stats?.totalRecords) * 100) :
                                                     0
 
+
                       }}%
                     </span>
                   </div>
