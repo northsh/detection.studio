@@ -35,14 +35,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <PrismEditor
-    v-model="editorContent"
-    language="yaml"
-    :lineNumbers="true"
-    :insertSpaces="true"
-    tabSize="2"
-    :enableAutocompletion="true"
-    :class="['h-full w-full border rounded', props.class]"
-    @update:modelValue="onEditorUpdate"
-  />
+    <PrismEditor
+        v-model="editorContent"
+        language="yaml"
+        :lineNumbers="true"
+        :insertSpaces="true"
+        tabSize="2"
+        :enableAutocompletion="true"
+        :class="['h-full w-full border rounded', props.class]"
+        @update:modelValue="onEditorUpdate"
+    />
 </template>

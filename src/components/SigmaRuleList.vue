@@ -1,264 +1,286 @@
 <template>
-  <div class="flex flex-col h-full overflow-hidden">
-    <div class="p-4 border-b bg-card shadow-xs">
-      <!-- Search input with throttled input -->
-      <div class="relative w-full">
-        <Input
-          v-model="searchQuery"
-          class="w-full pl-9"
-          placeholder="Search across rules..."
-          @input="onSearch"
-        />
-        <Search class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Button
-          v-if="searchQuery"
-          variant="ghost"
-          size="icon"
-          class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-          @click="clearSearch"
-        >
-          <XCircle class="h-4 w-4" />
-        </Button>
-      </div>
-
-      <!-- Filter controls -->
-      <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
-        <!-- Collapsible filters section -->
-        <Collapsible>
-          <CollapsibleTrigger asChild>
-            <div class="flex items-center justify-between cursor-pointer">
-              <div class="flex items-center gap-2">
-                <h3 class="text-sm font-medium">Filters</h3>
-                <Badge class="text-xs" variant="outline">{{ getActiveFiltersCount() }}</Badge>
-              </div>
-              <ChevronDown
-                class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"
-              />
+    <div class="flex flex-col h-full overflow-hidden">
+        <div class="p-4 border-b bg-card shadow-xs">
+            <!-- Search input with throttled input -->
+            <div class="relative w-full">
+                <Input
+                    v-model="searchQuery"
+                    class="w-full pl-9"
+                    placeholder="Search across rules..."
+                    @input="onSearch"
+                />
+                <Search
+                    class="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+                <Button
+                    v-if="searchQuery"
+                    variant="ghost"
+                    size="icon"
+                    class="h-8 w-8 absolute right-1 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    @click="clearSearch"
+                >
+                    <XCircle class="h-4 w-4" />
+                </Button>
             </div>
-          </CollapsibleTrigger>
 
-          <CollapsibleContent class="pt-2">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Status filter -->
-              <div class="space-y-2">
-                <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
-                <div class="flex flex-wrap gap-1.5">
-                  <Badge
-                    v-for="status in statusOptions"
-                    :key="status"
-                    :class="[
+            <!-- Filter controls -->
+            <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
+                <!-- Collapsible filters section -->
+                <Collapsible>
+                    <CollapsibleTrigger asChild>
+                        <div class="flex items-center justify-between cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-medium">Filters</h3>
+                                <Badge
+                                    class="text-xs"
+                                    variant="outline"
+                                    >{{ getActiveFiltersCount() }}</Badge
+                                >
+                            </div>
+                            <ChevronDown
+                                class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"
+                            />
+                        </div>
+                    </CollapsibleTrigger>
+
+                    <CollapsibleContent class="pt-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Status filter -->
+                            <div class="space-y-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
+                                <div class="flex flex-wrap gap-1.5">
+                                    <Badge
+                                        v-for="status in statusOptions"
+                                        :key="status"
+                                        :class="[
                       statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' :
                       'bg-muted/50 text-muted-foreground hover:bg-muted',
                       'cursor-pointer transition-colors'
                     ]"
-                    variant="outline"
-                    @click="toggleStatusFilter(status)"
-                  >
-                    {{ status }}
-                  </Badge>
-                </div>
-              </div>
+                                        variant="outline"
+                                        @click="toggleStatusFilter(status)"
+                                    >
+                                        {{ status }}
+                                    </Badge>
+                                </div>
+                            </div>
 
-              <!-- Logsource filter with combobox for search -->
-              <div class="space-y-2">
-                <h3 class="text-xs font-medium text-muted-foreground">Filter by Logsource</h3>
-                <Combobox v-model="selectedProduct" @update:modelValue="applyFilters">
-                  <ComboboxAnchor>
-                    <div class="relative w-full items-center">
-                      <ComboboxInput
-                        :display-value="(val) => val"
-                        class="pl-9 w-full bg-background"
-                        placeholder="Search product/category/service..."
-                        @input="onProductSearch"
-                      />
-                      <span
-                        class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
-                      >
-                        <Search class="size-4 text-muted-foreground" />
-                      </span>
-                    </div>
-                  </ComboboxAnchor>
+                            <!-- Logsource filter with combobox for search -->
+                            <div class="space-y-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">
+                                    Filter by Logsource
+                                </h3>
+                                <Combobox
+                                    v-model="selectedProduct"
+                                    @update:modelValue="applyFilters"
+                                >
+                                    <ComboboxAnchor>
+                                        <div class="relative w-full items-center">
+                                            <ComboboxInput
+                                                :display-value="(val) => val"
+                                                class="pl-9 w-full bg-background"
+                                                placeholder="Search product/category/service..."
+                                                @input="onProductSearch"
+                                            />
+                                            <span
+                                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
+                                            >
+                                                <Search class="size-4 text-muted-foreground" />
+                                            </span>
+                                        </div>
+                                    </ComboboxAnchor>
 
-                  <ComboboxList class="w-full">
-                    <ComboboxEmpty> No matches found </ComboboxEmpty>
+                                    <ComboboxList class="w-full">
+                                        <ComboboxEmpty> No matches found </ComboboxEmpty>
 
-                    <ComboboxGroup>
-                      <ComboboxItem
-                        v-for="option in filteredProductOptions"
-                        :key="option"
-                        :value="option"
-                        class="flex items-center justify-between"
-                      >
-                        <div class="flex items-center gap-2">
-                          <span>{{ option }}</span>
-                          <Badge v-if="getOptionType(option)" class="text-[10px]" variant="outline">
-                            {{ getOptionType(option) }}
-                          </Badge>
+                                        <ComboboxGroup>
+                                            <ComboboxItem
+                                                v-for="option in filteredProductOptions"
+                                                :key="option"
+                                                :value="option"
+                                                class="flex items-center justify-between"
+                                            >
+                                                <div class="flex items-center gap-2">
+                                                    <span>{{ option }}</span>
+                                                    <Badge
+                                                        v-if="getOptionType(option)"
+                                                        class="text-[10px]"
+                                                        variant="outline"
+                                                    >
+                                                        {{ getOptionType(option) }}
+                                                    </Badge>
+                                                </div>
+
+                                                <ComboboxItemIndicator>
+                                                    <Check :class="cn('ml-auto h-4 w-4')" />
+                                                </ComboboxItemIndicator>
+                                            </ComboboxItem>
+                                        </ComboboxGroup>
+                                    </ComboboxList>
+                                </Combobox>
+                            </div>
                         </div>
 
-                        <ComboboxItemIndicator>
-                          <Check :class="cn('ml-auto h-4 w-4')" />
-                        </ComboboxItemIndicator>
-                      </ComboboxItem>
-                    </ComboboxGroup>
-                  </ComboboxList>
-                </Combobox>
-              </div>
+                        <!-- Logsource sorting toggle -->
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs text-muted-foreground">Product</span>
+                                <Toggle
+                                    :pressed="logsourceSortingStyle === 'category-product-service'"
+                                    size="sm"
+                                    @update:pressed="toggleLogSourceSorting"
+                                />
+                                <span class="text-xs text-muted-foreground">Category</span>
+                            </div>
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
             </div>
-
-            <!-- Logsource sorting toggle -->
-            <div class="mt-4">
-              <div class="flex items-center justify-between mb-2">
-                <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
-              </div>
-              <div class="flex items-center space-x-2">
-                <span class="text-xs text-muted-foreground">Product</span>
-                <Toggle
-                  :pressed="logsourceSortingStyle === 'category-product-service'"
-                  size="sm"
-                  @update:pressed="toggleLogSourceSorting"
-                />
-                <span class="text-xs text-muted-foreground">Category</span>
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
-    </div>
-
-    <!-- Error state -->
-    <div v-if="error" class="p-4 flex flex-col justify-center items-center grow text-red-500">
-      <Alert class="max-w-md" variant="destructive">
-        <AlertTitle>Error loading rules</AlertTitle>
-        <AlertDescription>{{ error }}</AlertDescription>
-      </Alert>
-      <Button class="mt-4" variant="default" @click="retryLoadRules"> Retry </Button>
-    </div>
-
-    <!-- Loading state with skeleton -->
-    <div v-else-if="isLoading" class="p-4 grow">
-      <div class="space-y-4">
-        <div v-for="i in 3" :key="`skeleton-group-${i}`" class="space-y-3">
-          <div class="flex items-center justify-between">
-            <Skeleton class="h-4 w-32" />
-            <Skeleton class="h-4 w-12" />
-          </div>
-          <div
-            v-for="j in 3"
-            :key="`skeleton-item-${i}-${j}`"
-            class="p-3 border border-border rounded-md"
-          >
-            <Skeleton class="h-5 w-2/3 mb-2" />
-            <div class="flex gap-1.5 mb-2">
-              <Skeleton class="h-4 w-16" />
-              <Skeleton class="h-4 w-16" />
-            </div>
-            <Skeleton class="h-4 w-full mb-2" />
-            <Skeleton class="h-4 w-3/4" />
-            <div class="flex gap-1.5 mt-2">
-              <Skeleton class="h-4 w-20" />
-              <Skeleton class="h-4 w-20" />
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Results list -->
-    <ScrollArea v-else class="grow overflow-hidden">
-      <div
-        v-if="allRules.length === 0"
-        class="text-center py-16 flex flex-col items-center justify-center h-full"
-      >
-        <div class="bg-muted/30 rounded-lg p-6 max-w-md">
-          <h3 class="text-lg font-medium mb-2">No Sigma Rules Found</h3>
-          <p class="text-muted-foreground mb-4">
-            The rules index file may be missing or empty. Please ensure the "sigma-rules-index.json"
-            file exists in the public directory.
-          </p>
-          <Button variant="default" @click="retryLoadRules"> Retry Loading Rules </Button>
+        <!-- Error state -->
+        <div v-if="error" class="p-4 flex flex-col justify-center items-center grow text-red-500">
+            <Alert class="max-w-md" variant="destructive">
+                <AlertTitle>Error loading rules</AlertTitle>
+                <AlertDescription>{{ error }}</AlertDescription>
+            </Alert>
+            <Button class="mt-4" variant="default" @click="retryLoadRules"> Retry </Button>
         </div>
-      </div>
-      <div v-else-if="groupedRules.length === 0" class="text-center py-4 text-muted-foreground">
-        No rules found matching your criteria.
-      </div>
-      <div v-else ref="containerRef" class="">
-        <div :style="{ height: `${totalHeight}px` }" class="relative">
-          <div v-for="group in visibleGroups" :key="group.label" class="mb-6">
+
+        <!-- Loading state with skeleton -->
+        <div v-else-if="isLoading" class="p-4 grow">
+            <div class="space-y-4">
+                <div v-for="i in 3" :key="`skeleton-group-${i}`" class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <Skeleton class="h-4 w-32" />
+                        <Skeleton class="h-4 w-12" />
+                    </div>
+                    <div
+                        v-for="j in 3"
+                        :key="`skeleton-item-${i}-${j}`"
+                        class="p-3 border border-border rounded-md"
+                    >
+                        <Skeleton class="h-5 w-2/3 mb-2" />
+                        <div class="flex gap-1.5 mb-2">
+                            <Skeleton class="h-4 w-16" />
+                            <Skeleton class="h-4 w-16" />
+                        </div>
+                        <Skeleton class="h-4 w-full mb-2" />
+                        <Skeleton class="h-4 w-3/4" />
+                        <div class="flex gap-1.5 mt-2">
+                            <Skeleton class="h-4 w-20" />
+                            <Skeleton class="h-4 w-20" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results list -->
+        <ScrollArea v-else class="grow overflow-hidden">
             <div
-              class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2 px-4"
+                v-if="allRules.length === 0"
+                class="text-center py-16 flex flex-col items-center justify-center h-full"
             >
-              <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                {{ group.label }}
-              </h3>
-              <Badge class="text-xs" variant="outline">{{ group.items.length }} rules</Badge>
-            </div>
-            <div class="space-y-2">
-              <div
-                v-for="itemInfo in group.items"
-                :key="itemInfo.rule.id || itemInfo.rule.path"
-                :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
-                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-px hover:shadow-xs"
-                @click="selectRule(itemInfo.rule)"
-              >
-                <div class="flex items-start justify-between">
-                  <h3 class="font-medium">{{ itemInfo.rule.title }}</h3>
+                <div class="bg-muted/30 rounded-lg p-6 max-w-md">
+                    <h3 class="text-lg font-medium mb-2">No Sigma Rules Found</h3>
+                    <p class="text-muted-foreground mb-4">
+                        The rules index file may be missing or empty. Please ensure the
+                        "sigma-rules-index.json" file exists in the public directory.
+                    </p>
+                    <Button variant="default" @click="retryLoadRules"> Retry Loading Rules </Button>
                 </div>
+            </div>
+            <div
+                v-else-if="groupedRules.length === 0"
+                class="text-center py-4 text-muted-foreground"
+            >
+                No rules found matching your criteria.
+            </div>
+            <div v-else ref="containerRef" class="">
+                <div :style="{ height: `${totalHeight}px` }" class="relative">
+                    <div v-for="group in visibleGroups" :key="group.label" class="mb-6">
+                        <div
+                            class="flex items-center justify-between sticky top-0 bg-background py-2 z-10 border-b mb-2 px-4"
+                        >
+                            <h3
+                                class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+                            >
+                                {{ group.label }}
+                            </h3>
+                            <Badge class="text-xs" variant="outline"
+                                >{{ group.items.length }} rules</Badge
+                            >
+                        </div>
+                        <div class="space-y-2">
+                            <div
+                                v-for="itemInfo in group.items"
+                                :key="itemInfo.rule.id || itemInfo.rule.path"
+                                :class="{'border-primary/50 bg-primary/5': isSelected(itemInfo.rule)}"
+                                class="mx-4 p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-px hover:shadow-xs"
+                                @click="selectRule(itemInfo.rule)"
+                            >
+                                <div class="flex items-start justify-between">
+                                    <h3 class="font-medium">{{ itemInfo.rule.title }}</h3>
+                                </div>
 
-                <div class="flex items-start justify-between mt-1">
-                  <div class="flex gap-1.5">
-                    <Badge
-                      v-if="itemInfo.rule.level"
-                      :class="getLevelBadgeClass(itemInfo.rule.level)"
-                      class="uppercase font-semibold text-[10px] tracking-wider"
-                    >
-                      {{ itemInfo.rule.level }}
-                    </Badge>
-                    <Badge
-                      v-if="itemInfo.rule.status"
-                      class="uppercase font-semibold text-[10px] tracking-wider"
-                      variant="outline"
-                    >
-                      {{ itemInfo.rule.status }}
-                    </Badge>
-                  </div>
-                </div>
-                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">
-                  {{
+                                <div class="flex items-start justify-between mt-1">
+                                    <div class="flex gap-1.5">
+                                        <Badge
+                                            v-if="itemInfo.rule.level"
+                                            :class="getLevelBadgeClass(itemInfo.rule.level)"
+                                            class="uppercase font-semibold text-[10px] tracking-wider"
+                                        >
+                                            {{ itemInfo.rule.level }}
+                                        </Badge>
+                                        <Badge
+                                            v-if="itemInfo.rule.status"
+                                            class="uppercase font-semibold text-[10px] tracking-wider"
+                                            variant="outline"
+                                        >
+                                            {{ itemInfo.rule.status }}
+                                        </Badge>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-muted-foreground line-clamp-2 mt-1">
+                                    {{
                                         itemInfo.rule.description
-                  }}
-                </p>
-                <div class="flex flex-wrap gap-1.5 mt-2">
-                  <Badge
-                    v-if="itemInfo.rule.logsource?.product"
-                    class="px-2 py-0 text-xs"
-                    variant="secondary"
-                  >
-                    {{ itemInfo.rule.logsource.product }}
-                  </Badge>
-                  <Badge
-                    v-if="itemInfo.rule.logsource?.category"
-                    class="px-2 py-0 text-xs"
-                    variant="secondary"
-                  >
-                    {{ itemInfo.rule.logsource.category }}
-                  </Badge>
-                  <Badge
-                    v-if="itemInfo.rule.logsource?.service"
-                    class="px-2 py-0 text-xs"
-                    variant="secondary"
-                  >
-                    {{ itemInfo.rule.logsource.service }}
-                  </Badge>
+                                    }}
+                                </p>
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    <Badge
+                                        v-if="itemInfo.rule.logsource?.product"
+                                        class="px-2 py-0 text-xs"
+                                        variant="secondary"
+                                    >
+                                        {{ itemInfo.rule.logsource.product }}
+                                    </Badge>
+                                    <Badge
+                                        v-if="itemInfo.rule.logsource?.category"
+                                        class="px-2 py-0 text-xs"
+                                        variant="secondary"
+                                    >
+                                        {{ itemInfo.rule.logsource.category }}
+                                    </Badge>
+                                    <Badge
+                                        v-if="itemInfo.rule.logsource?.service"
+                                        class="px-2 py-0 text-xs"
+                                        variant="secondary"
+                                    >
+                                        {{ itemInfo.rule.logsource.service }}
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-      </div>
-      <ScrollBar />
-    </ScrollArea>
-  </div>
+            <ScrollBar />
+        </ScrollArea>
+    </div>
 </template>
 
 <script lang="ts" setup>

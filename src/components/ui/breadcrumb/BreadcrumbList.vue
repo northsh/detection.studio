@@ -8,9 +8,9 @@ const props = defineProps<{
 </script>
 
 <template>
-  <ol
-    :class="cn('flex flex-wrap items-center gap-1.5 wrap-break-word text-sm text-muted-foreground sm:gap-2.5', props.class)"
-  >
-    <slot />
-  </ol>
+    <ol
+        :class="cn('flex flex-wrap items-center gap-1.5 wrap-break-word text-sm text-muted-foreground sm:gap-2.5', props.class)"
+    >
+        <slot />
+    </ol>
 </template>

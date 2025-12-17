@@ -111,22 +111,22 @@ function resetScroll() {
 </script>
 
 <template>
-  <div ref="parentRef" class="h-full overflow-auto">
-    <div
-      :style="{
+    <div ref="parentRef" class="h-full overflow-auto">
+        <div
+            :style="{
         height: `${totalSize}px`,
         width: '100%',
         position: 'relative',
       }"
-    >
-      <div
-        v-for="virtualRow in virtualRows"
-        :key="virtualRow.index"
-        :class="[
+        >
+            <div
+                v-for="virtualRow in virtualRows"
+                :key="virtualRow.index"
+                :class="[
           'px-4',
           isGroupHeader(virtualRow.index) ? 'sticky bg-background border-b z-10' : ''
         ]"
-        :style="{
+                :style="{
           position: isActiveGroupHeader(virtualRow.index) ? 'sticky' : 'absolute',
           top: 0,
           left: 0,
@@ -134,27 +134,32 @@ function resetScroll() {
           height: `${virtualRow.size}px`,
           transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
         }"
-      >
-        <!-- Group Header -->
-        <template v-if="isGroupHeader(virtualRow.index)">
-          <div class="flex items-center justify-between py-2 mb-2">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              {{ flattenedItems[virtualRow.index].label }}
-            </h3>
-            <Badge class="text-xs" variant="outline"
-              >{{ flattenedItems[virtualRow.index].rules.length }}
-              rules
-            </Badge>
-          </div>
-        </template>
+            >
+                <!-- Group Header -->
+                <template v-if="isGroupHeader(virtualRow.index)">
+                    <div class="flex items-center justify-between py-2 mb-2">
+                        <h3
+                            class="text-sm font-semibold uppercase tracking-wider text-muted-foreground"
+                        >
+                            {{ flattenedItems[virtualRow.index].label }}
+                        </h3>
+                        <Badge class="text-xs" variant="outline"
+                            >{{ flattenedItems[virtualRow.index].rules.length }}
+                            rules
+                        </Badge>
+                    </div>
+                </template>
 
-        <!-- Rule Item -->
-        <template v-else>
-          <RuleItem :rule="flattenedItems[virtualRow.index].rule" @select-rule="handleSelectRule" />
-        </template>
-      </div>
+                <!-- Rule Item -->
+                <template v-else>
+                    <RuleItem
+                        :rule="flattenedItems[virtualRow.index].rule"
+                        @select-rule="handleSelectRule"
+                    />
+                </template>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
 
 <style scoped>
