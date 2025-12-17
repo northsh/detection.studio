@@ -3,14 +3,15 @@ import type { SigmaRule } from "../stores/SigmaBrowserStore";
 import * as Flexsearch from "flexsearch";
 
 interface SearchMessage {
-    type: "search" | "init";
+    type: "search" | "init" | "load";
     query?: string;
     rules?: SigmaRule[];
 }
 
 interface SearchResponse {
-    type: "result" | "ready" | "error";
+    type: "result" | "ready" | "error" | "loaded";
     results?: SigmaRule[];
+    rules?: SigmaRule[];
     error?: string;
 }
 
@@ -22,7 +23,45 @@ self.onmessage = async (event: MessageEvent<SearchMessage>) => {
     const { type, query, rules } = event.data;
 
     try {
-        if (type === "init") {
+        if (type === "load") {
+            // Load rules from the sigma-rules-index.json file
+            console.log("SearchWorker: Loading rules from index...");
+
+            try {
+                const response = await fetch("/sigma-rules-index.json");
+
+                if (!response.ok) {
+                    throw new Error(
+                        `Failed to load rules index: ${response.status} ${response.statusText}`,
+                    );
+                }
+
+                const data = await response.json();
+
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid rules index format");
+                }
+
+                console.log(`SearchWorker: Successfully loaded ${data.length} rules`);
+
+                // Send the rules back to the main thread
+                postResponse({ type: "loaded", rules: data });
+
+                // Automatically initialize the search index with the loaded rules
+                // This allows the worker to be ready for searches immediately
+                const initMessage: SearchMessage = {
+                    type: "init",
+                    rules: data,
+                };
+                self.onmessage?.({ data: initMessage } as MessageEvent<SearchMessage>);
+            } catch (error) {
+                console.error("SearchWorker: Error loading rules:", error);
+                postResponse({
+                    type: "error",
+                    error: error instanceof Error ? error.message : "Failed to load rules",
+                });
+            }
+        } else if (type === "init") {
             // Build the search index from rules data at runtime
             console.log("SearchWorker: Building search index from rules...");
 

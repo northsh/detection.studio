@@ -55,6 +55,15 @@ const pyodideReadyPromise = (async () => {
         // Install PySigma (now compatible with PyYAML 6.0.3+)
         await micropip.install("pysigma");
 
+        // Install pipeline packages
+        // These pipelines will be available for all backends (allowed_backends is typically None for pipelines)
+        await micropip.install([
+            "pysigma-pipeline-windows",
+            "pysigma-pipeline-sysmon",
+            // "pysigma-pipeline-ocsf", // TODO: Blocked behind pysigma 1.0.0
+            // "pySigma-pipeline-rclinuxedr" // TODO: Blocked behind pysigma 1.0.0
+        ]);
+
         updateStatus({ pyodideReady: true });
         await loadPythonModule();
         updateStatus({ ready: true });

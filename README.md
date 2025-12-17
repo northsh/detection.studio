@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./.github/images/logo.png" [alt="detection.studio](https://detection.studio/ Logo" width="120" height="120">
+  <img src="src/images/logo.png" [alt="detection.studio](https://detection.studio/ Logo" width="120" height="120">
 </p>
 
 <h1 align="center">detection.studio</h1>

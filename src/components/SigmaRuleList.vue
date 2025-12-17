@@ -24,121 +24,15 @@
             </div>
 
             <!-- Filter controls -->
-            <div class="mt-4 space-y-4 bg-muted px-4 py-1 rounded">
-                <!-- Collapsible filters section -->
-                <Collapsible>
-                    <CollapsibleTrigger asChild>
-                        <div class="flex items-center justify-between cursor-pointer">
-                            <div class="flex items-center gap-2">
-                                <h3 class="text-sm font-medium">Filters</h3>
-                                <Badge
-                                    class="text-xs"
-                                    variant="outline"
-                                    >{{ getActiveFiltersCount() }}</Badge
-                                >
-                            </div>
-                            <ChevronDown
-                                class="h-4 w-4 text-muted-foreground transition-transform ui-expanded:rotate-180"
-                            />
-                        </div>
-                    </CollapsibleTrigger>
-
-                    <CollapsibleContent class="pt-2">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Status filter -->
-                            <div class="space-y-2">
-                                <h3 class="text-xs font-medium text-muted-foreground">Status</h3>
-                                <div class="flex flex-wrap gap-1.5">
-                                    <Badge
-                                        v-for="status in statusOptions"
-                                        :key="status"
-                                        :class="[
-                      statusFilters[status] ? 'bg-primary/10 text-primary border-primary/20' :
-                      'bg-muted/50 text-muted-foreground hover:bg-muted',
-                      'cursor-pointer transition-colors'
-                    ]"
-                                        variant="outline"
-                                        @click="toggleStatusFilter(status)"
-                                    >
-                                        {{ status }}
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <!-- Logsource filter with combobox for search -->
-                            <div class="space-y-2">
-                                <h3 class="text-xs font-medium text-muted-foreground">
-                                    Filter by Logsource
-                                </h3>
-                                <Combobox
-                                    v-model="selectedProduct"
-                                    @update:modelValue="applyFilters"
-                                >
-                                    <ComboboxAnchor>
-                                        <div class="relative w-full items-center">
-                                            <ComboboxInput
-                                                :display-value="(val) => val"
-                                                class="pl-9 w-full bg-background"
-                                                placeholder="Search product/category/service..."
-                                                @input="onProductSearch"
-                                            />
-                                            <span
-                                                class="absolute start-0 inset-y-0 flex items-center justify-center px-3"
-                                            >
-                                                <Search class="size-4 text-muted-foreground" />
-                                            </span>
-                                        </div>
-                                    </ComboboxAnchor>
-
-                                    <ComboboxList class="w-full">
-                                        <ComboboxEmpty> No matches found </ComboboxEmpty>
-
-                                        <ComboboxGroup>
-                                            <ComboboxItem
-                                                v-for="option in filteredProductOptions"
-                                                :key="option"
-                                                :value="option"
-                                                class="flex items-center justify-between"
-                                            >
-                                                <div class="flex items-center gap-2">
-                                                    <span>{{ option }}</span>
-                                                    <Badge
-                                                        v-if="getOptionType(option)"
-                                                        class="text-[10px]"
-                                                        variant="outline"
-                                                    >
-                                                        {{ getOptionType(option) }}
-                                                    </Badge>
-                                                </div>
-
-                                                <ComboboxItemIndicator>
-                                                    <Check :class="cn('ml-auto h-4 w-4')" />
-                                                </ComboboxItemIndicator>
-                                            </ComboboxItem>
-                                        </ComboboxGroup>
-                                    </ComboboxList>
-                                </Combobox>
-                            </div>
-                        </div>
-
-                        <!-- Logsource sorting toggle -->
-                        <div class="mt-4">
-                            <div class="flex items-center justify-between mb-2">
-                                <h3 class="text-xs font-medium text-muted-foreground">Group By</h3>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs text-muted-foreground">Product</span>
-                                <Toggle
-                                    :pressed="logsourceSortingStyle === 'category-product-service'"
-                                    size="sm"
-                                    @update:pressed="toggleLogSourceSorting"
-                                />
-                                <span class="text-xs text-muted-foreground">Category</span>
-                            </div>
-                        </div>
-                    </CollapsibleContent>
-                </Collapsible>
-            </div>
+            <SearchFilters
+                :status-filters="statusFilters"
+                :selected-product="selectedProduct"
+                :logsource-sorting-style="logsourceSortingStyle"
+                :all-rules="allRules"
+                @update:status-filters="onUpdateStatusFilters"
+                @update:selected-product="onUpdateSelectedProduct"
+                @update:logsource-sorting="onUpdateLogsourceSorting"
+            />
         </div>
 
         <!-- Error state -->
@@ -289,25 +183,13 @@ import {useSigmaRulesStore} from '../stores/SigmaBrowserStore.ts';
 import {Input} from '@/components/ui/input';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
-import {
-    Combobox,
-    ComboboxAnchor,
-    ComboboxEmpty,
-    ComboboxGroup,
-    ComboboxInput,
-    ComboboxItem,
-    ComboboxItemIndicator,
-    ComboboxList
-} from '@/components/ui/combobox';
-import {Collapsible, CollapsibleContent, CollapsibleTrigger} from '@/components/ui/collapsible';
-import {Toggle} from '@/components/ui/toggle';
 import {Skeleton} from '@/components/ui/skeleton';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {useRoute, useRouter} from 'vue-router';
 import type {SigmaRule} from '../lib/sigma/SigmaRepoService';
-import {Check, ChevronDown, Search, XCircle} from 'lucide-vue-next';
-import {cn} from '@/lib/utils';
+import {Search, XCircle} from 'lucide-vue-next';
 import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
+import SearchFilters from '@/components/sigma/SearchFilters.vue';
 
 // Accept initial rule ID from parent component
 const props = defineProps<{
@@ -337,126 +219,17 @@ const statusFilters = reactive({
 
 const selectedProduct = ref('');
 const logsourceSortingStyle = ref('product-category-service');
-const productSearchQuery = ref('');
 
-// Track product-category-service mappings for better UX
-const logsourceMapping = computed(() => {
-    const mapping: Record<string, { type: string, items: Set<string> }> = {};
-
-    allRules.value.forEach(rule => {
-        if (rule.logsource?.product) {
-            if (!mapping[rule.logsource.product]) {
-                mapping[rule.logsource.product] = {type: 'product', items: new Set()};
-            }
-
-            if (rule.logsource.category) {
-                mapping[rule.logsource.product].items.add(rule.logsource.category);
-
-                if (!mapping[rule.logsource.category]) {
-                    mapping[rule.logsource.category] = {type: 'category', items: new Set()};
-                }
-            }
-
-            if (rule.logsource.service) {
-                mapping[rule.logsource.product].items.add(rule.logsource.service);
-
-                if (!mapping[rule.logsource.service]) {
-                    mapping[rule.logsource.service] = {type: 'service', items: new Set()};
-                }
-            }
-        }
-    });
-
-    return mapping;
-});
-
-// Helper to determine option type
-function getOptionType(option: string): string | null {
-    return logsourceMapping.value[option]?.type || null;
-}
-
-// Computed status filters that are enabled
-const enabledStatusFilters = computed(() => {
-    return Object.entries(statusFilters)
-        .filter(([_, enabled]) => enabled)
-        .map(([status]) => status);
-});
-
-// Get active filters count for badge
-function getActiveFiltersCount(): string {
-    let count = enabledStatusFilters.value.length;
-    if (selectedProduct.value) count++;
-    return count.toString();
-}
-
-// Toggle status filter
-function toggleStatusFilter(status: string) {
-    statusFilters[status] = !statusFilters[status];
+// Handle status filter updates from SearchFilters component
+function onUpdateStatusFilters(filters: Record<string, boolean>) {
+    Object.assign(statusFilters, filters);
     applyFilters();
 }
 
-// Cache for product options
-const productOptionsCache = ref({
-    rulesLength: 0,
-    options: [] as string[]
-});
-
-// Get unique logsource options (products, categories, services) from rules with caching
-const productOptions = computed(() => {
-    // Only recompute if the rules array has changed
-    if (productOptionsCache.value.rulesLength === allRules.value.length &&
-        productOptionsCache.value.options.length > 0) {
-        return productOptionsCache.value.options;
-    }
-
-    const options = new Set<string>();
-
-    allRules.value.forEach(rule => {
-        if (rule.logsource?.product) {
-            options.add(rule.logsource.product);
-        }
-        if (rule.logsource?.category) {
-            options.add(rule.logsource.category);
-        }
-        if (rule.logsource?.service) {
-            options.add(rule.logsource.service);
-        }
-    });
-
-    const sortedOptions = Array.from(options).sort();
-
-    // Update cache
-    productOptionsCache.value = {
-        rulesLength: allRules.value.length,
-        options: sortedOptions
-    };
-
-    return sortedOptions;
-});
-
-// Filtered product options based on search query
-const filteredProductOptions = computed(() => {
-    if (!productSearchQuery.value) return productOptions.value;
-
-    const query = productSearchQuery.value.toLowerCase();
-    return productOptions.value.filter(product =>
-        product.toLowerCase().includes(query)
-    );
-});
-
-// Debounce product search to avoid triggering on every keystroke
-let productSearchTimeout: number | null = null;
-
-// Handle product search with debouncing
-function onProductSearch(event: Event) {
-    if (productSearchTimeout) {
-        clearTimeout(productSearchTimeout);
-    }
-
-    productSearchTimeout = window.setTimeout(() => {
-        productSearchQuery.value = (event.target as HTMLInputElement).value;
-        productSearchTimeout = null;
-    }, 200);
+// Handle selected product updates from SearchFilters component
+function onUpdateSelectedProduct(product: string) {
+    selectedProduct.value = product;
+    applyFilters();
 }
 
 // Clear search input and reset search results
@@ -721,11 +494,9 @@ function applyFilters() {
     resetScroll();
 }
 
-// Toggle between product and category grouping
-function toggleLogSourceSorting(pressed: boolean) {
-    logsourceSortingStyle.value = pressed
-        ? 'category-product-service'
-        : 'product-category-service';
+// Handle logsource sorting updates from SearchFilters component
+function onUpdateLogsourceSorting(style: string) {
+    logsourceSortingStyle.value = style;
     applyFilters();
 }
 

@@ -2,15 +2,16 @@ import { ref, onUnmounted, getCurrentInstance } from "vue";
 import type { SigmaRule } from "../stores/SigmaBrowserStore";
 
 interface SearchMessage {
-    type: "search" | "init";
+    type: "search" | "init" | "load";
     query?: string;
     rules?: SigmaRule[];
     options?: any;
 }
 
 interface SearchResponse {
-    type: "result" | "ready" | "error";
+    type: "result" | "ready" | "error" | "loaded";
     results?: SigmaRule[];
+    rules?: SigmaRule[];
     error?: string;
 }
 
@@ -39,13 +40,20 @@ export function useSearchWorker() {
         }
     }
 
+    let loadCallback: ((rules: SigmaRule[]) => void) | null = null;
+
     // Handle messages from the worker
     function handleWorkerMessage(event: MessageEvent<SearchResponse>) {
-        const { type, results, error } = event.data;
+        const { type, results, rules, error } = event.data;
 
         if (type === "ready") {
             isReady.value = true;
             console.log("Search worker initialized");
+        } else if (type === "loaded") {
+            if (loadCallback && rules) {
+                loadCallback(rules);
+                loadCallback = null;
+            }
         } else if (type === "result") {
             isSearching.value = false;
             if (searchCallback) {
@@ -55,6 +63,11 @@ export function useSearchWorker() {
             isSearching.value = false;
             searchError.value = error || "Unknown error";
             console.error("Search worker error:", error);
+
+            // Handle load errors
+            if (loadCallback) {
+                loadCallback = null;
+            }
         }
     }
 
@@ -97,6 +110,30 @@ export function useSearchWorker() {
             const message: SearchMessage = {
                 type: "init",
                 rules: serializedRules,
+            };
+
+            worker.value.postMessage(message);
+        });
+    }
+
+    // Load rules from the worker
+    function loadRules(): Promise<SigmaRule[]> {
+        return new Promise((resolve, reject) => {
+            if (!worker.value) {
+                initWorker();
+            }
+
+            if (!worker.value) {
+                reject(new Error("Failed to initialize worker"));
+                return;
+            }
+
+            loadCallback = (rules: SigmaRule[]) => {
+                resolve(rules);
+            };
+
+            const message: SearchMessage = {
+                type: "load",
             };
 
             worker.value.postMessage(message);
@@ -147,6 +184,7 @@ export function useSearchWorker() {
     return {
         initWorker,
         initializeIndex,
+        loadRules,
         search,
         terminateWorker,
         isReady,
