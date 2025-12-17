@@ -6,7 +6,7 @@
       "name": "detection.studio",
       "dependencies": {
         "@fontsource-variable/dm-sans": "^5.2.8",
-        "@pinia/colada": "^0.17.9",
+        "@pinia/colada": "^0.19.0",
         "@radix-icons/vue": "^1.0.0",
         "@sentry/vite-plugin": "^4.6.1",
         "@sentry/vue": "^10.31.0",
@@ -207,7 +207,7 @@
 
     "@oxlint/win32-x64": ["@oxlint/win32-x64@1.33.0", "", { "os": "win32", "cpu": "x64" }, "sha512-ReyR8rNHjKNnO7dxGny9RCPELRAdhm3y780FNBcA07E1wvxSCkB+Mn5db0Pa5bRmxrsU/MTZ/aaBFa+ERXDdXw=="],
 
-    "@pinia/colada": ["@pinia/colada@0.17.9", "", { "dependencies": { "@vue/devtools-api": "^8.0.5" }, "peerDependencies": { "pinia": "^2.2.6 || ^3.0.0", "vue": "^3.5.17" } }, "sha512-AW3+816HMFCpwfEBinmPksNoqHW8PxVKR+iQLTg2qo7lvsVOI9M4KqUFefr9ZBIUAMItd7Tx5HO8tdB0aHJ62A=="],
+    "@pinia/colada": ["@pinia/colada@0.19.0", "", { "dependencies": { "@vue/devtools-api": "^8.0.5" }, "peerDependencies": { "pinia": "^2.2.6 || ^3.0.0", "vue": "^3.5.17" } }, "sha512-JZk1pFd+3VLP5fVGj72zxtV9eDBaAW5yBLVOFoH2b4YfaZrqqtu+cxEC+sKVNJMnqzSH4/BM7EBof8uAhYZQeQ=="],
 
     "@pkgjs/parseargs": ["@pkgjs/parseargs@0.11.0", "", {}, "sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg=="],
 
