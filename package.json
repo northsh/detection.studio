@@ -31,7 +31,7 @@
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "flexsearch": "^0.8.212",
-        "fs-extra": "^11.3.2",
+        "fs-extra": "^11.3.3",
         "fuse.js": "^7.1.0",
         "isomorphic-git": "^1.36.1",
         "js-yaml": "^4.1.1",
