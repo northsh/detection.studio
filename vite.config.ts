@@ -15,16 +15,22 @@ export default defineConfig({
         sigmaRepoPlugin(),
         svgLoader(),
         viteStaticCopyPyodide(),
-        sentryVitePlugin({
-            org: "northsh",
-            project: "detection-studio",
-            telemetry: false,
-        }),
+        !process.env.CI &&
+            sentryVitePlugin({
+                org: "northsh",
+                project: "detection-studio",
+                telemetry: false,
+            }),
     ],
     root: "./",
     resolve: {
         alias: {
             "@": path.resolve(__dirname, "./src"),
+        },
+    },
+    server: {
+        watch: {
+            ignored: ["**/.sigma-repo/**"],
         },
     },
     worker: {
