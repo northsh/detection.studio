@@ -33,6 +33,9 @@ export default defineConfig({
             ignored: ["**/.sigma-repo/**"],
         },
     },
+    optimizeDeps: {
+        exclude: ["pyodide"],
+    },
     worker: {
         format: "es", // Use ES module format for workers (required for Vite 7/Rollup)
     },
