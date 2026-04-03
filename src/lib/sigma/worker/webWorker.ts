@@ -85,11 +85,16 @@ const pyodideReadyPromise = (async () => {
  */
 async function loadPythonModule() {
   try {
-    // Import the Python module using Vite's dynamic import
-    const sigmaConverterModule = await import(
-      "/src/lib/sigma/python/sigma_converter.py?raw"
-    );
-    const pythonCode = sigmaConverterModule.default;
+    // Fetch the Python module as raw text.
+    // Using fetch() instead of import("...?raw") because Vite's dynamic
+    // import with ?raw doesn't work reliably in workers across runtimes.
+    // In dev mode the source path works; in production the static-copy
+    // plugin places .py files at the output root.
+    let response = await fetch("/src/lib/sigma/python/sigma_converter.py");
+    if (!response.ok) {
+      response = await fetch("/sigma_converter.py");
+    }
+    const pythonCode = await response.text();
 
     // Create a namespace for our Python module only if it doesn't exist
     if (!sigmaNamespace) {
