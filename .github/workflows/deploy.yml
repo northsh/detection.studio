@@ -28,7 +28,7 @@ jobs:
 
             - name: Get installed Playwright version
               id: playwright-version
-              run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').dependencies['@playwright/test'].version)")" >> $GITHUB_ENV
+              run: echo "PLAYWRIGHT_VERSION=$(bun pm ls 2>/dev/null | grep '@playwright/test' | sed 's/.*@//')" >> $GITHUB_ENV
 
             - name: Cache playwright binaries
               uses: actions/cache@v3
@@ -36,7 +36,7 @@ jobs:
               with:
                   path: |
                       ~/.cache/ms-playwright
-                  key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}-${{ matrix.browser }}-${{ hashFiles('**/package-lock.json') }}
+                  key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}-${{ matrix.browser }}-${{ hashFiles('**/bun.lock') }}
 
             - name: Install dependencies
               run: bun install
@@ -48,6 +48,12 @@ jobs:
             - name: Install Playwright browsers
               run: bunx playwright install ${{ matrix.browser }}
               if: steps.playwright-cache.outputs.cache-hit != 'true'
+
+            - name: Clone SigmaHQ rules (shallow)
+              run: git clone --depth 1 --single-branch --branch master https://github.com/SigmaHQ/sigma.git .sigma-repo
+
+            - name: Generate Sigma rules index
+              run: bun run scripts/generate-sigma-index.ts
 
             - name: Run Playwright tests for ${{ matrix.browser }}
               run: bun run test --project=${{ matrix.browser }}
