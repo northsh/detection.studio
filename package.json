@@ -68,7 +68,7 @@
     "@typescript/native-preview": "^7.0.0-dev.20260411.1",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/tsconfig": "^0.9.1",
-    "oxfmt": "^0.43.0",
+    "oxfmt": "^0.44.0",
     "oxlint": "^1.59.0",
     "oxlint-tsgolint": "^0.19.0",
     "playwright": "^1.59.1",
