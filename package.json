@@ -45,7 +45,7 @@
     "prism-code-editor": "^5.1.0",
     "promise-worker": "^2.0.1",
     "pyodide": "0.29.3",
-    "reka-ui": "^2.9.5",
+    "reka-ui": "^2.9.6",
     "simple-git": "^3.35.2",
     "sqlite-worker": "^0.9.0",
     "tailwind-merge": "^3.5.0",
