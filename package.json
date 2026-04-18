@@ -24,7 +24,7 @@
     "@tanstack/vue-table": "^8.21.3",
     "@tanstack/vue-virtual": "^3.13.23",
     "@types/js-yaml": "^4.0.9",
-    "@unhead/vue": "^2.1.13",
+    "@unhead/vue": "^3.0.4",
     "@vueuse/core": "^14.2.1",
     "@vueuse/integrations": "^14.2.1",
     "change-case": "^5.4.4",
