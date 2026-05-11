@@ -117,14 +117,19 @@ function openChangelog() {
     <Sidebar collapsible="icon" variant="inset" class="-mr-1">
       <SidebarHeader>
         <SidebarMenu>
-          <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2">
-            <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap">
-              Detection Studio
+          <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2 pb-2">
+            <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap flex items-center gap-3">
+              <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
+              <div class="flex flex-col">
+                <div class="">Detection Studio</div>
+                <div class="text-xs text-transparent bg-clip-text bg-linear-to-r from-primary to-primary-foreground">by north.sh</div>
+              </div>
             </div>
-            <div v-else class="pl-1 w-full font-semibold">D.S</div>
+            <div v-else class="pl-1 w-full font-semibold pt-2 pb-4">
+              <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
-        <SidebarSeparator :class="{'mx-2': workStore.sidebarOpen}" class="w-full bg-border! mx-0" />
         <SidebarMenu>
           <SidebarMenuItem>
             <WorkspaceSelection />
@@ -241,12 +246,11 @@ function openChangelog() {
             <Transition>
               <Card
                 v-if="workStore.sidebarOpen"
-                class="text-xs text-muted-foreground p-2 flex items-center gap-2"
+                class="text-xs text-muted-foreground p-2 flex flex-col items-center gap-0"
               >
                 Powered by
-                <Sparkles class="text-primary h-4 w-4" />
                 <a class="text-primary font-semibold" href="https://north.sh/" target="_blank">
-                  north.sh
+                  <img src="/images/logo_dark.png" class="h-7" alt="north.sh logo" />
                 </a>
               </Card>
             </Transition>
