@@ -1,10 +1,9 @@
 <script lang="ts" setup>
 import {computed, ref, watch} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {useFileDialog} from "@vueuse/core";
 import {AlertCircleIcon, AlertTriangleIcon, CheckCircleIcon, LoaderIcon, PlusIcon, SearchIcon, XIcon} from "lucide-vue-next";
 import {Button} from "@/components/ui/button";
-import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
+
 import {Badge} from "@/components/ui/badge";
 import {Card} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
@@ -17,17 +16,6 @@ const activeTab = ref("summary");
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
 const showErrorDetails = ref(false);
-
-// @ts-ignore
-const {open, onChange} = useFileDialog({
-    accept: 'application/json,.ndjson,.jsonl',
-    directory: false,
-})
-
-onChange(async (files: FileList | null) => {
-    if (!files?.length || !data.value) return;
-    data.value.current_data_frame = await files[0].text();
-})
 
 // Access rsigma evaluation results from the sigma store
 const searchResults = computed(() => sigma.value?.search_results ?? null);
@@ -194,21 +182,8 @@ function highlightMatches(line: string, re: RegExp): string {
 
 <template>
   <div class="h-full w-full rounded-xl bg-muted/5 flex flex-col gap-2 p-3 overflow-hidden">
-    <!-- Empty state - no data uploaded -->
-    <div
-      v-if="!data?.current_data_frame"
-      class="flex flex-col items-center justify-center h-full gap-2"
-    >
-      <h2 class="text-lg font-semibold">Sample Data</h2>
-      <p class="text-sm text-muted-foreground mb-2">Upload sample data to evaluate your Sigma rules against</p>
-      <Button class="h-8 flex gap-2" size="sm" @click="open">
-        <PlusIcon class="h-3.5 w-3.5" />
-        Upload JSON / NDJSON File
-      </Button>
-    </div>
-
     <!-- Data is loaded -->
-    <template v-else>
+    <template v-if="data?.current_data_frame">
       <!-- Header with stats -->
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
@@ -263,7 +238,7 @@ function highlightMatches(line: string, re: RegExp): string {
       </div>
 
       <!-- Data Analysis Tabs -->
-      <Tabs v-model="activeTab" class="flex-1 min-h-0 flex flex-col items-start">
+      <Tabs v-model="activeTab" class="flex-1 min-h-0 flex flex-col">
         <TabsList class="mb-2">
           <TabsTrigger value="summary">Summary</TabsTrigger>
           <TabsTrigger value="matches">
@@ -303,7 +278,7 @@ function highlightMatches(line: string, re: RegExp): string {
               </div>
             </div>
 
-            <!-- Stats row -->
+            <!-- Stats row: with evaluation results -->
             <div class="grid grid-cols-4 gap-3" v-if="searchResults">
               <Card class="p-3 flex flex-col">
                 <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Records</span>
@@ -325,6 +300,29 @@ function highlightMatches(line: string, re: RegExp): string {
                 <span class="text-[10px] uppercase tracking-wider text-muted-foreground">File Size</span>
                 <span class="text-xl font-semibold mt-1">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
               </Card>
+            </div>
+
+            <!-- Stats row: data loaded but no rule active -->
+            <div v-else class="flex flex-col gap-3">
+              <div class="grid grid-cols-2 gap-3">
+                <Card class="p-3 flex flex-col">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">File Size</span>
+                  <span class="text-xl font-semibold mt-1">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
+                </Card>
+                <Card class="p-3 flex flex-col">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Lines</span>
+                  <span class="text-xl font-semibold mt-1">{{ rawLines.length.toLocaleString() }}</span>
+                </Card>
+              </div>
+              <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-md">
+                <div class="flex items-center gap-2 text-blue-400">
+                  <SearchIcon class="h-4 w-4 shrink-0" />
+                  <h3 class="text-sm font-medium">Select a Sigma rule to evaluate</h3>
+                </div>
+                <p class="text-xs text-muted-foreground mt-1">
+                  Open or create a Sigma rule in the editor to evaluate it against this dataset.
+                </p>
+              </div>
             </div>
 
             <!-- Field coverage warning -->
@@ -543,8 +541,8 @@ function highlightMatches(line: string, re: RegExp): string {
           </div>
 
           <!-- Lines display -->
-          <ScrollArea class="flex-1 min-h-0 w-full">
-            <div class="text-xs rounded-md font-mono min-w-max">
+          <div class="flex-1 min-h-0 overflow-auto">
+            <div class="text-xs rounded-md font-mono">
               <table>
                 <tbody>
                   <tr
@@ -574,8 +572,7 @@ function highlightMatches(line: string, re: RegExp): string {
                 <p class="text-sm">No lines match the pattern</p>
               </div>
             </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          </div>
         </TabsContent>
       </Tabs>
     </template>

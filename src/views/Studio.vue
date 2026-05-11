@@ -4,14 +4,14 @@ import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {Button} from "@/components/ui/button";
 import Editor from "@/components/Editor.vue";
-import {Github, MoreVertical, Share, Download} from "lucide-vue-next";
+import {Github, MoreVertical, Share, Download, PlusIcon} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
 import {computed} from "vue";
 import ShareButton from "@/components/ShareWorkspaceButton.vue";
 import DataView from "@/components/DataView.vue";
 import SIEMSelector from "@/components/SIEMSelector.vue";
 import PipelineSelector from "@/components/PipelineSelector.vue";
-import {useWindowSize} from '@vueuse/core';
+import {useWindowSize, useFileDialog} from '@vueuse/core';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -47,6 +47,7 @@ import {useClipboard} from '@vueuse/core';
 import JSZip from 'jszip';
 import {supportedSiems} from "@/types/SIEMs.ts";
 import {ref} from 'vue';
+import {Badge} from "@/components/ui/badge";
 
 /**
  * Head
@@ -63,6 +64,22 @@ useHead({
 
 const workspaceStore = useWorkspaceStore();
 const shareStore = useWorkspaceSharingStore();
+
+const hasData = computed(() => !!workspaceStore.currentWorkspace?.dataStore()?.current_data_frame);
+
+// File dialog for the upload-sample-data button (shown when no data is loaded)
+const { open: openDataUpload, onChange: onDataFileChange } = useFileDialog({
+    accept: 'application/json,.ndjson,.jsonl',
+    directory: false,
+});
+
+onDataFileChange(async (files: FileList | null) => {
+    if (!files?.length) return;
+    const ds = workspaceStore.currentWorkspace?.dataStore();
+    if (ds) {
+        ds.current_data_frame = await files[0].text();
+    }
+});
 
 // Use VueUse's useWindowSize for responsive behavior
 const {width, height} = useWindowSize();
@@ -281,18 +298,28 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
               <SiemOutputQuery class="border" />
             </ResizablePanel>
 
-            <!-- Resize Handle -->
-            <ResizableHandle v-if="true" with-handle class="my-1" />
+            <!-- Resize Handle + DataView panel: only when data is loaded -->
+            <template v-if="hasData">
+              <ResizableHandle with-handle class="my-1" />
+              <ResizablePanel
+                :default-size="30"
+                :min-size="10"
+                class="min-h-0 flex flex-col"
+              >
+                <DataView class="h-full w-full border" />
+              </ResizablePanel>
+            </template>
 
-            <!-- SIEM Sample Data - Takes 65% -->
-            <ResizablePanel
-              v-if="true"
-              :default-size="30"
-              :min-size="10"
-              class="min-h-0 flex flex-col"
+            <!-- Upload button: when no data is loaded -->
+            <button
+              v-else
+              class="mx-1 mb-1 mt-1 h-12 w-full rounded-lg bg-gradient-to-t from-muted to-muted/60 border border-muted-foreground/10 flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:from-muted hover:to-muted/40 transition-colors cursor-pointer"
+              @click="openDataUpload()"
             >
-              <DataView class="h-full w-full border" />
-            </ResizablePanel>
+              <PlusIcon class="h-3.5 w-3.5" />
+              Upload Sample Data
+              <Badge variant="default">New</Badge>
+            </button>
           </ResizablePanelGroup>
         </ResizablePanel>
       </ResizablePanelGroup>
