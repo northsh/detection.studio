@@ -38,7 +38,7 @@ const pyodideReadyPromise = (async () => {
     updateStatus({ ready: false, pyodideReady: false });
 
     pyodide = await loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.0/full/",
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.3/full/",
       convertNullToNone: true,
     });
 
@@ -54,6 +54,15 @@ const pyodideReadyPromise = (async () => {
 
     // Install PySigma (now compatible with PyYAML 6.0.3+)
     await micropip.install("pysigma");
+
+    // Install pipeline packages
+    // These pipelines will be available for all backends (allowed_backends is typically None for pipelines)
+    await micropip.install([
+      "pysigma-pipeline-windows",
+      "pysigma-pipeline-sysmon",
+      // "pysigma-pipeline-ocsf", // TODO: Blocked behind pysigma 1.0.0
+      // "pySigma-pipeline-rclinuxedr" // TODO: Blocked behind pysigma 1.0.0
+    ]);
 
     updateStatus({ pyodideReady: true });
     await loadPythonModule();
@@ -76,9 +85,16 @@ const pyodideReadyPromise = (async () => {
  */
 async function loadPythonModule() {
   try {
-    // Import the Python module using Vite's dynamic import
-    const sigmaConverterModule = await import("/src/lib/sigma/python/sigma_converter.py?raw");
-    const pythonCode = sigmaConverterModule.default;
+    // Fetch the Python module as raw text.
+    // Using fetch() instead of import("...?raw") because Vite's dynamic
+    // import with ?raw doesn't work reliably in workers across runtimes.
+    // In dev mode the source path works; in production the static-copy
+    // plugin places .py files at the output root.
+    let response = await fetch("/src/lib/sigma/python/sigma_converter.py");
+    if (!response.ok) {
+      response = await fetch("/sigma_converter.py");
+    }
+    const pythonCode = await response.text();
 
     // Create a namespace for our Python module only if it doesn't exist
     if (!sigmaNamespace) {
@@ -257,9 +273,12 @@ registerPromiseWorker(async (message) => {
         try {
           // Translate target to backend name
           const backendName = getBackendNameFromTarget(message.target);
-          const pipelines = pyodide?.runPython("get_available_pipelines('" + backendName + "')", {
-            globals: sigmaNamespace,
-          });
+          const pipelines = pyodide?.runPython(
+            "get_available_pipelines('" + backendName + "')",
+            {
+              globals: sigmaNamespace,
+            },
+          );
           return {
             success: true,
             pipelines: pipelines?.toJs() || [],
