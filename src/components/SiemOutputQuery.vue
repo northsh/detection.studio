@@ -79,7 +79,7 @@ const siem_title = computed(() => {
 </script>
 <template>
   <div class="h-full w-full rounded-xl bg-muted relative overflow-hidden flex flex-col">
-    <div class="flex items-center gap-2 bg-muted-foreground/10 px-3 py-1.5">
+    <div class="flex items-center gap-2 px-3 py-1.5">
       <h3 class="text-xs font-medium">SIEM Query Output</h3>
       <p class="text-xs font-bold text-muted-foreground title">
         {{ siem_title }}
@@ -119,7 +119,7 @@ const siem_title = computed(() => {
       v-model:model-value="sigma.siem_query"
       :read-only="true"
       :word-wrap="true"
-      class="h-full w-full border-border text-xs md:text-sm overflow-y-auto overflow-x-hidden bg-[#0D1118]"
+      class="h-full w-full m-[0.5px] rounded border-border text-xs md:text-sm overflow-y-auto overflow-x-hidden bg-[#0D1118]"
       language="splunk-spl"
     />
   </div>

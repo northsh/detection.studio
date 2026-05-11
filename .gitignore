@@ -28,6 +28,9 @@ dist-ssr
 .env.sentry-build-plugin
 .env
 
+# Rust / rsigma-wasm build artifacts
+rsigma-wasm/target/
+
 # Sigma Repo
 .sigma-repo/
 /test-results/

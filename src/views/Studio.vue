@@ -256,7 +256,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
       class="flex flex-col flex-1 h-[calc(100vh-3.5rem)] max-h-[calc(100vh-3.5rem)] min-h-0 w-full overflow-hidden"
     >
       <!-- Use ResizablePanelGroup for vertical layout -->
-      <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
+          <ResizablePanelGroup auto-save-id="studio-bottom" class="h-full min-h-0 w-full" direction="vertical">
         <!-- Editor Panel - Takes ~60% of the space -->
         <ResizablePanel :default-size="70" :min-size="20" class="p-1 min-h-0 flex flex-col">
           <div class="h-full w-full overflow-hidden flex flex-col">
@@ -270,7 +270,7 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         <!-- Bottom Section - Takes ~40% of the space -->
         <ResizablePanel :default-size="30" :min-size="10" class="p-1 min-h-0 flex flex-col">
           <!-- Nested ResizablePanelGroup for the bottom section -->
-          <ResizablePanelGroup class="h-full min-h-0 w-full" direction="vertical">
+      <ResizablePanelGroup auto-save-id="studio-main" class="h-full min-h-0 w-full" direction="vertical">
             <!-- SIEM Query Output - Compact - Takes only 35% -->
             <ResizablePanel
               :default-size="35"
@@ -278,20 +278,20 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
               :min-size="15"
               class="min-h-0 flex flex-col"
             >
-              <SiemOutputQuery />
+              <SiemOutputQuery class="border" />
             </ResizablePanel>
 
             <!-- Resize Handle -->
-            <ResizableHandle v-if="false" with-handle />
+            <ResizableHandle v-if="true" with-handle class="my-1" />
 
             <!-- SIEM Sample Data - Takes 65% -->
             <ResizablePanel
-              v-if="false"
+              v-if="true"
               :default-size="30"
               :min-size="10"
               class="min-h-0 flex flex-col"
             >
-              <DataView class="h-full w-full" />
+              <DataView class="h-full w-full border" />
             </ResizablePanel>
           </ResizablePanelGroup>
         </ResizablePanel>

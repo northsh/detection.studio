@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {onMounted, useTemplateRef, watch} from "vue";
+import {onMounted, onBeforeUnmount, useTemplateRef, watch} from "vue";
 import type {PrismEditor} from "prism-code-editor/dist/types.d";
 import {highlightSelectionMatches, searchWidget} from "prism-code-editor/search"
 import {defaultCommands} from "prism-code-editor/commands"
@@ -66,6 +66,7 @@ const emit = defineEmits<{
 
 const editorRef = useTemplateRef("prism-editor-ref");
 let editor: PrismEditor;
+const cleanups: (() => void)[] = [];
 
 onMounted(() => {
     if (!editorRef.value) return;
@@ -126,16 +127,23 @@ onMounted(() => {
         // Placeholder for potential input handling logic
     }, true);
 
-    editor.addListener("update", (e: string) => {
-        emit("update:modelValue", e);
-    });
+    // prism-code-editor v5 uses .on() instead of .addListener()
+    cleanups.push(editor.on("update", (value: string) => {
+        emit("update:modelValue", value);
+    }));
 
-    editor.addListener("selectionChange", (e: string) => {
-        emit("selectionChange", e);
-    });
+    cleanups.push(editor.on("selectionChange", (_selection, value: string) => {
+        emit("selectionChange", value);
+    }));
 
     // Emit the ready event with the editor instance
     emit("ready", editor);
+});
+
+onBeforeUnmount(() => {
+    cleanups.forEach(cleanup => cleanup());
+    cleanups.length = 0;
+    editor?.remove();
 });
 
 // On prop change, notify the editor

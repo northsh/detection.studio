@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { useSearchWorker } from "../composables/useSearchWorker";
 
 export interface SigmaLogsource {
@@ -34,65 +34,39 @@ export const useSigmaRulesStore = defineStore("sigmaRules", () => {
   const searchResults = ref<SigmaRule[]>([]);
   const error = ref<string | null>(null);
 
-  const allRules = ref<SigmaRule[]>([]);
   const isRulesLoaded = ref(false);
 
   // Initialize the search worker
   const searchWorker = useSearchWorker();
 
-  async function loadRulesIndex(): Promise<void> {
-    if (isRulesLoaded.value) return;
-
-    try {
-      console.log("SigmaRulesStore: Loading rules index...");
-
-      const response = await fetch("/sigma-rules-index.json");
-
-      if (!response.ok) {
-        console.error(`Failed to load rules index: ${response.status} ${response.statusText}`);
-        throw new Error(`Failed to load rules index: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      if (!Array.isArray(data)) {
-        console.error("Rules index is not an array:", data);
-        throw new Error("Invalid rules index format");
-      }
-
-      allRules.value = data;
-      isRulesLoaded.value = true;
-      console.log(`SigmaRulesStore: Successfully loaded ${allRules.value.length} rules`);
-    } catch (error) {
-      console.error("Error loading rules index:", error);
-      allRules.value = [];
-      throw error;
-    }
-  }
-
+  /**
+   * Fetch rules and build the search index entirely in the Web Worker.
+   * The worker fetches `/sigma-rules-index.json`, parses it, builds the
+   * FlexSearch index, and sends the parsed rules back via postMessage.
+   * This keeps the main thread free during the heavy JSON parse + indexing.
+   */
   async function fetchRules(forceReload: boolean = false) {
+    if (isRulesLoaded.value && !forceReload) return;
+
     isLoading.value = true;
     error.value = null;
 
     try {
-      if (forceReload) {
-        isRulesLoaded.value = false;
-      }
+      console.log("SigmaRulesStore: Loading rules via worker...");
 
-      if (!isRulesLoaded.value) {
-        await loadRulesIndex();
-      }
-      rules.value = allRules.value;
-      console.log(`SigmaRulesStore: Fetched ${rules.value.length} rules`);
+      await searchWorker.fetchAndInitialize(
+        "/sigma-rules-index.json",
+        (loadedRules) => {
+          // Called when the worker has parsed the JSON — the structured
+          // clone transfer is unavoidable but much cheaper than
+          // JSON.parse(JSON.stringify(...)) that was here before.
+          rules.value = loadedRules;
+          isRulesLoaded.value = true;
+          console.log(`SigmaRulesStore: Received ${loadedRules.length} rules from worker`);
+        },
+      );
 
-      // Initialize the search worker with the rules data
-      try {
-        await searchWorker.initializeIndex(rules.value);
-        console.log("SigmaRulesStore: Search worker initialized");
-      } catch (err) {
-        console.error("SigmaRulesStore: Failed to initialize search worker:", err);
-        // Don't throw - allow the app to work without search
-      }
+      console.log("SigmaRulesStore: Search worker initialized");
     } catch (err) {
       console.error("Error fetching sigma rules:", err);
       error.value = err instanceof Error ? err.message : "Failed to fetch rules";
@@ -146,13 +120,13 @@ export const useSigmaRulesStore = defineStore("sigmaRules", () => {
     }
   }
 
-  // Computed property to get filtered rules (either search results or all rules)
-  const filteredRules = () => {
+  // Proper computed — cached by Vue's reactivity system
+  const filteredRules = computed(() => {
     if (!searchQuery.value || searchQuery.value.trim() === "") {
       return rules.value;
     }
     return searchResults.value;
-  };
+  });
 
   return {
     rules,

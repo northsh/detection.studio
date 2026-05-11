@@ -1,4 +1,5 @@
 import { type Ref } from "vue";
+import type { RsigmaEvalResult } from "@/lib/rsigma-wasm/rsigmaEvaluator";
 
 export interface SearchResult {
   matches: any[];
@@ -24,4 +25,11 @@ export interface SigmaStore {
   active_sigma_rule_file_id: Ref<string>;
   updateSelectedPipelines: (pipelines: string[]) => void;
   isReady: Ref<boolean>;
+
+  // rsigma evaluation state
+  search_results: Ref<RsigmaEvalResult | null>;
+  is_searching: Ref<boolean>;
+  search_error: Ref<string>;
+  is_data_loaded: Ref<boolean>;
+  data_loading_error: Ref<string>;
 }

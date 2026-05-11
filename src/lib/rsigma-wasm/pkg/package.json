@@ -1,0 +1,15 @@
+{
+  "name": "rsigma-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "rsigma_wasm_bg.wasm",
+    "rsigma_wasm.js",
+    "rsigma_wasm.d.ts"
+  ],
+  "main": "rsigma_wasm.js",
+  "types": "rsigma_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

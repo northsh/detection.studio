@@ -103,7 +103,7 @@ function toggleLogSourceSorting(pressed: boolean) {
 </script>
 
 <template>
-  <div class="mt-4 space-y-4">
+  <div class="space-y-4">
     <!-- Collapsible filters section -->
     <Collapsible>
       <CollapsibleTrigger asChild>

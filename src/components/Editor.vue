@@ -36,18 +36,22 @@ const editorMaxHeight = computed(() => {
 
 const breakpoints = useBreakpoints(breakpointsTailwind)
 const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
+
+// Use separate auto-save IDs for desktop/mobile to avoid constraint conflicts
+// when persisted layout sizes violate different min/max constraints
+const autoSaveId = computed(() => isDesktop.value ? 'editor-desktop' : 'editor-mobile')
 </script>
 
 <template>
   <ResizablePanelGroup
     ref="editorContainerRef"
-    auto-save-id="editor"
+    :auto-save-id="autoSaveId"
     class="h-full w-full min-h-0 flex-1 rounded-lg border"
     direction="horizontal"
   >
     <ResizablePanel
       ref="fileStorePanelRef"
-      :default-size="20"
+      :default-size="isDesktop ? 20 : 60"
       :max-size="isDesktop ? 30 : 90"
       :min-size="isDesktop ? 20 : 60"
       collapsible
@@ -55,7 +59,7 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
       <FileList />
     </ResizablePanel>
     <ResizableHandle with-handle />
-    <ResizablePanel :default-size="80" as-child class="h-full min-h-0 overflow-hidden">
+    <ResizablePanel :default-size="isDesktop ? 80 : 40" as-child class="h-full min-h-0 overflow-hidden">
       <Tabs v-model:model-value="fs.currentlyOpenFileId" class="">
         <div class="flex items-center">
           <Button

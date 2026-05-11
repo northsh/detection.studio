@@ -36,6 +36,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["pyodide"],
   },
+  assetsInclude: ["**/*.wasm"],
   worker: {
     format: "es", // Use ES module format for workers (required for Vite 7/Rollup)
   },

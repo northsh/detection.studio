@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {computed, ref} from 'vue';
+import {computed, ref, watch} from 'vue';
 import {Badge} from '@/components/ui/badge';
 import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 import {defaultRangeExtractor, useVirtualizer} from '@tanstack/vue-virtual';
@@ -29,7 +29,7 @@ const activeGroupHeaderRef = ref(-1);
 
 // Flatten the grouped rules into a single array with headers and items
 const flattenedItems = computed(() => {
-    const items = [];
+    const items: Array<{ isHeader?: true; label?: string; rules?: SigmaRule[]; rule?: SigmaRule; groupIndex: number }> = [];
 
     for (const group of props.groupedRules) {
         // Add group header
@@ -65,13 +65,17 @@ const isGroupHeader = (index: number) => flattenedItems.value[index]?.isHeader =
 // Check if an item is the active sticky header
 const isActiveGroupHeader = (index: number) => activeGroupHeaderRef.value === index;
 
-// Create the virtualizer
-const rowVirtualizer = useVirtualizer({
-    count: computed(() => flattenedItems.value.length).value,
+// Reactive count for the virtualizer
+const itemCount = computed(() => flattenedItems.value.length);
+
+// Create the virtualizer with reactive count and dynamic measurement
+const rowVirtualizer = useVirtualizer(computed(() => ({
+    count: itemCount.value,
     getScrollElement: () => parentRef.value,
-    estimateSize: (index) => isGroupHeader(index) ? GROUP_HEADER_HEIGHT : ITEM_HEIGHT,
+    estimateSize: (index: number) => isGroupHeader(index) ? GROUP_HEADER_HEIGHT : ITEM_HEIGHT,
+    measureElement: (el: Element) => el.getBoundingClientRect().height,
     overscan: 10,
-    rangeExtractor: (range) => {
+    rangeExtractor: (range: any) => {
         // Find the last header that's in or before the visible range
         activeGroupHeaderRef.value = [...groupHeaderIndexes.value]
             .reverse()
@@ -86,7 +90,7 @@ const rowVirtualizer = useVirtualizer({
 
         return [...itemsToRender].sort((a, b) => a - b);
     }
-});
+})));
 
 // Get virtual rows for rendering
 const virtualRows = computed(() => rowVirtualizer.value.getVirtualItems());
@@ -103,16 +107,28 @@ function handleSelectRule(rule: SigmaRule) {
 function resetScroll() {
     if (parentRef.value) {
         parentRef.value.scrollTop = 0;
-
-        // Reset active header when scrolling back to top
         activeGroupHeaderRef.value = groupHeaderIndexes.value[0] || -1;
     }
 }
+
+// Re-scroll to top when data changes (filters applied)
+watch(() => props.groupedRules, () => {
+    resetScroll();
+});
+
+defineExpose({ resetScroll });
 </script>
 
 <template>
   <div ref="parentRef" class="h-full overflow-auto">
     <div
+      v-if="flattenedItems.length === 0"
+      class="text-center py-4 text-muted-foreground"
+    >
+      No rules found matching your criteria.
+    </div>
+    <div
+      v-else
       :style="{
         height: `${totalSize}px`,
         width: '100%',
@@ -122,6 +138,8 @@ function resetScroll() {
       <div
         v-for="virtualRow in virtualRows"
         :key="virtualRow.index"
+        :ref="(el) => { if (el) rowVirtualizer.measureElement(el as Element) }"
+        :data-index="virtualRow.index"
         :class="[
           'px-4',
           isGroupHeader(virtualRow.index) ? 'sticky bg-background border-b z-10' : ''
@@ -131,7 +149,7 @@ function resetScroll() {
           top: 0,
           left: 0,
           width: 'calc(100% - 16px)',
-          height: `${virtualRow.size}px`,
+          minHeight: `${virtualRow.size}px`,
           transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
         }"
       >
@@ -142,7 +160,7 @@ function resetScroll() {
               {{ flattenedItems[virtualRow.index].label }}
             </h3>
             <Badge class="text-xs" variant="outline"
-              >{{ flattenedItems[virtualRow.index].rules.length }}
+              >{{ flattenedItems[virtualRow.index].rules?.length }}
               rules
             </Badge>
           </div>
@@ -150,7 +168,7 @@ function resetScroll() {
 
         <!-- Rule Item -->
         <template v-else>
-          <RuleItem :rule="flattenedItems[virtualRow.index].rule" @select-rule="handleSelectRule" />
+          <RuleItem :rule="flattenedItems[virtualRow.index].rule!" @select-rule="handleSelectRule" />
         </template>
       </div>
     </div>
