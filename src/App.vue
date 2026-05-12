@@ -118,16 +118,16 @@ function openChangelog() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2 pb-2">
-            <div v-if="workStore.sidebarOpen" class="w-full font-semibold whitespace-nowrap flex items-center gap-3">
+            <a v-if="workStore.sidebarOpen" href="https://north.sh/" target="_blank" class="w-full font-semibold whitespace-nowrap flex items-center gap-3 no-underline text-inherit">
               <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
               <div class="flex flex-col">
                 <div class="">Detection Studio</div>
                 <div class="text-xs text-transparent bg-clip-text bg-linear-to-r from-primary to-primary-foreground">by north.sh</div>
               </div>
-            </div>
-            <div v-else class="pl-1 w-full font-semibold pt-2 pb-4">
+            </a>
+            <a v-else href="https://north.sh/" target="_blank" class="pl-1 w-full font-semibold pt-2 pb-4">
               <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
-            </div>
+            </a>
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
@@ -244,15 +244,15 @@ function openChangelog() {
           </SidebarMenuItem>
           <SidebarMenuItem>
             <Transition>
-              <Card
+              <a
                 v-if="workStore.sidebarOpen"
-                class="text-xs text-muted-foreground p-2 flex flex-col items-center gap-0"
+                href="https://north.sh/"
+                target="_blank"
+                class="rounded-lg border bg-card text-card-foreground shadow-sm text-xs text-muted-foreground p-2 flex flex-col items-center gap-0 hover:bg-accent transition-colors no-underline"
               >
                 Powered by
-                <a class="text-primary font-semibold" href="https://north.sh/" target="_blank">
-                  <img src="/images/logo_dark.png" class="h-7" alt="north.sh logo" />
-                </a>
-              </Card>
+                <img src="/images/logo_dark.png" class="h-7" alt="north.sh logo" />
+              </a>
             </Transition>
           </SidebarMenuItem>
         </SidebarMenu>
