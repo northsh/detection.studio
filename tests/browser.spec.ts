@@ -5,16 +5,12 @@ test.describe("Conversion", () => {
     await page.goto("/", {
       waitUntil: "networkidle",
     });
-    await page.getByRole("button", { name: "Close" }).first().click();
-    await page.getByRole("button", { name: "Browser" }).click();
-    await page.getByRole("textbox", { name: "Search across rules..." }).click();
-    await page.getByRole("textbox", { name: "Search across rules..." }).fill("AWS ROOT");
-    await page
-      .getByText("AWS Root CredentialsmediumtestDetects AWS root account usageawscloudtrail")
-      .click();
-    await page.getByRole("button", { name: "Import to Studio" }).click();
-    await expect(page.locator("#siem-query-editor")).toContainText(
-      'userIdentity.type="Root" NOT eventType="AwsServiceEvent"',
-    );
+    await page.getByRole('button', { name: 'Close' }).first().click();
+    await page.getByRole('button', { name: 'Browser' }).click();
+    await page.getByRole('textbox', { name: 'Search across rules...' }).click();
+    await page.getByRole('textbox', { name: 'Search across rules...' }).fill('aws root');
+    await page.getByRole('heading', { name: 'AWS Root Credentials' }).click();
+    await page.getByRole('button', { name: 'Import to Studio' }).click();
+    await expect(page.locator('#siem-query-editor')).toContainText('userIdentity.type="Root" NOT eventType="AwsServiceEvent"');
   });
 });
