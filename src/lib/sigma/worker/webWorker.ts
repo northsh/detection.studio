@@ -53,7 +53,7 @@ const pyodideReadyPromise = (async () => {
     await micropip.install(wheelUrl);
 
     // Install PySigma (now compatible with PyYAML 6.0.3+)
-    await micropip.install("pysigma");
+    await micropip.install("pysigma==1.3.2");
 
     // Install pipeline packages
     // These pipelines will be available for all backends (allowed_backends is typically None for pipelines)
