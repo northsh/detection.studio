@@ -51,6 +51,7 @@
     "sqlite-worker": "^0.9.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0",
+    "tailwindcss-animate": "^1.0.7",
     "universal-cookie": "^8.1.2",
     "uuid": "^14.0.0",
     "vite-plugin-static-copy": "^4.1.0",
