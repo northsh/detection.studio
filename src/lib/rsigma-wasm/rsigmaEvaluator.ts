@@ -54,7 +54,12 @@ export class RsigmaEvaluator {
   private readinessListeners: ReadinessListener[] = [];
 
   constructor() {
-    if (typeof Worker === "undefined") return; // SSR guard
+    // Use import.meta.env.SSR (a build-time constant) so Vite/Rollup can
+    // dead-code-eliminate the Worker + new URL() expression from the SSR
+    // bundle.  The previous `typeof Worker === "undefined"` guard only
+    // worked at runtime — the SSR build still tried to resolve the worker
+    // entry point inside `.vite-ssg-temp/` and failed with ModuleNotFound.
+    if (import.meta.env.SSR || typeof Worker === "undefined") return;
     this.worker = new Worker(
       new URL("../../workers/rsigmaWorker.ts", import.meta.url),
       { type: "module" },

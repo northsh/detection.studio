@@ -32,7 +32,7 @@ type WorkerResponse = {
 function getWorker(): PromiseWorker {
   if (!promiseWorker) {
     // Check if we're in a browser environment
-    if (typeof window !== "undefined" && typeof Worker !== "undefined") {
+    if (!import.meta.env.SSR && typeof window !== "undefined" && typeof Worker !== "undefined") {
       worker = new Worker(new URL("./webWorker.ts", import.meta.url), { type: "module" });
       promiseWorker = new PromiseWorker(worker);
 

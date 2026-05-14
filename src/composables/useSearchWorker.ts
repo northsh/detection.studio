@@ -23,7 +23,7 @@ export function useSearchWorker() {
 
   // Initialize the worker
   function initWorker() {
-    if (worker.value) {
+    if (worker.value || import.meta.env.SSR) {
       return;
     }
 
