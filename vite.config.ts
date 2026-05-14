@@ -35,6 +35,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ["pyodide"],
+    include: ["flexsearch", "promise-worker", "promise-worker/register"],
   },
   assetsInclude: ["**/*.wasm"],
   worker: {
