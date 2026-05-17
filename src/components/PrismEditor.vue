@@ -12,8 +12,8 @@ import {indentGuides} from "prism-code-editor/guides";
 import {createEditor} from "prism-code-editor";
 import {autoComplete, fuzzyFilter} from "prism-code-editor/autocomplete";
 
-// Import Sigma autocomplete
-import {sigmaCompletion} from "../lib/sigma/autocomplete";
+// Import Sigma autocomplete (side-effect: registers completions for "yaml" language)
+import "../lib/sigma/autocomplete";
 
 // Import theme CSS as raw strings so we can swap them at runtime.
 // Static imports of both CSS files would mean whichever loads last wins permanently.
@@ -108,25 +108,14 @@ onMounted(() => {
 
     // Add autocomplete extension if enabled
     if (props.enableAutocompletion) {
-        if (props.language === 'yaml') {
-            extensions.push(
-                autoComplete({
-                    filter: fuzzyFilter,
-                    closeOnBlur: true,
-                    explicitOnly: false,
-                    preferAbove: false,
-                }, sigmaCompletion)
-            );
-        } else {
-            extensions.push(
-                autoComplete({
-                    filter: fuzzyFilter,
-                    closeOnBlur: true,
-                    explicitOnly: false,
-                    preferAbove: false,
-                })
-            );
-        }
+        extensions.push(
+            autoComplete({
+                filter: fuzzyFilter,
+                closeOnBlur: true,
+                explicitOnly: false,
+                preferAbove: false,
+            })
+        );
     }
 
     editor = createEditor(

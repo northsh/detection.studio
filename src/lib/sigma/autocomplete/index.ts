@@ -62,42 +62,49 @@ function getIndentation(before: string): string {
   return match ? match[1] : "";
 }
 
-// Get detection section selection names
-function getSelectionNames(before: string): string[] {
-  if (!isInSection(before, "detection")) {
-    return [];
-  }
-
-  const lines = before.split("\n");
+// Get detection section selection names (direct children of detection only)
+function getSelectionNames(fullText: string): string[] {
+  const lines = fullText.split("\n");
   const selectionNames: string[] = [];
   let inDetection = false;
   let detectionIndent = -1;
+  let childIndent = -1;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (line.match(/^\s*detection\s*:/)) {
       inDetection = true;
       detectionIndent = (line.match(/^\s*/) || [""])[0].length;
+      childIndent = -1;
       continue;
     }
 
-    if (inDetection) {
-      const currentIndent = (line.match(/^\s*/) || [""])[0].length;
-      if (line.trim() === "") {
-        continue;
-      }
+    if (!inDetection) continue;
 
-      if (currentIndent <= detectionIndent) {
-        inDetection = false;
-        continue;
-      }
+    const currentIndent = (line.match(/^\s*/) || [""])[0].length;
 
-      // Check if this is a selection name (not condition)
-      if (!line.match(/^\s*condition\s*:/) && line.includes(":")) {
-        const selectionName = line.trim().split(":")[0].trim();
-        if (selectionName && !selectionNames.includes(selectionName)) {
-          selectionNames.push(selectionName);
-        }
+    // Skip blank lines
+    if (line.trim() === "") continue;
+
+    // If we've returned to detection level or above, we've left the section
+    if (currentIndent <= detectionIndent) {
+      inDetection = false;
+      continue;
+    }
+
+    // Determine the direct-child indent level from the first child we see
+    if (childIndent === -1) {
+      childIndent = currentIndent;
+    }
+
+    // Only extract keys at exactly the direct-child indent level
+    if (currentIndent !== childIndent) continue;
+
+    // Must be a key: value line (not condition)
+    if (!line.match(/^\s*condition\s*:/) && line.includes(":")) {
+      const selectionName = line.trim().split(":")[0].trim();
+      if (selectionName && !selectionNames.includes(selectionName)) {
+        selectionNames.push(selectionName);
       }
     }
   }
@@ -124,260 +131,316 @@ const sigmaContext = (context: any, _: PrismEditor): SigmaCompletionContext => {
   };
 };
 
+/**
+ * Helper: extract the current word being typed (identifier chars at end of lineBefore).
+ * Returns [word, startOffset] where startOffset is the position in the document where the word starts.
+ */
+function getCurrentWord(lineBefore: string, pos: number): [string, number] {
+  const match = lineBefore.match(/([a-zA-Z0-9_]*)$/);
+  const word = match ? match[1] : "";
+  return [word, pos - word.length];
+}
+
+/**
+ * Helper: extract the value being typed after a colon.
+ * Returns [value, startOffset] or null if not after a colon.
+ */
+function getValueAfterColon(lineBefore: string, pos: number): [string, number] | null {
+  const match = lineBefore.match(/:\s*([a-zA-Z0-9_.]*)$/);
+  if (!match) return null;
+  const value = match[1];
+  return [value, pos - value.length];
+}
+
 // Define completion sources
 const sources: CompletionSource<SigmaCompletionContext>[] = [
   // Top-level field completions
   (context, _) => {
-    const { before, lineBefore } = context;
+    const { before, lineBefore, explicit, inLogsource, inDetection } = context;
     const indent = getIndentation(before);
 
-    // Only suggest top level fields if we're at the beginning of a line
-    // and not inside another field's value
-    if (lineBefore.trim() === "" || lineBefore.trim().endsWith(":")) {
-      // Check if we're at the top level by checking indentation
-      if (indent.length === 0 || (lineBefore.trim() === "" && before.trim() === "")) {
-        return {
-          from: context.pos - lineBefore.trim().length,
-          options: optionsFromKeys(sigmaFields, "property"),
-        };
-      }
-    }
+    // Don't offer top-level fields if we're inside a section
+    if (inLogsource || inDetection) return null;
 
-    return null;
+    // Check if the line looks like a field name being typed (no colon yet on this line)
+    if (lineBefore.includes(":")) return null;
+
+    // Must be at top-level indentation (0)
+    if (indent.length !== 0) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+
+    // Only trigger if explicitly requested or at least 1 char typed
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: optionsFromKeys(sigmaFields, "property"),
+    };
   },
 
   // Logsource field completions
   (context, _) => {
-    const { lineBefore, inLogsource } = context;
+    const { lineBefore, inLogsource, explicit } = context;
 
-    if (inLogsource && (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))) {
-      return {
-        from: context.pos - lineBefore.trim().length,
-        options: optionsFromKeys(logsourceFields, "property"),
-      };
-    }
+    if (!inLogsource) return null;
 
-    return null;
+    // Don't suggest field names if there's already a colon (user is typing a value)
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: optionsFromKeys(logsourceFields, "property"),
+    };
   },
 
   // Category value completions
   (context, _) => {
-    const { lineBefore, inLogsource } = context;
+    const { lineBefore, inLogsource, explicit } = context;
+    if (!inLogsource) return null;
 
-    if (inLogsource && lineBefore.trim().match(/^\s*category\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: categoryValues.map((value) => ({
-          label: value,
-          icon: "constant",
-        })),
-      };
-    }
+    // Check if we're on a line with "category:"
+    if (!lineBefore.match(/category\s*:/)) return null;
 
-    return null;
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: categoryValues.map((v) => ({ label: v, icon: "constant" })),
+    };
   },
 
   // Product value completions
   (context, _) => {
-    const { lineBefore, inLogsource } = context;
+    const { lineBefore, inLogsource, explicit } = context;
+    if (!inLogsource) return null;
 
-    if (inLogsource && lineBefore.trim().match(/^\s*product\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: productValues.map((value) => ({
-          label: value,
-          icon: "constant",
-        })),
-      };
-    }
+    if (!lineBefore.match(/product\s*:/)) return null;
 
-    return null;
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: productValues.map((v) => ({ label: v, icon: "constant" })),
+    };
   },
 
   // Service value completions
   (context, _) => {
-    const { lineBefore, inLogsource } = context;
+    const { lineBefore, inLogsource, explicit } = context;
+    if (!inLogsource) return null;
 
-    if (inLogsource && lineBefore.trim().match(/^\s*service\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: serviceValues.map((value) => ({
-          label: value,
-          icon: "constant",
-        })),
-      };
-    }
+    if (!lineBefore.match(/service\s*:/)) return null;
 
-    return n;
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: serviceValues.map((v) => ({ label: v, icon: "constant" })),
+    };
   },
 
   // Level value completions
   (context, _) => {
-    const { lineBefore } = context;
+    const { lineBefore, explicit } = context;
 
-    if (lineBefore.trim().match(/^\s*level\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: levelValues.map((value) => ({
-          label: value,
-          icon: "enum",
-        })),
-      };
-    }
+    if (!lineBefore.match(/level\s*:/)) return null;
 
-    return null;
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: levelValues.map((v) => ({ label: v, icon: "enum" })),
+    };
   },
 
   // Status value completions
   (context, _) => {
-    const { lineBefore } = context;
+    const { lineBefore, explicit } = context;
 
-    if (lineBefore.trim().match(/^\s*status\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: statusValues.map((value) => ({
-          label: value,
-          icon: "enum",
-        })),
-      };
-    }
+    if (!lineBefore.match(/status\s*:/)) return null;
 
-    return null;
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: statusValues.map((v) => ({ label: v, icon: "enum" })),
+    };
   },
 
-  // Tags completions
-  (context, editor) => {
-    const { lineBefore } = context;
-
-    if (lineBefore.trim().match(/^\s*-\s*$/)) {
-      const previousLine =
-        editor.value
-          .split("\n")
-          .slice(0, (editor as any).posFromOffset(context.pos).line)
-          .pop() || "";
-
-      if (previousLine && previousLine.trim().match(/^\s*tags\s*:/)) {
-        return {
-          from: context.pos,
-          options: mitreTactics.map((value) => ({
-            label: value,
-            icon: "constant",
-          })),
-        };
-      }
-    }
-
-    return null;
-  },
-
-  // Detection field completions
+  // Tags completions (MITRE ATT&CK tactics)
   (context, _) => {
-    const { before, lineBefore, inDetection } = context;
+    const { before, lineBefore, explicit } = context;
 
-    if (inDetection && (lineBefore.trim() === "" || lineBefore.trim().endsWith(":"))) {
-      // Exclude top-level "condition" field from suggestions unless we haven't provided it yet
-      const hasCondition = before.includes("condition:");
-      const options = optionsFromKeys(detectionFields, "property");
+    // Check if we're in a tags list item (line starts with "- " or "  - ")
+    const tagItemMatch = lineBefore.match(/^\s*-\s+([a-zA-Z0-9_.]*)?$/);
+    if (!tagItemMatch) return null;
 
-      if (hasCondition) {
-        return {
-          from: context.pos - lineBefore.trim().length,
-          options: options.filter((o) => o.label !== "condition"),
-        };
-      }
+    // Check that we're inside a tags section
+    if (!isInSection(before, "tags")) return null;
 
+    const word = tagItemMatch[1] || "";
+    const from = context.pos - word.length;
+
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: mitreTactics.map((value) => ({
+        label: value,
+        icon: "constant",
+      })),
+    };
+  },
+
+  // Detection field completions (selection names, condition)
+  (context, _) => {
+    const { before, lineBefore, inDetection, explicit } = context;
+
+    if (!inDetection) return null;
+
+    // Don't suggest field names if there's already a colon on this line
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    // Exclude "condition" if already defined
+    const hasCondition = before.includes("condition:");
+    const options = optionsFromKeys(detectionFields, "property");
+
+    if (hasCondition) {
       return {
-        from: context.pos - lineBefore.trim().length,
-        options,
+        from,
+        options: options.filter((o) => o.label !== "condition"),
       };
     }
 
-    return null;
+    return { from, options };
   },
 
-  // Field modifiers
+  // Field modifiers (after | character)
   (context, _) => {
     const { lineBefore } = context;
 
-    // Check if we're in a position to offer modifiers (after a | character)
-    const modifierMatch = lineBefore.match(/([a-zA-Z0-9_]+)(\|[a-zA-Z0-9_]+)*\|$/);
-    if (modifierMatch) {
-      return {
-        from: context.pos,
-        options: sigmaModifiers.map((value) => ({
-          label: value,
-          icon: "function",
-        })),
-      };
-    }
+    // Match when typing after a pipe: e.g. "FieldName|con" or "FieldName|contains|end"
+    const modifierMatch = lineBefore.match(/([a-zA-Z0-9_]+(?:\|[a-zA-Z0-9_]+)*)\|([a-zA-Z0-9_]*)$/);
+    if (!modifierMatch) return null;
 
-    return null;
+    const partial = modifierMatch[2];
+    const from = context.pos - partial.length;
+
+    return {
+      from,
+      options: sigmaModifiers.map((value) => ({
+        label: value,
+        icon: "function",
+      })),
+    };
   },
 
   // Condition value completions
   (context, _) => {
-    const { lineBefore, inDetection, selectionNames } = context;
+    const { lineBefore, inDetection, selectionNames, explicit } = context;
 
-    if (inDetection && lineBefore.trim().match(/^\s*condition\s*:\s*$/)) {
-      // Generate condition suggestions based on defined selections
-      const options: Completion[] = conditionPatterns.map((pattern) => ({
-        label: pattern,
-        icon: "keyword",
-      }));
+    if (!inDetection) return null;
 
-      // Add condition options based on selection names
-      if (selectionNames.length > 0) {
-        selectionNames.forEach((name) => {
-          options.push({
-            label: name,
-            icon: "keyword",
-          });
+    // Check if we're on a condition line (after "condition:")
+    if (!lineBefore.match(/condition\s*:/)) return null;
 
-          if (selectionNames.length > 1) {
-            selectionNames
-              .filter((n) => n !== name)
-              .forEach((otherName) => {
-                options.push({
-                  label: `${name} and ${otherName}`,
-                  icon: "keyword",
-                });
-                options.push({
-                  label: `${name} or ${otherName}`,
-                  icon: "keyword",
-                });
-                options.push({
-                  label: `${name} and not ${otherName}`,
-                  icon: "keyword",
-                });
-              });
-          }
-        });
-      }
+    const valueInfo = lineBefore.match(/condition\s*:\s*(.*)$/);
+    if (!valueInfo) return null;
 
+    const typed = valueInfo[1];
+
+    // If nothing typed yet after the colon, offer full condition patterns
+    if (typed.trim().length === 0) {
+      if (!explicit) return null;
       return {
         from: context.pos,
-        options,
-      };
-    }
-
-    return null;
-  },
-
-  // Windows Event ID completions
-  (context, _) => {
-    const { lineBefore, inDetection } = context;
-
-    if (inDetection && lineBefore.trim().match(/^\s*EventID\s*:\s*$/)) {
-      return {
-        from: context.pos,
-        options: windowsEventIds.map((id) => ({
-          label: id,
-          icon: "constant",
+        options: conditionPatterns.map((pattern) => ({
+          label: pattern,
+          icon: "keyword",
         })),
       };
     }
 
-    return null;
+    // Otherwise, complete the last word/token being typed
+    const lastWordMatch = typed.match(/([a-zA-Z0-9_*]*)$/);
+    const lastWord = lastWordMatch ? lastWordMatch[1] : "";
+    const from = context.pos - lastWord.length;
+
+    if (!explicit && lastWord.length === 0) return null;
+
+    // Offer condition keywords + actual selection names
+    const conditionKeywords = ["and", "or", "not", "1", "all", "of", "them"];
+    const options: Completion[] = conditionKeywords.map((kw) => ({
+      label: kw,
+      icon: "keyword",
+    }));
+
+    // Add selection names and wildcard patterns
+    selectionNames.forEach((name) => {
+      options.push({ label: name, icon: "variable" });
+    });
+
+    // Add common wildcard patterns based on selection name prefixes
+    const prefixes = new Set<string>();
+    selectionNames.forEach((name) => {
+      const match = name.match(/^([a-zA-Z]+)_/);
+      if (match) prefixes.add(match[1]);
+    });
+    prefixes.forEach((prefix) => {
+      options.push({ label: `${prefix}*`, icon: "variable" });
+    });
+
+    return { from, options };
+  },
+
+  // Windows Event ID completions
+  (context, _) => {
+    const { lineBefore, inDetection, explicit } = context;
+
+    if (!inDetection) return null;
+
+    if (!lineBefore.match(/EventID\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: windowsEventIds.map((id) => ({
+        label: id,
+        icon: "constant",
+      })),
+    };
   },
 ];
 

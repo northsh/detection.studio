@@ -129,6 +129,7 @@ defineExpose({ resetScroll });
     </div>
     <div
       v-else
+      class=""
       :style="{
         height: `${totalSize}px`,
         width: '100%',
@@ -148,7 +149,7 @@ defineExpose({ resetScroll });
           position: isActiveGroupHeader(virtualRow.index) ? 'sticky' : 'absolute',
           top: 0,
           left: 0,
-          width: 'calc(100% - 16px)',
+          width: 'calc(100%)',
           transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
         }"
       >
@@ -174,13 +175,7 @@ defineExpose({ resetScroll });
   </div>
 </template>
 
-<style scoped>
-/* Fix for virtual scroll overlapping */
-.h-full.overflow-auto {
-    position: relative;
-    max-width: 100%;
-    overflow-x: hidden;
-}
+<style>
 
 /* Fix for sticky group headers */
 .sticky {
@@ -188,6 +183,12 @@ defineExpose({ resetScroll });
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     max-width: 100%;
+}
+
+/* Match ScrollBar.vue style */
+.h-full.overflow-auto {
+  scrollbar-color: var(--muted-foreground) var(--muted);
+  scrollbar-width: auto;
 }
 
 /* Match ScrollBar.vue style */
