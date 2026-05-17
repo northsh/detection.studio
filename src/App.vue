@@ -127,14 +127,16 @@ function openChangelog() {
         <SidebarMenu>
           <SidebarMenuItem :class="{'mx-2': workStore.sidebarOpen}" class="flex items-center gap-2 pb-2">
             <a v-if="workStore.sidebarOpen" href="https://north.sh/" target="_blank" class="w-full font-semibold whitespace-nowrap flex items-center gap-3 no-underline text-inherit">
-              <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
+              <img src="/images/logomark_light.png" class="h-5 dark:hidden"  alt="north.sh logo"/>
+              <img src="/images/logomark_dark.png" class="h-5 hidden dark:block"  alt="north.sh logo"/>
               <div class="flex flex-col">
                 <div class="">Detection Studio</div>
                 <div class="text-xs text-transparent bg-clip-text bg-linear-to-r from-primary to-primary-foreground">by north.sh</div>
               </div>
             </a>
             <a v-else href="https://north.sh/" target="_blank" class="pl-1 w-full font-semibold pt-2 pb-4">
-              <img src="/images/logomark_dark.png" class="h-5"  alt="north.sh logo"/>
+              <img src="/images/logomark_light.png" class="translate-x-1 h-5 dark:hidden"  alt="north.sh logo"/>
+              <img src="/images/logomark_dark.png" class="translate-x-1 h-5 hidden dark:block"  alt="north.sh logo"/>
             </a>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -259,7 +261,8 @@ function openChangelog() {
                 class="rounded-lg border bg-card text-card-foreground shadow-sm text-xs text-muted-foreground p-2 flex flex-col items-center gap-0 hover:bg-accent transition-colors no-underline"
               >
                 Powered by
-                <img src="/images/logo_dark.png" class="h-7" alt="north.sh logo" />
+                <img src="/images/logo_dark.png" class="hidden dark:block h-7" alt="north.sh logo" />
+                <img src="/images/logo_light.png" class="dark:hidden h-7" alt="north.sh logo" />
               </a>
             </Transition>
           </SidebarMenuItem>
@@ -267,12 +270,12 @@ function openChangelog() {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-    <SidebarInset class="bg-muted/30 flex-1 flex flex-col overflow-hidden">
+    <SidebarInset class="dark:bg-muted/30 flex-1 flex flex-col overflow-hidden">
       <router-view class="flex-1 w-full overflow-hidden"></router-view>
+      <Toaster />
     </SidebarInset>
   </SidebarProvider>
 
   <!-- Changelog Dialog with auto-show for new releases -->
   <ChangelogDialog ref="changelogDialogRef" :auto-show="true" />
-  <Toaster />
 </template>

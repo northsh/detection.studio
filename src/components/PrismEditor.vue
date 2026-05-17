@@ -15,6 +15,11 @@ import {autoComplete, fuzzyFilter} from "prism-code-editor/autocomplete";
 // Import Sigma autocomplete
 import {sigmaCompletion} from "../lib/sigma/autocomplete";
 
+// Import theme CSS as raw strings so we can swap them at runtime.
+// Static imports of both CSS files would mean whichever loads last wins permanently.
+import githubDarkCss from "prism-code-editor/themes/github-dark.css?inline";
+import githubLightCss from "prism-code-editor/themes/github-light.css?inline";
+
 import "prism-code-editor/search.css"
 import "prism-code-editor/languages/html"
 import "prism-code-editor/languages/clike"
@@ -27,12 +32,26 @@ import "prism-code-editor/prism/languages/splunk-spl"
 import "prism-code-editor/layout.css"
 import "prism-code-editor/scrollbar.css"
 import "prism-code-editor/copy-button.css"
-import "prism-code-editor/themes/github-dark.css"
-import "prism-code-editor/themes/github-light.css"
 import "prism-code-editor/autocomplete.css"
 import "prism-code-editor/autocomplete-icons.css"
 
-const { colorMode, prefersDark } = useAppColorMode();
+const { isDark } = useAppColorMode();
+
+// Shared <style> tag for the prism theme — one per app, swapped on mode change.
+let themeStyleEl: HTMLStyleElement | null = null;
+
+function getThemeCss() {
+    return isDark.value ? githubDarkCss : githubLightCss;
+}
+
+function applyTheme() {
+    if (!themeStyleEl) {
+        themeStyleEl = document.createElement("style");
+        themeStyleEl.id = "prism-theme";
+        document.head.appendChild(themeStyleEl);
+    }
+    themeStyleEl.textContent = getThemeCss();
+}
 
 const props = withDefaults(
     defineProps<{
@@ -59,13 +78,6 @@ const props = withDefaults(
     },
 );
 
-// Derive the prism theme from the current color mode
-// colorMode can be 'auto' when following system preference, so fall back to prefersDark
-function resolveTheme() {
-    const isDark = colorMode.value === 'dark' || (colorMode.value === 'auto' && prefersDark.value);
-    return isDark ? 'github-dark' : 'github-light';
-}
-
 const emit = defineEmits<{
     "update:modelValue": [value: string];
     "selectionChange": [value: string];
@@ -78,6 +90,9 @@ const cleanups: (() => void)[] = [];
 
 onMounted(() => {
     if (!editorRef.value) return;
+
+    // Apply the correct theme immediately on mount
+    applyTheme();
 
     // Create extensions array with the default ones
     const extensions = [
@@ -93,7 +108,6 @@ onMounted(() => {
 
     // Add autocomplete extension if enabled
     if (props.enableAutocompletion) {
-        // Register completions for YAML (Sigma uses YAML format)
         if (props.language === 'yaml') {
             extensions.push(
                 autoComplete({
@@ -104,7 +118,6 @@ onMounted(() => {
                 }, sigmaCompletion)
             );
         } else {
-            // For other languages, just add basic autocomplete
             extensions.push(
                 autoComplete({
                     filter: fuzzyFilter,
@@ -121,7 +134,6 @@ onMounted(() => {
         {
             value: props.modelValue,
             language: props.language,
-            theme: resolveTheme(),
             tabSize: props.tabSize,
             insertSpaces: props.insertSpaces,
             lineNumbers: props.lineNumbers,
@@ -131,11 +143,8 @@ onMounted(() => {
         ...extensions
     );
 
-    editor.textarea?.addEventListener('beforeinput', () => {
-        // Placeholder for potential input handling logic
-    }, true);
+    editor.textarea?.addEventListener('beforeinput', () => {}, true);
 
-    // prism-code-editor v5 uses .on() instead of .addListener()
     cleanups.push(editor.on("update", (value: string) => {
         emit("update:modelValue", value);
     }));
@@ -144,7 +153,6 @@ onMounted(() => {
         emit("selectionChange", value);
     }));
 
-    // Emit the ready event with the editor instance
     emit("ready", editor);
 });
 
@@ -154,29 +162,19 @@ onBeforeUnmount(() => {
     editor?.remove();
 });
 
-// On prop change, notify the editor
-watch(
-    () => props.modelValue,
-    () => {
-        if (!editor) return;
-
-        editor.setOptions({value: props.modelValue});
-    },
-);
-
-watch(
-    () => props.language,
-    (newLanguage) => {
-        if (!editor) return;
-
-        editor.setOptions({language: newLanguage});
-    }
-);
-
-// Switch editor theme when color mode or system preference changes
-watch([colorMode, prefersDark], () => {
+watch(() => props.modelValue, () => {
     if (!editor) return;
-    editor.setOptions({theme: resolveTheme()});
+    editor.setOptions({value: props.modelValue});
+});
+
+watch(() => props.language, (newLanguage) => {
+    if (!editor) return;
+    editor.setOptions({language: newLanguage});
+});
+
+// Swap the theme style tag when dark/light changes
+watch(isDark, () => {
+    applyTheme();
 });
 </script>
 

@@ -81,11 +81,11 @@
 
       <!-- Skeleton code editor -->
       <div class="flex flex-col h-[400px]">
-        <div class="px-6 py-3 bg-[#0D1116] border-b border-gray-800 shrink-0">
-          <Skeleton class="h-4 w-32 bg-gray-700/20" />
+        <div class="px-6 py-3 dark:bg-[#0D1116] border-b dark:border-gray-800 shrink-0">
+          <Skeleton class="h-4 w-32 dark:bg-gray-700/20" />
         </div>
-        <div class="flex-1 bg-[#0D1116] p-4">
-          <Skeleton class="h-full w-full bg-gray-700/20" />
+        <div class="flex-1 dark:bg-[#0D1116] p-4">
+          <Skeleton class="h-full w-full dark:bg-gray-700/20" />
         </div>
       </div>
 
@@ -221,10 +221,10 @@
 
       <!-- Rule Definition with code editor -->
       <div class="flex flex-col h-[400px]">
-        <div class="px-6 py-3 bg-[#0D1116] border-b border-gray-800 shrink-0">
+        <div class="px-6 py-3 dark:bg-[#0D1116] border-b dark:border-gray-800 shrink-0">
           <span class="text-xs uppercase tracking-wider font-medium">YAML Definition</span>
         </div>
-        <div class="flex-1 bg-[#0D1116]">
+        <div class="flex-1 dark:bg-[#0D1116]">
           <PrismEditor
             v-model="currentRuleContent"
             :insert-spaces="true"

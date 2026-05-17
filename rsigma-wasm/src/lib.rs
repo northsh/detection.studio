@@ -294,3 +294,4 @@ fn evaluate_inner(rule_yaml: &str, events_json: &str, pipeline_yamls: &str, filt
         error: None,
     }
 }
+

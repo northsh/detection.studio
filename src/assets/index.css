@@ -28,15 +28,15 @@
      */
 
     /* Surface layers — subtle purple-violet tint, gentle depth hierarchy */
-    --background: oklch(0.985 0.006 281);
+    --background: oklch(1 0.006 281);
     --foreground: oklch(0.205 0.022 281);
 
     /* Muted — recessed UI: TabsList, Skeleton, Switch tracks */
-    --muted: oklch(0.945 0.010 281);
+    --muted: oklch(0.965 0.006 281);
     --muted-foreground: oklch(0.455 0.014 281);
 
     /* Card — off-white with faint violet tint */
-    --card: oklch(0.982 0.006 281);
+    --card: oklch(0.994 0.002 281);
     --card-foreground: oklch(0.235 0.020 281);
 
     /* Popover — pure-feeling white with minimal tint, floats above everything */
@@ -47,18 +47,18 @@
     --border: oklch(0.915 0.012 281);
 
     /* Input outlines — matches border for a uniform soft feel */
-    --input: oklch(0.915 0.012 281);
+    --input: oklch(0.915 0.002 281);
 
     /* Primary — brand violet */
     --primary: oklch(0.556 0.200 281);
     --primary-foreground: oklch(0.985 0.006 281);
 
     /* Secondary — low-chroma violet surface for secondary buttons */
-    --secondary: oklch(0.935 0.018 281);
+    --secondary: oklch(0.935 0.005 281);
     --secondary-foreground: oklch(0.205 0.022 281);
 
     /* Accent — hover/focus tint on menu items, selects, etc. */
-    --accent: oklch(0.960 0.014 281);
+    --accent: oklch(0.960 0.005 281);
     --accent-foreground: oklch(0.205 0.022 281);
 
     /* Destructive — OKLCH red, L tuned for AA contrast on white text */
@@ -101,13 +101,13 @@
     --chart-5: oklch(0.580 0.180 25);
 
     /* Sidebar — barely offset from background for structural separation */
-    --sidebar-background: oklch(0.975 0.008 281);
+    --sidebar-background: oklch(0.98 0.004 281);
     --sidebar-foreground: oklch(0.300 0.018 281);
     --sidebar-primary: oklch(0.205 0.022 281);
     --sidebar-primary-foreground: oklch(0.985 0.006 281);
-    --sidebar-accent: oklch(0.955 0.012 281);
+    --sidebar-accent: oklch(0.955 0.005 281);
     --sidebar-accent-foreground: oklch(0.380 0.016 281);
-    --sidebar-border: oklch(0.915 0.012 281);
+    --sidebar-border: oklch(0.915 0.005 281);
     --sidebar-ring: oklch(0.556 0.200 281);
 
     /* Code editor surface — github-dark's background for embedded code blocks */

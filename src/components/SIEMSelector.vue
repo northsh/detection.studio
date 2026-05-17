@@ -16,6 +16,8 @@ import splunk_svg from '@/images/splunk.svg?component';
 import loki_svg from '@/images/grafana.svg?component';
 import elasticsearch_svg from '@/images/elasticsearch.svg?component';
 
+const props = withDefaults(defineProps<{ fluid?: boolean }>(), { fluid: false });
+
 const workspace = useWorkspaceStore();
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
@@ -40,7 +42,7 @@ const selectedSiem = computed(() => {
         variant="outline"
         role="combobox"
         :aria-expanded="open"
-        class="w-50! h-8 border-primary justify-between bg-background px-3 font-normal hover:bg-background"
+        :class="props.fluid ? 'w-full! h-8 border-primary justify-between bg-background px-3 font-normal hover:bg-background' : 'w-50! h-8 border-primary justify-between bg-background px-3 font-normal hover:bg-background'"
       >
         <template v-if="selectedSiem">
           <span class="flex min-w-0 items-center gap-2">
@@ -79,7 +81,7 @@ const selectedSiem = computed(() => {
         <!-- Main vendor cards in 3 columns -->
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 p-2 pb-0">
           <template v-for="vendor in ['Splunk', 'Elasticsearch', 'Grafana']" :key="vendor">
-            <Card class="p-1 px-3 mb-1 flex flex-col w-[220px]">
+            <Card class="p-1 px-3 mb-1 gap-0 flex flex-col w-[220px]">
               <div class="flex gap-3 items-center p-1">
                 <component
                   :is="vendor === 'Splunk' ? splunk_svg : vendor === 'Elasticsearch' ? elasticsearch_svg : loki_svg"

@@ -7,6 +7,8 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Separator} from '@/components/ui/separator';
+import {SidebarTrigger} from '@/components/ui/sidebar';
 import {supportedSiems} from '@/types/SIEMs';
 import {useSettingsStore, type Theme} from '@/stores/SettingsStore';
 
@@ -55,10 +57,18 @@ function saveSettings() {
 </script>
 
 <template>
-  <div class="container py-10">
-    <div class="mx-auto max-w-3xl">
-      <h1 class="text-3xl font-bold mb-6">Settings</h1>
+  <div class="flex flex-col h-screen w-full max-w-full overflow-hidden">
+    <!-- Header - Fixed height, no overflow -->
+    <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
+      <div class="w-full flex items-center gap-1 md:gap-4 px-4">
+        <SidebarTrigger />
+        <Separator class="h-4!" orientation="vertical" />
+        <span class="text-sm font-semibold">Settings</span>
+      </div>
+    </header>
 
+    <div class="flex-1 overflow-y-auto px-4 py-6">
+      <div class="mx-auto max-w-3xl">
       <Card class="mb-6">
         <CardHeader>
           <CardTitle>User Preferences</CardTitle>
@@ -118,7 +128,7 @@ function saveSettings() {
             </div>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter class="flex flex-col items-end">
           <Button @click="saveSettings">Save Changes</Button>
         </CardFooter>
       </Card>
@@ -146,7 +156,11 @@ function saveSettings() {
             </div>
           </div>
         </CardContent>
+        <CardFooter class="flex flex-col items-end">
+          <Button @click="saveSettings">Save Changes</Button>
+        </CardFooter>
       </Card>
+      </div>
     </div>
   </div>
 </template>

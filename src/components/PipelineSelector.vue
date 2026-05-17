@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import {computed, watch, ref, onMounted} from "vue";
+
+const props = withDefaults(defineProps<{ fluid?: boolean }>(), { fluid: false });
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {getAvailablePipelines} from "@/lib/sigma/worker/workerApi";
 import {Button} from "@/components/ui/button";
@@ -101,9 +103,8 @@ function toTitleCase(str: string): string {
         variant="outline"
         role="combobox"
         :aria-expanded="isDropdownOpen"
-        class="w-70! h-8 justify-between"
+        :class="(props.fluid ? 'w-full! h-8 justify-between' : 'w-70! h-8 justify-between') + (selectedPipelines.length > 0 ? 'border-primary dark:bg-primary/10 dark:hover:bg-primary/20' : 'bg-background text-muted-foreground hover:bg-background')"
         @click="loadPipelines"
-        :class="selectedPipelines.length > 0 ? 'border-primary bg-primary/10 hover:bg-primary/20' : 'bg-background text-muted-foreground hover:bg-background'"
       >
         {{ buttonLabel }}
         <ChevronDown class="ml-2 h-4 w-4 shrink-0 opacity-50" />

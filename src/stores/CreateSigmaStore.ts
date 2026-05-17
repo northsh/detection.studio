@@ -246,31 +246,94 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
       }
 
       /**
+       * Split concatenated JSON text into individual JSON strings.
+       * Handles: single object, JSON array, NDJSON, and concatenated
+       * pretty-printed JSON (e.g. `{ ... }\n{ ... }`).
+       */
+      function splitJsonObjects(text: string): string[] {
+        // First, try parsing as a single valid JSON value
+        try {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed)) return parsed.map((o) => JSON.stringify(o));
+          return [JSON.stringify(parsed)];
+        } catch {
+          // Not a single valid JSON value
+        }
+
+        // Try NDJSON: if every non-empty line parses independently
+        const lines = text.split("\n").filter((l) => l.trim());
+        const ndjsonAttempt: string[] = [];
+        let isNdjson = true;
+        for (const line of lines) {
+          try {
+            JSON.parse(line);
+            ndjsonAttempt.push(line);
+          } catch {
+            isNdjson = false;
+            break;
+          }
+        }
+        if (isNdjson && ndjsonAttempt.length > 0) return ndjsonAttempt;
+
+        // Concatenated pretty-printed JSON: use brace-depth tracking to
+        // find boundaries between top-level objects.
+        const objects: string[] = [];
+        let depth = 0;
+        let start = -1;
+        let inString = false;
+        let escape = false;
+
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (escape) {
+            escape = false;
+            continue;
+          }
+          if (ch === "\\") {
+            if (inString) escape = true;
+            continue;
+          }
+          if (ch === '"') {
+            inString = !inString;
+            continue;
+          }
+          if (inString) continue;
+
+          if (ch === "{") {
+            if (depth === 0) start = i;
+            depth++;
+          } else if (ch === "}") {
+            depth--;
+            if (depth === 0 && start >= 0) {
+              objects.push(text.slice(start, i + 1));
+              start = -1;
+            }
+          }
+        }
+
+        return objects.length > 0 ? objects : [text];
+      }
+
+      /**
        * Normalize validation JSON: parse, flatten nested Windows Event
        * structures, and return NDJSON suitable for rsigma evaluation.
+       *
+       * Handles single objects, arrays, NDJSON, and concatenated
+       * pretty-printed JSON from SigmaHQ regression data.
        */
       function normalizeValidationJson(jsonText: string): string {
-        let parsed: any;
-        try {
-          parsed = JSON.parse(jsonText);
-        } catch {
-          // Not valid JSON -- might be NDJSON, return as-is
-          return jsonText;
-        }
+        const jsonStrings = splitJsonObjects(jsonText);
 
-        // Array of events
-        if (Array.isArray(parsed)) {
-          return parsed
-            .map((evt) => JSON.stringify(flattenWindowsEvent(evt)))
-            .join("\n");
-        }
-
-        // Single event object
-        if (typeof parsed === "object" && parsed !== null) {
-          return JSON.stringify(flattenWindowsEvent(parsed));
-        }
-
-        return jsonText;
+        return jsonStrings
+          .map((s) => {
+            try {
+              const obj = JSON.parse(s);
+              return JSON.stringify(flattenWindowsEvent(obj));
+            } catch {
+              return s;
+            }
+          })
+          .join("\n");
       }
 
       async function fetchValidationData(ruleYaml: string) {

@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage,} from "@/components/ui/breadcrumb";
 import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {Button} from "@/components/ui/button";
 import Editor from "@/components/Editor.vue";
-import {Github, MoreVertical, Share, Download, PlusIcon, Upload} from "lucide-vue-next";
+import {Github, MoreVertical, Share, Download, PlusIcon} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
 import {computed} from "vue";
 import ShareButton from "@/components/ShareWorkspaceButton.vue";
 import DataView from "@/components/DataView.vue";
 import SIEMSelector from "@/components/SIEMSelector.vue";
 import PipelineSelector from "@/components/PipelineSelector.vue";
-import {useWindowSize, useFileDialog} from '@vueuse/core';
+import {useFileDialog} from '@vueuse/core';
+import {useOverflowItems} from "@/composables/useOverflowItems";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -78,10 +78,6 @@ onDataFileChange(async (files: FileList | null) => {
         ds.current_data_frame = await files[0].text();
     }
 });
-
-// Use VueUse's useWindowSize for responsive behavior
-const {width, height} = useWindowSize();
-const isCompactView = computed(() => width.value < 768 || height.value < 600);
 
 // Share dialog state
 const shareDialogOpen = ref(false);
@@ -163,94 +159,133 @@ const fs = computed(() => workspaceStore.currentWorkspace?.fileStore());
 function exportFiles() {
     exportButtonRef.value?.exportFiles();
 }
+
+// Header overflow.
+// containerRef on the full row (no overflow-hidden) so ResizeObserver sees the real width.
+// reservedWidth: SidebarTrigger 28px + Separator 1px + 2 gaps at 8px + grow spacer 0px
+//   + overflow button 32px is handled by overflowButtonWidth separately.
+// Items are split into left (siem, pipeline) and right (github, share, export) for rendering,
+// but the composable treats them as a single flat list sorted by priority.
+type HeaderItem = { id: string; priority: number };
+const headerItems: HeaderItem[] = [
+    { id: 'siem',     priority: 50 },
+    { id: 'pipeline', priority: 20 },
+    { id: 'github',   priority: 10 },
+    { id: 'share',    priority: 40 },
+    { id: 'export',   priority: 30 },
+];
+
+const {
+    containerRef: headerRowRef,
+    measurementRef: headerMeasureRef,
+    setItemRef: setHeaderItemRef,
+    visibleItems: visibleHeaderItems,
+    overflowItems: overflowHeaderItems,
+    hasOverflow: hasHeaderOverflow,
+// overflowButtonWidth: 32px (⋮ button) + 8px gap = 40 handled internally
+// reservedWidth: 0 — containerRef sits on the flex-1 zone that IS the available space
+} = useOverflowItems(headerItems, { gap: 8, overflowButtonWidth: 32, reservedWidth: 0 });
+
+const leftIds  = new Set(['siem', 'pipeline']);
+const rightIds = new Set(['github', 'share', 'export']);
+const visibleLeft  = computed(() => visibleHeaderItems.value.filter(i => leftIds.has(i.id)));
+const visibleRight = computed(() => visibleHeaderItems.value.filter(i => rightIds.has(i.id)));
 </script>
 
 <template>
   <div class="flex flex-col h-screen w-full max-w-full overflow-hidden">
-    <!-- Header - Fixed height, no overflow -->
-    <header class="flex h-14 shrink-0 items-center gap-1 md:gap-2">
-      <div class="w-full flex items-center gap-1 md:gap-4 px-4">
-        <SidebarTrigger />
-        <Separator class="h-4!" orientation="vertical" />
-        <Breadcrumb v-if="false">
-          <BreadcrumbList>
-            <BreadcrumbItem class="hidden md:block">
-              <BreadcrumbPage href="#">Detection Studio</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <!-- Header -->
+    <header class="flex h-14 shrink-0 items-center">
+      <!-- Outer row: fixed anchors + flex-1 overflow zone + fixed ⋮ button -->
+      <div class="w-full flex items-center gap-2 px-4">
 
-        <div class="flex items-center gap-3">
-          <SIEMSelector />
-          <PipelineSelector />
-        </div>
-        <div class="grow"></div>
-        <div class="flex items-center gap-1 md:gap-2">
-          <!-- Desktop buttons (hidden on mobile) -->
-          <a
-            href="https://github.com/northsh/detection.studio/"
-            target="_blank"
-            class="hidden md:inline"
-          >
-            <Button size="sm" variant="ghost">
-              <Github class="h-4 w-4 text-primary" />
-              GitHub
+        <!-- Fixed anchors — not part of overflow measurement -->
+        <SidebarTrigger class="shrink-0" />
+        <Separator class="h-4! shrink-0" orientation="vertical" />
+
+        <!-- Overflow zone — containerRef here gets the true available width -->
+        <div ref="headerRowRef" class="flex-1 flex items-center gap-2 min-w-0 relative">
+
+          <!-- Hidden measurement layer -->
+          <div ref="headerMeasureRef" class="absolute invisible flex items-center gap-2 pointer-events-none" aria-hidden="true">
+            <div :ref="el => setHeaderItemRef('siem', el as HTMLElement | null)"><SIEMSelector /></div>
+            <div :ref="el => setHeaderItemRef('pipeline', el as HTMLElement | null)"><PipelineSelector /></div>
+            <div :ref="el => setHeaderItemRef('github', el as HTMLElement | null)">
+              <Button size="sm" variant="ghost"><Github class="h-4 w-4 text-primary" />GitHub</Button>
+            </div>
+            <div :ref="el => setHeaderItemRef('share', el as HTMLElement | null)"><ShareButton /></div>
+            <div :ref="el => setHeaderItemRef('export', el as HTMLElement | null)"><ExportButton /></div>
+          </div>
+
+          <!-- Left group: selectors, start-aligned -->
+          <template v-for="item in visibleLeft" :key="item.id">
+            <SIEMSelector v-if="item.id === 'siem'" />
+            <PipelineSelector v-else-if="item.id === 'pipeline'" />
+          </template>
+
+          <!-- Spacer -->
+          <div class="grow" />
+
+          <!-- Right group: actions, end-aligned -->
+          <template v-for="item in visibleRight" :key="item.id">
+            <a v-if="item.id === 'github'" href="https://github.com/northsh/detection.studio/" target="_blank">
+              <Button size="sm" variant="ghost"><Github class="h-4 w-4 text-primary" />GitHub</Button>
+            </a>
+            <ShareButton v-else-if="item.id === 'share'" />
+            <ExportButton v-else-if="item.id === 'export'" ref="exportButtonRef" />
+          </template>
+
+        </div><!-- end overflow zone -->
+
+        <!-- Overflow dropdown — fixed outside the zone so it doesn't affect measurement -->
+        <DropdownMenu v-if="hasHeaderOverflow">
+          <DropdownMenuTrigger as-child>
+            <Button size="sm" variant="ghost" class="h-8 w-8 p-0 shrink-0">
+              <MoreVertical class="h-4 w-4" />
+              <span class="sr-only">More options</span>
             </Button>
-          </a>
-
-          <ShareButton />
-
-          <Button class="hidden h-8 md:flex gap-2" size="sm" variant="secondary" @click="openImportDialog" v-if="false">
-            <Upload class="h-3.5 w-3.5" />
-            Import
-          </Button>
-
-          <ExportButton ref="exportButtonRef" />
-
-          <!-- Mobile dropdown menu (shown on mobile only) -->
-          <DropdownMenu>
-            <DropdownMenuTrigger as-child>
-              <Button size="sm" variant="ghost" class="md:hidden h-8 w-8 p-0">
-                <MoreVertical class="h-4 w-4" />
-                <span class="sr-only">More options</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem as-child>
-                <a
-                  href="https://github.com/northsh/detection.studio/"
-                  target="_blank"
-                  class="flex items-center gap-2 cursor-pointer"
-                >
-                  <Github class="h-4 w-4" />
-                  GitHub
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                @click="openShareDialog"
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="min-w-72">
+            <!-- Pipeline renders as an inline selector, not a flat menu item -->
+            <div
+              v-if="overflowHeaderItems.some(i => i.id === 'pipeline')"
+              class="px-2 py-1.5"
+            >
+              <p class="text-xs text-muted-foreground mb-1.5 px-1">Pipeline</p>
+              <PipelineSelector :fluid="true" />
+            </div>
+            <DropdownMenuItem
+              v-if="overflowHeaderItems.some(i => i.id === 'github')"
+              as-child
+            >
+              <a
+                href="https://github.com/northsh/detection.studio/"
+                target="_blank"
                 class="flex items-center gap-2 cursor-pointer"
               >
-                <Share class="h-4 w-4" />
-                Share
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                @click="openImportDialog"
-                class="flex items-center gap-2 cursor-pointer"
-              >
-                <Upload class="h-4 w-4" />
-                Import
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                @click="exportFiles"
-                :disabled="!fs?.files.length"
-                class="flex items-center gap-2 cursor-pointer"
-              >
-                <Download class="h-4 w-4" />
-                Export
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                <Github class="h-4 w-4" />
+                GitHub
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="overflowHeaderItems.some(i => i.id === 'share')"
+              @click="openShareDialog"
+              class="flex items-center gap-2 cursor-pointer"
+            >
+              <Share class="h-4 w-4" />
+              Share
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="overflowHeaderItems.some(i => i.id === 'export')"
+              @click="exportFiles"
+              :disabled="!fs?.files.length"
+              class="flex items-center gap-2 cursor-pointer"
+            >
+              <Download class="h-4 w-4" />
+              Export
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
 
@@ -312,7 +347,7 @@ function exportFiles() {
     </div>
 
     <!-- Mobile View Sheet for small viewports -->
-    <Sheet v-if="isCompactView && false" side="bottom">
+    <Sheet v-if="false" side="bottom">
       <SheetTrigger as-child>
         <Button class="md:hidden fixed bottom-4 right-4 z-50" variant="outline">
           View Sample Data

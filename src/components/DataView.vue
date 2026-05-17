@@ -1,11 +1,9 @@
 <script lang="ts" setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {AlertCircleIcon, AlertTriangleIcon, CheckCircleIcon, FlaskConicalIcon, LoaderIcon, PlusIcon, SearchIcon, XIcon} from "lucide-vue-next";
+import {AlertCircleIcon, AlertTriangleIcon, FlaskConicalIcon, LoaderIcon, SearchIcon, XIcon} from "lucide-vue-next";
 import {Button} from "@/components/ui/button";
 
-import {Badge} from "@/components/ui/badge";
-import {Card} from "@/components/ui/card";
 import {Input} from "@/components/ui/input";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 
@@ -81,7 +79,7 @@ function formatCellValue(value: any, key: string): string {
     if (value === undefined || value === null) return '';
     const str = typeof value === 'object' ? JSON.stringify(value) : String(value);
     if (matchedFieldNames.value.has(key)) {
-        return `<span class="text-primary-500 font-semibold">${str}</span>`;
+        return `<span class="matched-cell">${str}</span>`;
     }
     return str;
 }
@@ -200,445 +198,457 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full w-full rounded-xl bg-muted/5 flex flex-col gap-2 p-3 overflow-hidden">
+  <div class="h-full w-full flex flex-col gap-0 overflow-hidden">
     <!-- Data is loaded -->
     <template v-if="data?.current_data_frame">
-      <!-- Header with stats -->
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-          <h2 class="text-sm font-semibold">Sample Data</h2>
+      <!-- Header -->
+      <div class="flex items-center justify-between px-4 py-3 border-b border-border/60">
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-medium text-foreground">Sample Data</span>
 
-          <!-- Data loaded indicator -->
-          <Badge v-if="sigma?.is_data_loaded" class="bg-green-600 hover:bg-green-700">
-            <CheckCircleIcon class="h-3 w-3 mr-1" />
-            Ready for Analysis
-          </Badge>
+          <!-- Status pill: ready -->
+          <span
+            v-if="sigma?.is_data_loaded"
+            class="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground"
+          >
+            <span class="w-1.5 h-1.5 rounded-full bg-[oklch(0.625_0.170_160)]"></span>
+            Ready
+          </span>
 
-          <!-- Loading indicator -->
-          <Badge v-else-if="!sigma?.data_loading_error" class="bg-orange-500 hover:bg-orange-600">
-            <LoaderIcon class="h-3 w-3 mr-1 animate-spin" />
-            Loading Data
-          </Badge>
+          <!-- Status pill: loading -->
+          <span
+            v-else-if="!sigma?.data_loading_error"
+            class="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground"
+          >
+            <LoaderIcon class="w-2.5 h-2.5 animate-spin" />
+            Loading
+          </span>
 
-          <!-- Error indicator -->
-          <Badge
+          <!-- Status pill: error -->
+          <button
             v-else
-            class="bg-red-600 hover:bg-red-700 cursor-pointer"
+            class="inline-flex items-center gap-1 text-[10px] font-medium text-destructive hover:text-destructive/80 transition-colors"
             @click="showErrorDetails = !showErrorDetails"
           >
-            <AlertCircleIcon class="h-3 w-3 mr-1" />
-            Error Loading Data
-          </Badge>
+            <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
+            Error
+          </button>
 
-          <!-- Validation data indicator (independent of loading chain) -->
-          <Badge v-if="validationMetadata" class="bg-violet-600 hover:bg-violet-700">
-            <FlaskConicalIcon class="h-3 w-3 mr-1" />
-            SigmaHQ Validated
-          </Badge>
-
-          <!-- Validation loading indicator -->
-          <Badge v-if="validationLoading" class="bg-violet-500 hover:bg-violet-600">
-            <LoaderIcon class="h-3 w-3 mr-1 animate-spin" />
-            Loading Test Data
-          </Badge>
-
-          <!-- Show error message - explicit error display -->
-          <div
-            v-if="showErrorDetails && sigma?.data_loading_error"
-            class="absolute top-12 right-4 bg-red-900/90 text-white p-3 rounded-md text-xs z-10 max-w-md shadow-lg"
+          <!-- SigmaHQ validation pill -->
+          <span
+            v-if="validationMetadata"
+            class="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground"
           >
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="font-semibold">Error Details</h4>
-              <button class="text-white hover:text-red-200" @click="showErrorDetails = false">
-                ×
-              </button>
-            </div>
-            <div class="whitespace-pre-wrap">{{ sigma.data_loading_error }}</div>
+            <FlaskConicalIcon class="w-2.5 h-2.5" />
+            SigmaHQ
+          </span>
+
+          <!-- Validation loading pill -->
+          <span
+            v-if="validationLoading"
+            class="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground"
+          >
+            <LoaderIcon class="w-2.5 h-2.5 animate-spin" />
+            Test data
+          </span>
+        </div>
+
+        <!-- Error detail popover -->
+        <div
+          v-if="showErrorDetails && sigma?.data_loading_error"
+          class="absolute top-12 right-4 bg-popover border border-border text-popover-foreground p-3 rounded-lg text-xs z-10 max-w-md shadow-lg"
+        >
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Error Details</span>
+            <button class="text-muted-foreground hover:text-foreground transition-colors ml-4" @click="showErrorDetails = false">
+              <XIcon class="w-3 h-3" />
+            </button>
           </div>
+          <div class="whitespace-pre-wrap text-destructive font-mono">{{ sigma.data_loading_error }}</div>
         </div>
 
         <Button
-          class="h-7 flex gap-1"
+          class="h-6 text-[11px] gap-1"
           size="sm"
-          variant="outline"
+          variant="ghost"
           @click="data.clearCurrentDataFrame()"
         >
-          <PlusIcon class="h-3 w-3" />
+          <XIcon class="h-3 w-3" />
           Clear
         </Button>
       </div>
 
-      <!-- Data Analysis Tabs -->
+      <!-- Tabs -->
       <Tabs v-model="activeTab" class="flex-1 min-h-0 flex flex-col">
-        <TabsList class="mb-2">
-          <TabsTrigger value="summary">Summary</TabsTrigger>
-          <TabsTrigger value="matches">
-            Matches
-            <Badge v-if="searchResults?.stats?.totalMatches" class="ml-1">
-              {{ searchResults?.stats?.totalMatches }}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="raw">Raw Data</TabsTrigger>
-        </TabsList>
+        <div class="px-4 border-b border-border/60">
+          <TabsList class="bg-transparent p-0 h-auto gap-0 rounded-none">
+            <TabsTrigger
+              value="summary"
+              class="rounded-none border-b-2 border-transparent px-3 py-2 text-xs font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors"
+            >
+              Summary
+            </TabsTrigger>
+            <TabsTrigger
+              value="matches"
+              class="rounded-none border-b-2 border-transparent px-3 py-2 text-xs font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors"
+            >
+              Matches
+              <span
+                v-if="searchResults?.stats?.totalMatches"
+                class="ml-1.5 tabular-nums text-[10px] text-muted-foreground"
+              >{{ searchResults.stats.totalMatches }}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="raw"
+              class="rounded-none border-b-2 border-transparent px-3 py-2 text-xs font-medium text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-colors"
+            >
+              Raw
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <!-- Summary Tab -->
         <TabsContent
-          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col overflow-y-auto"
+          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col overflow-y-auto mt-0"
           value="summary"
         >
-          <div class="flex flex-col gap-3">
-            <!-- Status: error / searching -->
+          <div class="flex flex-col gap-px">
+
+            <!-- Evaluation error notice -->
             <div
               v-if="sigma?.search_error"
-              class="p-3 bg-red-500/10 border border-red-500/30 rounded-md"
+              class="mx-4 mt-4 flex items-start gap-2.5 p-3 rounded-md border border-destructive/25 bg-destructive/5"
             >
-              <div class="flex items-center gap-2 text-red-500">
-                <AlertCircleIcon class="h-4 w-4 shrink-0" />
-                <h3 class="text-sm font-medium">Evaluation Error</h3>
+              <AlertCircleIcon class="h-3.5 w-3.5 shrink-0 text-destructive mt-0.5" />
+              <div>
+                <p class="text-xs font-medium text-foreground">Evaluation error</p>
+                <p class="text-xs text-muted-foreground mt-0.5">{{ sigma.search_error }}</p>
               </div>
-              <p class="text-xs mt-1 text-red-400">{{ sigma.search_error }}</p>
             </div>
 
+            <!-- Searching indicator -->
             <div
               v-else-if="sigma?.is_searching"
-              class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-md"
+              class="mx-4 mt-4 flex items-center gap-2 text-xs text-muted-foreground"
             >
-              <div class="flex items-center gap-2 text-blue-500">
-                <LoaderIcon class="h-4 w-4 animate-spin" />
-                <h3 class="text-sm font-medium">Evaluating...</h3>
-              </div>
+              <LoaderIcon class="h-3 w-3 animate-spin shrink-0" />
+              <span>Evaluating rule against dataset…</span>
             </div>
 
-            <!-- Stats row: with evaluation results -->
-            <div class="grid grid-cols-4 gap-3" v-if="searchResults">
-              <Card class="p-3 flex flex-col">
-                <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Records</span>
-                <span class="text-xl font-semibold mt-1">{{ searchResults.stats.totalRecords }}</span>
-              </Card>
-              <Card class="p-3 flex flex-col">
-                <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Matches</span>
-                <span class="text-xl font-semibold mt-1" :class="searchResults.stats.totalMatches > 0 ? 'text-green-400' : ''">
-                  {{ searchResults.stats.totalMatches }}
-                </span>
-              </Card>
-              <Card class="p-3 flex flex-col">
-                <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Match Rate</span>
-                <span class="text-xl font-semibold mt-1">
+            <!-- Stats: with evaluation results -->
+            <div v-if="searchResults" class="grid grid-cols-4 divide-x divide-border/60 border-b border-border/60 mt-0">
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Records</span>
+                <span class="text-2xl font-semibold tabular-nums leading-none">{{ searchResults.stats.totalRecords.toLocaleString() }}</span>
+              </div>
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Matches</span>
+                <span
+                  class="text-2xl font-semibold tabular-nums leading-none"
+                  :class="searchResults.stats.totalMatches > 0 ? 'text-[oklch(0.625_0.170_160)]' : ''"
+                >{{ searchResults.stats.totalMatches.toLocaleString() }}</span>
+              </div>
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Match rate</span>
+                <span class="text-2xl font-semibold tabular-nums leading-none">
                   {{ searchResults.stats.totalRecords ? Math.round((searchResults.stats.totalMatches / searchResults.stats.totalRecords) * 100) : 0 }}%
                 </span>
-              </Card>
-              <Card class="p-3 flex flex-col">
-                <span class="text-[10px] uppercase tracking-wider text-muted-foreground">File Size</span>
-                <span class="text-xl font-semibold mt-1">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
-              </Card>
-            </div>
-
-            <!-- Stats row: data loaded but no rule active -->
-            <div v-else class="flex flex-col gap-3">
-              <div class="grid grid-cols-2 gap-3">
-                <Card class="p-3 flex flex-col">
-                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">File Size</span>
-                  <span class="text-xl font-semibold mt-1">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
-                </Card>
-                <Card class="p-3 flex flex-col">
-                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Lines</span>
-                  <span class="text-xl font-semibold mt-1">{{ totalLineCount.toLocaleString() }}</span>
-                </Card>
               </div>
-              <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-md">
-                <div class="flex items-center gap-2 text-blue-400">
-                  <SearchIcon class="h-4 w-4 shrink-0" />
-                  <h3 class="text-sm font-medium">Select a Sigma rule to evaluate</h3>
-                </div>
-                <p class="text-xs text-muted-foreground mt-1">
-                  Open or create a Sigma rule in the editor to evaluate it against this dataset.
-                </p>
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">File size</span>
+                <span class="text-2xl font-semibold tabular-nums leading-none">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
               </div>
             </div>
 
-            <!-- SigmaHQ Validation Result -->
-            <div
-              v-if="validationMetadata"
-              class="p-3 rounded-md"
-              :class="validationResult?.passed
-                ? 'bg-green-500/10 border border-green-500/30'
-                : validationResult
-                  ? 'bg-red-500/10 border border-red-500/30'
-                  : 'bg-violet-500/10 border border-violet-500/30'"
-            >
-              <div class="flex items-center gap-2 mb-2" :class="validationResult?.passed ? 'text-green-500' : validationResult ? 'text-red-500' : 'text-violet-400'">
-                <FlaskConicalIcon class="h-4 w-4 shrink-0" />
-                <h3 class="text-sm font-medium">
-                  SigmaHQ Regression Test
-                  <span v-if="validationResult?.passed" class="ml-1">-- Passed</span>
-                  <span v-else-if="validationResult" class="ml-1">-- Failed</span>
-                </h3>
+            <!-- Stats: data loaded, no rule active -->
+            <div v-else class="grid grid-cols-2 divide-x divide-border/60 border-b border-border/60">
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">File size</span>
+                <span class="text-2xl font-semibold tabular-nums leading-none">{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
               </div>
-              <p class="text-xs text-muted-foreground mb-2">
-                {{ validationMetadata.testName }}
-                <span v-if="validationMetadata.provider"> ({{ validationMetadata.provider }})</span>
+              <div class="px-4 py-4 flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Lines</span>
+                <span class="text-2xl font-semibold tabular-nums leading-none">{{ totalLineCount.toLocaleString() }}</span>
+              </div>
+            </div>
+
+            <!-- No rule hint -->
+            <div v-if="!searchResults" class="px-4 py-3 flex items-start gap-2.5">
+              <SearchIcon class="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 mt-0.5" />
+              <p class="text-xs text-muted-foreground">
+                Open or create a Sigma rule to evaluate it against this dataset.
               </p>
-              <div class="grid grid-cols-2 gap-2">
-                <Card class="p-2 flex flex-col">
-                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Expected Matches</span>
-                  <span class="text-lg font-semibold mt-0.5">{{ validationMetadata.expectedMatchCount }}</span>
-                </Card>
-                <Card class="p-2 flex flex-col">
-                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Actual Matches</span>
-                  <span class="text-lg font-semibold mt-0.5" :class="validationResult?.passed ? 'text-green-400' : validationResult ? 'text-red-400' : ''">
-                    {{ validationResult ? validationResult.actual : '--' }}
-                  </span>
-                </Card>
-              </div>
-              <p v-if="validationError" class="text-xs text-red-400 mt-2">{{ validationError }}</p>
             </div>
 
-            <!-- Field coverage warning -->
+            <!-- SigmaHQ Validation -->
+            <div v-if="validationMetadata" class="mx-4 my-4 rounded-md border border-border/60 overflow-hidden">
+              <!-- Validation header row -->
+              <div
+                class="flex items-center justify-between px-3 py-2.5 border-b border-border/60"
+                :class="validationResult?.passed ? 'bg-[oklch(0.625_0.170_160)]/5' : validationResult ? 'bg-destructive/5' : 'bg-muted/40'"
+              >
+                <div class="flex items-center gap-2">
+                  <FlaskConicalIcon class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <span class="text-xs font-medium text-foreground">SigmaHQ Regression Test</span>
+                  <span v-if="validationMetadata.provider" class="text-[10px] text-muted-foreground/70">{{ validationMetadata.provider }}</span>
+                </div>
+                <span
+                  v-if="validationResult"
+                  class="text-[10px] font-medium"
+                  :class="validationResult.passed ? 'text-[oklch(0.625_0.170_160)]' : 'text-destructive'"
+                >
+                  {{ validationResult.passed ? 'Passed' : 'Failed' }}
+                </span>
+              </div>
+
+              <!-- Test name -->
+              <div class="px-3 py-2 border-b border-border/60">
+                <p class="text-[11px] text-muted-foreground font-mono">{{ validationMetadata.testName }}</p>
+              </div>
+
+              <!-- Expected vs actual counts -->
+              <div class="grid grid-cols-2 divide-x divide-border/60">
+                <div class="px-3 py-3 flex flex-col gap-0.5">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Expected</span>
+                  <span class="text-xl font-semibold tabular-nums leading-none">{{ validationMetadata.expectedMatchCount }}</span>
+                </div>
+                <div class="px-3 py-3 flex flex-col gap-0.5">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground/70">Actual</span>
+                  <span
+                    class="text-xl font-semibold tabular-nums leading-none"
+                    :class="validationResult?.passed ? 'text-[oklch(0.625_0.170_160)]' : validationResult ? 'text-destructive' : ''"
+                  >
+                    {{ validationResult ? validationResult.actual : '—' }}
+                  </span>
+                </div>
+              </div>
+
+              <p v-if="validationError" class="px-3 pb-3 text-[11px] text-destructive">{{ validationError }}</p>
+            </div>
+
+            <!-- Missing fields warning -->
             <div
               v-if="fieldAnalysis?.missingFields?.length"
-              class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-md"
+              class="mx-4 mb-4 flex items-start gap-2.5 p-3 rounded-md border border-border/60 bg-muted/30"
             >
-              <div class="flex items-center gap-2 text-amber-500 mb-2">
-                <AlertTriangleIcon class="h-4 w-4 shrink-0" />
-                <h3 class="text-sm font-medium">
-                  {{ fieldAnalysis.missingFields.length }} rule field{{ fieldAnalysis.missingFields.length > 1 ? 's' : '' }} not found in dataset
-                </h3>
-              </div>
-              <p class="text-xs text-muted-foreground mb-2">
-                The following fields are referenced in your Sigma rule's detection section but do not exist in any event in your sample data.
-                This may indicate a field mapping issue -- consider adding a processing pipeline.
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <Badge
-                  v-for="field in fieldAnalysis.missingFields"
-                  :key="field"
-                  variant="outline"
-                  class="border-amber-500/50 text-amber-400 text-xs font-mono"
-                >
-                  {{ field }}
-                </Badge>
+              <AlertTriangleIcon class="h-3.5 w-3.5 shrink-0 text-muted-foreground mt-0.5" />
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-foreground mb-1">
+                  {{ fieldAnalysis.missingFields.length }} rule {{ fieldAnalysis.missingFields.length > 1 ? 'fields' : 'field' }} not in dataset
+                </p>
+                <p class="text-[11px] text-muted-foreground mb-2">
+                  These fields exist in the rule's detection section but not in your sample data. A field mapping pipeline may be needed.
+                </p>
+                <div class="flex flex-wrap gap-1">
+                  <code
+                    v-for="field in fieldAnalysis.missingFields"
+                    :key="field"
+                    class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground"
+                  >{{ field }}</code>
+                </div>
               </div>
             </div>
 
-            <!-- Field analysis detail -->
+            <!-- Field coverage grids -->
             <div
               v-if="fieldAnalysis && fieldAnalysis.ruleFields.length > 0"
-              class="grid grid-cols-1 md:grid-cols-2 gap-3"
+              class="grid grid-cols-1 md:grid-cols-2 gap-px border-t border-border/60"
             >
               <!-- Rule fields -->
-              <Card class="p-3">
-                <h3 class="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Rule Detection Fields</h3>
-                <div class="flex flex-wrap gap-1.5">
-                  <Badge
+              <div class="px-4 py-4 border-r border-border/60">
+                <p class="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-2.5">Rule detection fields</p>
+                <div class="flex flex-wrap gap-1">
+                  <code
                     v-for="field in fieldAnalysis.ruleFields"
                     :key="field"
-                    variant="outline"
-                    class="text-xs font-mono"
-                    :class="fieldAnalysis.missingFields.includes(field) ? 'border-amber-500/50 text-amber-400' : 'border-green-500/50 text-green-400'"
-                  >
-                    {{ field }}
-                  </Badge>
+                    class="text-[10px] font-mono px-1.5 py-0.5 rounded border"
+                    :class="fieldAnalysis.missingFields.includes(field)
+                      ? 'bg-destructive/5 border-destructive/25 text-destructive'
+                      : 'bg-[oklch(0.625_0.170_160)]/5 border-[oklch(0.625_0.170_160)]/25 text-[oklch(0.625_0.170_160)]'"
+                  >{{ field }}</code>
                 </div>
-              </Card>
+              </div>
 
-              <!-- Data fields (abbreviated) -->
-              <Card class="p-3">
-                <h3 class="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">
-                  Dataset Fields
-                  <span class="text-muted-foreground/60">({{ fieldAnalysis.dataFields.length }})</span>
-                </h3>
-                <div class="flex flex-wrap gap-1.5">
-                  <Badge
+              <!-- Dataset fields -->
+              <div class="px-4 py-4">
+                <p class="text-[10px] uppercase tracking-wider text-muted-foreground/70 mb-2.5">
+                  Dataset fields
+                  <span class="normal-case tracking-normal ml-1 text-muted-foreground/50">({{ fieldAnalysis.dataFields.length }})</span>
+                </p>
+                <div class="flex flex-wrap gap-1">
+                  <code
                     v-for="field in fieldAnalysis.dataFields.slice(0, 30)"
                     :key="field"
-                    variant="outline"
-                    class="text-xs font-mono text-muted-foreground"
-                  >
-                    {{ field }}
-                  </Badge>
+                    class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground"
+                  >{{ field }}</code>
                   <span
                     v-if="fieldAnalysis.dataFields.length > 30"
-                    class="text-xs text-muted-foreground/60 self-center"
-                  >
-                    +{{ fieldAnalysis.dataFields.length - 30 }} more
-                  </span>
+                    class="text-[10px] text-muted-foreground/50 self-center"
+                  >+{{ fieldAnalysis.dataFields.length - 30 }} more</span>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
         </TabsContent>
 
         <!-- Matches Tab -->
         <TabsContent
-          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col"
+          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col mt-0"
           value="matches"
         >
-          <div
-            v-if="tableData.length > 0"
-            class="flex-1 min-h-0 overflow-hidden"
-          >
-            <div class="flex flex-col flex-1 min-h-0">
-              <div class="border rounded-md overflow-hidden flex-1 min-h-0 matches-table">
-                <div class="overflow-x-auto">
-                  <table class="w-full text-sm">
-                    <thead class="bg-muted/50">
-                      <tr>
-                        <th
-                          v-for="col in columnKeys"
-                          :key="col"
-                          class="px-4 py-2 text-left font-medium text-muted-foreground"
-                        >
-                          {{ col }}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="(row, idx) in paginatedRows"
-                        :key="idx"
-                        class="border-t hover:bg-muted/30"
-                      >
-                        <td
-                          v-for="col in columnKeys"
-                          :key="col"
-                          class="px-4 py-2 text-xs"
-                          v-html="formatCellValue(row[col], col)"
-                        ></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+          <!-- Table -->
+          <div v-if="tableData.length > 0" class="flex-1 min-h-0 flex flex-col">
+            <div class="flex-1 min-h-0 overflow-auto">
+              <table class="w-full text-xs border-collapse">
+                <thead class="sticky top-0 z-10 bg-muted/60 backdrop-blur-sm">
+                  <tr>
+                    <th
+                      v-for="col in columnKeys"
+                      :key="col"
+                      class="px-4 py-2 text-left text-[10px] uppercase tracking-wider font-medium text-muted-foreground border-b border-border/60 whitespace-nowrap"
+                    >
+                      {{ col }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-border/40">
+                  <tr
+                    v-for="(row, idx) in paginatedRows"
+                    :key="idx"
+                    class="hover:bg-muted/20 transition-colors"
+                  >
+                    <td
+                      v-for="col in columnKeys"
+                      :key="col"
+                      class="px-4 py-2 font-mono text-[11px] text-foreground max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap"
+                      v-html="formatCellValue(row[col], col)"
+                    ></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-              <!-- Pagination -->
-              <div class="flex justify-between items-center py-2">
-                <div class="text-xs text-muted-foreground">
-                  Showing {{ showingFrom }} to {{ showingTo }}
-                  of {{ tableData.length }} matches
-                </div>
-                <div class="flex items-center gap-2">
-                  <Button
-                    :disabled="!canPrevious"
-                    size="sm"
-                    variant="outline"
-                    @click="currentPage--"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    :disabled="!canNext"
-                    size="sm"
-                    variant="outline"
-                    @click="currentPage++"
-                  >
-                    Next
-                  </Button>
-                </div>
+            <!-- Pagination -->
+            <div class="flex justify-between items-center px-4 py-2 border-t border-border/60 shrink-0">
+              <span class="text-[11px] text-muted-foreground tabular-nums">
+                {{ showingFrom }}–{{ showingTo }} of {{ tableData.length }}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <Button
+                  :disabled="!canPrevious"
+                  size="sm"
+                  variant="ghost"
+                  class="h-7 text-xs"
+                  @click="currentPage--"
+                >Previous</Button>
+                <Button
+                  :disabled="!canNext"
+                  size="sm"
+                  variant="ghost"
+                  class="h-7 text-xs"
+                  @click="currentPage++"
+                >Next</Button>
               </div>
             </div>
           </div>
 
-          <!-- No matches state -->
+          <!-- Empty: no matches -->
           <div
             v-else-if="sigma?.is_data_loaded && !sigma?.is_searching"
-            class="flex flex-col items-center justify-center py-12"
+            class="flex-1 flex flex-col items-center justify-center gap-2 text-center px-8"
           >
-            <SearchIcon class="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 class="text-lg font-medium">No Matches Found</h3>
-            <p class="text-sm text-muted-foreground mt-1">
-              The current Sigma rule doesn't match any logs in your dataset.
+            <SearchIcon class="h-8 w-8 text-muted-foreground/25" />
+            <p class="text-sm font-medium text-muted-foreground">No matches</p>
+            <p class="text-xs text-muted-foreground/60 max-w-xs">
+              The current Sigma rule doesn't match any events in this dataset.
             </p>
           </div>
 
-          <!-- Loading state -->
+          <!-- Empty: searching -->
           <div
             v-else-if="sigma?.is_searching"
-            class="flex flex-col items-center justify-center py-12"
+            class="flex-1 flex flex-col items-center justify-center gap-2"
           >
-            <LoaderIcon class="h-12 w-12 text-muted-foreground/50 mb-4 animate-spin" />
-            <h3 class="text-lg font-medium">Searching...</h3>
-            <p class="text-sm text-muted-foreground mt-1">Looking for matches in your dataset.</p>
+            <LoaderIcon class="h-6 w-6 text-muted-foreground/40 animate-spin" />
+            <p class="text-xs text-muted-foreground">Searching…</p>
           </div>
 
-          <!-- Other states -->
-          <div v-else class="flex flex-col items-center justify-center py-12">
-            <AlertCircleIcon class="h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 class="text-lg font-medium">No Data Available</h3>
-            <p class="text-sm text-muted-foreground mt-1">
-              {{
-                                sigma?.data_loading_error || 'Please make sure you have a valid Sigma rule and data loaded.'
-              }}
+          <!-- Empty: no data/rule -->
+          <div v-else class="flex-1 flex flex-col items-center justify-center gap-2 text-center px-8">
+            <AlertCircleIcon class="h-8 w-8 text-muted-foreground/25" />
+            <p class="text-sm font-medium text-muted-foreground">No data available</p>
+            <p class="text-xs text-muted-foreground/60 max-w-xs">
+              {{ sigma?.data_loading_error || 'Load a Sigma rule and dataset to see matches here.' }}
             </p>
           </div>
         </TabsContent>
 
         <!-- Raw Data Tab -->
         <TabsContent
-          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col"
+          class="flex-1 min-h-0 data-[state=active]:flex data-[state=active]:flex-col mt-0"
           value="raw"
         >
-          <!-- Search bar and stats -->
-          <div class="flex items-center gap-2 mb-2">
+          <!-- Search bar -->
+          <div class="px-4 py-2 border-b border-border/60 flex items-center gap-3">
             <div class="relative flex-1">
-              <SearchIcon class="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <SearchIcon class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground/50" />
               <Input
                 v-model="rawSearchQuery"
-                class="h-8 pl-8 pr-8 text-xs font-mono"
-                placeholder="Search with regex (e.g. CommandLine|whoami)"
+                class="h-7 pl-8 pr-7 text-[11px] font-mono bg-transparent border-border/60"
+                placeholder="Filter with regex…"
               />
               <button
                 v-if="rawSearchQuery"
-                class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                class="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
                 @click="rawSearchQuery = ''"
               >
-                <XIcon class="h-3.5 w-3.5" />
+                <XIcon class="h-3 w-3" />
               </button>
             </div>
-            <div class="flex items-center gap-3 text-xs text-muted-foreground whitespace-nowrap">
+            <div class="flex items-center gap-3 text-[11px] text-muted-foreground/60 whitespace-nowrap tabular-nums shrink-0">
               <span>{{ formatBytes(data?.current_data_frame?.length || 0) }}</span>
               <span>{{ totalLineCount.toLocaleString() }} lines</span>
-              <span v-if="rawMatchCount !== null">
-                <Badge variant="secondary" class="text-xs">{{ rawMatchCount.toLocaleString() }} matches</Badge>
-              </span>
+              <span v-if="rawMatchCount !== null">{{ rawMatchCount.toLocaleString() }} matches</span>
             </div>
           </div>
 
           <!-- Regex error -->
-          <div v-if="rawSearchError" class="mb-2 px-2 py-1 text-xs text-red-400 bg-red-500/10 rounded">
-            Invalid regex: {{ rawSearchError }}
+          <div v-if="rawSearchError" class="px-4 py-1.5 text-[11px] text-destructive border-b border-destructive/20 bg-destructive/5">
+            Invalid pattern: {{ rawSearchError }}
           </div>
 
-          <!-- Lines display -->
+          <!-- Lines -->
           <div class="flex-1 min-h-0 overflow-auto">
-            <div class="text-xs rounded-md font-mono">
-              <table>
-                <tbody>
-                  <tr
-                    v-for="line in rawDisplayLines"
-                    :key="line.lineNo"
-                    class="hover:bg-muted/30 align-top"
-                  >
-                    <td class="px-2 py-0.5 text-muted-foreground/50 select-none text-right whitespace-nowrap sticky left-0 bg-background/80 backdrop-blur-sm">{{ line.lineNo }}</td>
-                    <td
-                      class="px-2 py-0.5 text-slate-300 whitespace-pre"
-                      v-html="line.html"
-                    ></td>
-                  </tr>
-                </tbody>
-              </table>
+            <table class="w-full">
+              <tbody>
+                <tr
+                  v-for="line in rawDisplayLines"
+                  :key="line.lineNo"
+                  class="group hover:bg-muted/20 align-top"
+                >
+                  <td class="pl-4 pr-3 py-px text-[10px] font-mono text-muted-foreground/30 select-none text-right whitespace-nowrap w-px sticky left-0 bg-background/90 backdrop-blur-sm group-hover:bg-muted/20 transition-colors">{{ line.lineNo }}</td>
+                  <td
+                    class="pl-1 pr-4 py-px text-[11px] font-mono text-foreground/80 whitespace-pre"
+                    v-html="line.html"
+                  ></td>
+                </tr>
+              </tbody>
+            </table>
 
-              <!-- Load more -->
-              <div v-if="rawHasMore" class="flex justify-center py-3">
-                <Button size="sm" variant="outline" class="text-xs" @click="loadMoreRawLines">
-                  Load more lines
-                </Button>
-              </div>
+            <!-- Load more -->
+            <div v-if="rawHasMore" class="flex justify-center py-4">
+              <Button size="sm" variant="ghost" class="text-xs text-muted-foreground" @click="loadMoreRawLines">
+                Load {{ RAW_LINES_PER_PAGE }} more lines
+              </Button>
+            </div>
 
-              <!-- Empty search result -->
-              <div v-else-if="rawSearchQuery.trim() && !rawSearchError && !rawSearching && rawDisplayLines.length === 0" class="flex flex-col items-center py-8 text-muted-foreground">
-                <SearchIcon class="h-8 w-8 mb-2 opacity-50" />
-                <p class="text-sm">No lines match the pattern</p>
-              </div>
+            <!-- Empty search -->
+            <div
+              v-else-if="rawSearchQuery.trim() && !rawSearchError && !rawSearching && rawDisplayLines.length === 0"
+              class="flex flex-col items-center py-12 gap-2 text-muted-foreground/50"
+            >
+              <SearchIcon class="h-6 w-6" />
+              <p class="text-xs">No lines match this pattern</p>
             </div>
           </div>
         </TabsContent>
@@ -648,20 +658,19 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-:deep(.text-primary-500) {
-    color: hsl(var(--primary) / 0.9);
+/* Matched cell: primary accent, no background colour */
+:deep(.matched-cell) {
+    color: var(--primary);
+    font-weight: 600;
 }
 
-/* Matches table: truncate long cell values */
-:deep(.matches-table table) {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-:deep(.matches-table table td) {
-    max-width: 300px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+/* Raw view: search match highlight — underline only, no fill */
+:deep(mark) {
+    background: transparent;
+    text-decoration: underline;
+    text-decoration-color: var(--primary);
+    text-decoration-thickness: 1px;
+    color: inherit;
+    font-weight: 600;
 }
 </style>

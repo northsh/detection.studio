@@ -76,7 +76,12 @@ export const useWorkspaceSharingStore = defineStore("workspaceSharing", () => {
     };
 
     // Convert to base64url (URL-safe base64)
-    const base64url = btoa(JSON.stringify(shareData))
+    // Encode as UTF-8 bytes first to handle Unicode characters safely
+    const utf8Bytes = new TextEncoder().encode(JSON.stringify(shareData));
+    const binaryString = Array.from(utf8Bytes, (byte) =>
+      String.fromCharCode(byte),
+    ).join("");
+    const base64url = btoa(binaryString)
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=/g, "");
@@ -95,7 +100,12 @@ export const useWorkspaceSharingStore = defineStore("workspaceSharing", () => {
     const padding = base64.length % 4;
     const paddedBase64 = padding ? base64 + "=".repeat(4 - padding) : base64;
 
-    const shareData: WorkspaceShare = JSON.parse(atob(paddedBase64));
+    // Decode base64 to binary string, then interpret as UTF-8 bytes
+    const binaryString = atob(paddedBase64);
+    const utf8Bytes = Uint8Array.from(binaryString, (ch) => ch.charCodeAt(0));
+    const shareData: WorkspaceShare = JSON.parse(
+      new TextDecoder().decode(utf8Bytes),
+    );
 
     // Check version compatibility if needed
     if (shareData.version !== "1.0") {
