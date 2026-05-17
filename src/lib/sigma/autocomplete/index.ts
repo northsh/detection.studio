@@ -121,13 +121,13 @@ interface SigmaCompletionContext {
 }
 
 // Extract context for Sigma completions
-const sigmaContext = (context: any, _: PrismEditor): SigmaCompletionContext => {
+const sigmaContext = (context: any, editor: PrismEditor): SigmaCompletionContext => {
   const { before } = context;
   return {
     inLogsource: isInSection(before, "logsource"),
     inDetection: isInSection(before, "detection"),
     fieldModifier: (before.match(fieldModifierPattern) || [])[1] || null,
-    selectionNames: getSelectionNames(before),
+    selectionNames: getSelectionNames(editor.value),
   };
 };
 
