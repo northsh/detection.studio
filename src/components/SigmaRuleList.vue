@@ -22,7 +22,7 @@
       </div>
 
       <!-- Filter controls (extracted component) -->
-      <div class="mt-3 bg-muted px-4 py-2 rounded">
+      <div class="mt-3 border-t pt-3 px-1">
         <SearchFilters
           :statusFilters="statusFilters"
           :selectedProduct="selectedProduct"

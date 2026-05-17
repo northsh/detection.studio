@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {computed, ref, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {AlertCircleIcon, AlertTriangleIcon, CheckCircleIcon, LoaderIcon, PlusIcon, SearchIcon, XIcon} from "lucide-vue-next";
 import {Button} from "@/components/ui/button";
@@ -79,105 +79,107 @@ function formatBytes(bytes: number, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 }
 
-// ── Raw Data tab: line-based preview with regex search ──────────────
+// ── Raw Data tab: line-based preview with regex search (off main thread) ──
+
 const RAW_LINES_PER_PAGE = 200;
 const rawSearchQuery = ref("");
 const rawSearchError = ref("");
 const rawVisibleLines = ref(RAW_LINES_PER_PAGE);
+const rawSearching = ref(false);
 
-// Split raw data into lines (cached computed — only runs when data changes)
-const rawLines = computed(() => {
-    const raw = data.value?.current_data_frame;
-    if (!raw) return [];
-    return raw.split("\n");
-});
+// Reactive results populated by the worker
+const rawDisplayLines = ref<{ lineNo: number; text: string; html: string }[]>([]);
+const rawMatchCount = ref<number | null>(null);
+const totalLineCount = ref(0);
 
-const totalLineCount = computed(() => rawLines.value.length);
+// ── Worker lifecycle ────────────────────────────────────────────────
+let rawWorker: Worker | null = null;
+let nextSearchId = 0;
+let activeSearchId = -1; // id of the most recent request so we can ignore stale responses
+let searchDebounce: ReturnType<typeof setTimeout> | null = null;
+// Track the raw text we last sent so we only transfer it when it changes.
+let lastSentRaw: string | undefined;
 
-// Compile regex from search input (debounced via the ref)
-const rawSearchRegex = computed<RegExp | null>(() => {
-    const q = rawSearchQuery.value.trim();
-    if (!q) {
-        rawSearchError.value = "";
-        return null;
-    }
-    try {
-        const re = new RegExp(q, "i");
-        rawSearchError.value = "";
-        return re;
-    } catch (e) {
-        rawSearchError.value = e instanceof SyntaxError ? e.message : String(e);
-        return null;
-    }
-});
+function initRawWorker() {
+    if (rawWorker) return;
+    rawWorker = new Worker(
+        new URL("../workers/rawSearchWorker.ts", import.meta.url),
+        { type: "module" },
+    );
+    rawWorker.onmessage = (e) => {
+        const msg = e.data;
+        // Ignore stale responses
+        if (msg.id !== activeSearchId) return;
 
-// When searching, filter lines; otherwise show the first N lines
-const rawDisplayLines = computed<{ lineNo: number; text: string; html: string }[]>(() => {
-    const lines = rawLines.value;
-    const re = rawSearchRegex.value;
-    const limit = rawVisibleLines.value;
-    const result: { lineNo: number; text: string; html: string }[] = [];
+        rawSearching.value = false;
 
-    if (re) {
-        // Search mode: scan all lines but cap output
-        for (let i = 0; i < lines.length && result.length < limit; i++) {
-            if (re.test(lines[i])) {
-                result.push({
-                    lineNo: i + 1,
-                    text: lines[i],
-                    html: highlightMatches(lines[i], re),
-                });
-            }
+        if (msg.type === "error") {
+            rawSearchError.value = msg.error;
+            rawDisplayLines.value = [];
+            rawMatchCount.value = null;
+            return;
         }
-    } else {
-        // Preview mode: first N lines
-        const end = Math.min(lines.length, limit);
-        for (let i = 0; i < end; i++) {
-            result.push({ lineNo: i + 1, text: lines[i], html: escapeHtml(lines[i]) });
+        if (msg.type === "result") {
+            rawSearchError.value = "";
+            rawDisplayLines.value = msg.lines;
+            rawMatchCount.value = msg.matchCount;
+            totalLineCount.value = msg.totalLines;
         }
-    }
-    return result;
+    };
+}
+
+function dispatchSearch(forceText = false) {
+    if (!rawWorker) initRawWorker();
+
+    const raw = data.value?.current_data_frame ?? "";
+    const sendText = forceText || raw !== lastSentRaw;
+    if (sendText) lastSentRaw = raw;
+
+    const id = nextSearchId++;
+    activeSearchId = id;
+    rawSearching.value = true;
+
+    rawWorker!.postMessage({
+        type: "search",
+        id,
+        rawText: sendText ? raw : undefined,
+        pattern: rawSearchQuery.value.trim(),
+        limit: rawVisibleLines.value,
+    });
+}
+
+// Debounced watcher: fires when query, visible-line limit, or underlying data changes.
+function scheduleSearch(forceText = false) {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => dispatchSearch(forceText), 150);
+}
+
+watch(rawSearchQuery, () => {
+    rawVisibleLines.value = RAW_LINES_PER_PAGE;
+    scheduleSearch();
 });
 
-const rawMatchCount = computed(() => {
-    const re = rawSearchRegex.value;
-    if (!re) return null;
-    let count = 0;
-    for (const line of rawLines.value) {
-        if (re.test(line)) count++;
-    }
-    return count;
-});
+watch(rawVisibleLines, () => scheduleSearch());
+
+// When the raw data itself changes (or on initial mount), send it to the worker.
+watch(() => data.value?.current_data_frame, () => scheduleSearch(true), { immediate: true });
 
 const rawHasMore = computed(() => {
-    if (rawSearchRegex.value) {
-        return (rawMatchCount.value ?? 0) > rawDisplayLines.value.length;
+    if (rawMatchCount.value !== null) {
+        return rawMatchCount.value > rawDisplayLines.value.length;
     }
-    return rawLines.value.length > rawVisibleLines.value;
+    return totalLineCount.value > rawVisibleLines.value;
 });
 
 function loadMoreRawLines() {
     rawVisibleLines.value += RAW_LINES_PER_PAGE;
 }
 
-// Reset visible lines when search changes
-watch(rawSearchQuery, () => {
-    rawVisibleLines.value = RAW_LINES_PER_PAGE;
+onUnmounted(() => {
+    if (searchDebounce) clearTimeout(searchDebounce);
+    rawWorker?.terminate();
+    rawWorker = null;
 });
-
-function escapeHtml(str: string): string {
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-}
-
-function highlightMatches(line: string, re: RegExp): string {
-    const escaped = escapeHtml(line);
-    // Re-run the regex on the escaped version (safe because we only escape &<>)
-    const escapedRe = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
-    return escaped.replace(escapedRe, (match) => `<mark class="bg-yellow-400/40 text-yellow-200 rounded-sm px-0.5">${match}</mark>`);
-}
 </script>
 
 <template>
@@ -311,7 +313,7 @@ function highlightMatches(line: string, re: RegExp): string {
                 </Card>
                 <Card class="p-3 flex flex-col">
                   <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Lines</span>
-                  <span class="text-xl font-semibold mt-1">{{ rawLines.length.toLocaleString() }}</span>
+                  <span class="text-xl font-semibold mt-1">{{ totalLineCount.toLocaleString() }}</span>
                 </Card>
               </div>
               <div class="p-3 bg-blue-500/10 border border-blue-500/30 rounded-md">
@@ -567,7 +569,7 @@ function highlightMatches(line: string, re: RegExp): string {
               </div>
 
               <!-- Empty search result -->
-              <div v-else-if="rawSearchRegex && rawDisplayLines.length === 0" class="flex flex-col items-center py-8 text-muted-foreground">
+              <div v-else-if="rawSearchQuery.trim() && !rawSearchError && !rawSearching && rawDisplayLines.length === 0" class="flex flex-col items-center py-8 text-muted-foreground">
                 <SearchIcon class="h-8 w-8 mb-2 opacity-50" />
                 <p class="text-sm">No lines match the pattern</p>
               </div>

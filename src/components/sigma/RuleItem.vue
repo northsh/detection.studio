@@ -3,6 +3,7 @@ import {Badge} from '@/components/ui/badge';
 import type {SigmaRule} from '@/stores/SigmaBrowserStore';
 import {useSigmaRulesStore} from '@/stores/SigmaBrowserStore';
 import {getLevelBadgeClass} from './utils';
+import {ref} from 'vue';
 
 const props = defineProps<{
   rule: SigmaRule
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 }>();
 
 const sigmaRulesStore = useSigmaRulesStore();
+const isHovered = ref(false);
 
 // Check if a rule is currently selected
 function isSelected(rule: SigmaRule) {
@@ -28,11 +30,16 @@ function selectRule() {
 
 <template>
   <div
-    class="p-3 border rounded-md hover:bg-muted cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-xs my-2"
-    :class="{'border-primary/50 bg-primary/5': isSelected(rule)}"
+    class="p-3 border rounded-md cursor-pointer transition-all my-2"
+    :class="{
+      'border-primary/50 bg-primary/5': isSelected(rule),
+      'bg-muted -translate-y-[1px] shadow-xs': isHovered && !isSelected(rule),
+    }"
     @click="selectRule"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
   >
-    <h3 class="font-medium">{{ rule.title }}</h3>
+    <h3 class="font-medium truncate">{{ rule.title }}</h3>
     <div class="flex gap-1.5 mt-1">
       <Badge
         v-if="rule.level"
@@ -66,8 +73,8 @@ function selectRule() {
 
 <style scoped>
 /* Ensure smooth transitions */
-.transition-all {
-  transition-property: all;
+div {
+  transition-property: background-color, transform, box-shadow, border-color;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

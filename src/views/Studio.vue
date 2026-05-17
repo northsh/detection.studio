@@ -4,7 +4,7 @@ import {Separator} from "@/components/ui/separator";
 import {SidebarTrigger} from "@/components/ui/sidebar";
 import {Button} from "@/components/ui/button";
 import Editor from "@/components/Editor.vue";
-import {Github, MoreVertical, Share, Download, PlusIcon} from "lucide-vue-next";
+import {Github, MoreVertical, Share, Download, PlusIcon, Upload} from "lucide-vue-next";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore.ts";
 import {computed} from "vue";
 import ShareButton from "@/components/ShareWorkspaceButton.vue";
@@ -98,6 +98,64 @@ function openShareDialog() {
 
 function handleShare() {
     copy(shareUrl.value);
+}
+
+// Import workspace from URL
+const importDialogOpen = ref(false);
+const importUrl = ref('');
+const importError = ref('');
+
+function openImportDialog() {
+    importUrl.value = '';
+    importError.value = '';
+    importDialogOpen.value = true;
+}
+
+function handleImport() {
+    importError.value = '';
+    const raw = importUrl.value.trim();
+    if (!raw) {
+        importError.value = 'Please enter a share URL.';
+        return;
+    }
+
+    try {
+        // Accept a full URL with a hash, or just the raw base64url hash
+        let hash = raw;
+        if (raw.includes('#')) {
+            hash = raw.split('#')[1];
+        }
+
+        if (!hash) {
+            importError.value = 'Could not find a workspace hash in the provided URL.';
+            return;
+        }
+
+        const workspace = shareStore.reconstructFromUrl(hash);
+
+        // Handle duplicate names
+        const existingName = workspaceStore.availableWorkspaces.some(
+            (w) => w.name.replace(' (Imported)', '') === workspace.name.replace(' (Imported)', ''),
+        );
+
+        if (existingName) {
+            const baseNameMatch = workspace.name.match(/(.*?)( \(\d+\))?( \(Imported\))?$/);
+            const baseName = baseNameMatch ? baseNameMatch[1] : workspace.name;
+            let counter = 1;
+            let newName = `${baseName} (${counter})`;
+            while (workspaceStore.availableWorkspaces.some((w) => w.name.replace(' (Imported)', '') === newName)) {
+                counter++;
+                newName = `${baseName} (${counter})`;
+            }
+            workspace.name = `${newName} (Imported)`;
+        }
+
+        workspaceStore.availableWorkspaces.push(workspace);
+        workspaceStore.setCurrentWorkspace(workspace);
+        importDialogOpen.value = false;
+    } catch (e) {
+        importError.value = 'Invalid workspace URL. Make sure you paste the full share link.';
+    }
 }
 
 // Export functionality
@@ -226,6 +284,11 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 
           <ShareButton />
 
+          <Button class="hidden h-8 md:flex gap-2" size="sm" variant="secondary" @click="openImportDialog">
+            <Upload class="h-3.5 w-3.5" />
+            Import
+          </Button>
+
           <ExportButton />
 
           <!-- Mobile dropdown menu (shown on mobile only) -->
@@ -253,6 +316,13 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
               >
                 <Share class="h-4 w-4" />
                 Share
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                @click="openImportDialog"
+                class="flex items-center gap-2 cursor-pointer"
+              >
+                <Upload class="h-4 w-4" />
+                Import
               </DropdownMenuItem>
               <DropdownMenuItem
                 @click="exportFiles"
@@ -347,6 +417,33 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+    <!-- Import Workspace Dialog -->
+    <Dialog v-model:open="importDialogOpen">
+      <DialogContent class="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Import workspace</DialogTitle>
+          <DialogDescription>
+            Paste a detection.studio share URL to import a workspace into your session.
+          </DialogDescription>
+        </DialogHeader>
+        <div class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1.5">
+            <Label for="import-url">Share URL</Label>
+            <Input
+              id="import-url"
+              v-model="importUrl"
+              placeholder="https://detection.studio/#..."
+              @keydown.enter="handleImport"
+            />
+            <p v-if="importError" class="text-xs text-destructive">{{ importError }}</p>
+          </div>
+          <Button class="w-full" @click="handleImport">
+            Import workspace
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
 
     <!-- Share Dialog for mobile dropdown -->
     <Dialog v-model:open="shareDialogOpen">

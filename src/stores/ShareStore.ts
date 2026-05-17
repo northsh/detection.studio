@@ -11,22 +11,21 @@ export interface WorkspaceShare {
 }
 
 // Match the persistent state serialization type
+// Note: dataState is intentionally excluded — data frames can be very large
+// and are not suitable for URL hash-based sharing.
 type SerializedWorkspace = {
   id: string;
   name: string;
   plan: string;
   sigmaState?: any;
   fileState?: any;
-  dataState?: any;
 };
 
 export const useWorkspaceSharingStore = defineStore("workspaceSharing", () => {
-  // Serialize workspace for sharing
+  // Serialize workspace for sharing (dataState is intentionally excluded — too large for URL hashes)
   function serializeWorkspace(workspace: Workspace): SerializedWorkspace {
-    // Get store states if available
     const sigmaState = workspace.sigmaStore()?.$state;
     const fileState = workspace.fileStore()?.$state;
-    const dataState = workspace.dataStore()?.$state;
 
     return {
       id: workspace.id,
@@ -34,7 +33,6 @@ export const useWorkspaceSharingStore = defineStore("workspaceSharing", () => {
       plan: workspace.plan,
       sigmaState,
       fileState,
-      dataState,
     };
   }
 
@@ -55,9 +53,7 @@ export const useWorkspaceSharingStore = defineStore("workspaceSharing", () => {
     if (serialized.sigmaState) {
       sigmaStore().$state = serialized.sigmaState;
     }
-    if (serialized.dataState) {
-      dataStore().$state = serialized.dataState;
-    }
+    // dataState is not restored — sample data is not included in workspace exports
 
     return {
       id: newId,

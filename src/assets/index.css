@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@plugin 'tailwindcss-animate';
+@import "tw-animate-css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -218,6 +218,16 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
   --animate-collapsible-down: collapsible-down 0.2s ease-in-out;
   --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
+}
+
+@keyframes collapsible-down {
+  from { height: 0; opacity: 0; }
+  to   { height: var(--reka-collapsible-content-height); opacity: 1; }
+}
+
+@keyframes collapsible-up {
+  from { height: var(--reka-collapsible-content-height); opacity: 1; }
+  to   { height: 0; opacity: 0; }
 }
 
 @layer base {

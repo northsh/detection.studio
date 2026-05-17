@@ -5,6 +5,7 @@
       <div class="w-full flex items-center gap-1 md:gap-4 px-4">
         <SidebarTrigger />
         <Separator class="h-4!" orientation="vertical" />
+        <span class="text-sm font-semibold">Sigma Rules Browser</span>
         <div class="grow"></div>
         <div class="flex items-center gap-1 md:gap-2">
           <Button

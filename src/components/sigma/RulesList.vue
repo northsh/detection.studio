@@ -19,9 +19,9 @@ const emit = defineEmits<{
     'select-rule': [rule: SigmaRule]
 }>();
 
-// Constants for virtualizer
-const ITEM_HEIGHT = 150; // Estimated height of each rule item
-const GROUP_HEADER_HEIGHT = 40; // Estimated height of group headers
+// Estimated heights — measureElement will override these with actual measured values
+const ITEM_HEIGHT = 160;
+const GROUP_HEADER_HEIGHT = 48;
 
 // Refs
 const parentRef = ref<HTMLElement | null>(null);
@@ -149,7 +149,6 @@ defineExpose({ resetScroll });
           top: 0,
           left: 0,
           width: 'calc(100% - 16px)',
-          minHeight: `${virtualRow.size}px`,
           transform: isActiveGroupHeader(virtualRow.index) ? undefined : `translateY(${virtualRow.start}px)`,
         }"
       >
@@ -180,7 +179,7 @@ defineExpose({ resetScroll });
 .h-full.overflow-auto {
     position: relative;
     max-width: 100%;
-    overflow-x: hidden; /* Prevent horizontal overflow */
+    overflow-x: hidden;
 }
 
 /* Fix for sticky group headers */
@@ -191,8 +190,21 @@ defineExpose({ resetScroll });
     max-width: 100%;
 }
 
-/* Fix for absolutely positioned items */
-.relative > [style*="position: absolute"] {
-    max-width: calc(100% - 16px); /* Match the width style set in the vue component */
+/* Match ScrollBar.vue style */
+.h-full.overflow-auto::-webkit-scrollbar {
+    width: 10px; /* w-2.5 */
+}
+
+.h-full.overflow-auto::-webkit-scrollbar-track {
+    background: transparent;
+    border-left: 1px solid transparent;
+    padding: 1px; /* p-px */
+}
+
+.h-full.overflow-auto::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px; /* rounded-full */
+    border: 1px solid transparent;
+    background-clip: content-box;
 }
 </style>

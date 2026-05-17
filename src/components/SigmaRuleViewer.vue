@@ -1,11 +1,19 @@
 <template>
-  <ScrollArea class="flex flex-col h-full">
-    <div v-if="!currentRule" class="flex items-center justify-center h-full">
-      <p>Select a rule to view its details</p>
+  <div v-if="!currentRule" class="flex flex-col items-center justify-center h-full gap-4 px-8 text-center">
+    <div class="rounded-full bg-muted p-4">
+      <ShieldCheck class="h-8 w-8 text-muted-foreground" />
     </div>
+    <div class="flex flex-col gap-1">
+      <h3 class="text-sm font-semibold">No rule selected</h3>
+      <p class="text-xs text-muted-foreground max-w-[240px]">
+        Select a rule from the list on the left to view its details and import it into your workspace.
+      </p>
+    </div>
+  </div>
 
-    <div v-else-if="isLoadingIndividualRule" class="flex flex-col h-full">
-      <div class="border-b p-6 bg-card shadow-xs h-full">
+  <ScrollArea v-else class="h-full">
+    <div v-if="isLoadingIndividualRule" class="flex flex-col">
+      <div class="border-b p-6 bg-card shadow-xs">
         <!-- Skeleton title section -->
         <div class="flex items-start justify-between">
           <Skeleton class="h-8 w-64" />
@@ -72,11 +80,11 @@
       </div>
 
       <!-- Skeleton code editor -->
-      <div class="grow flex flex-col h-full">
-        <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
+      <div class="flex flex-col h-[400px]">
+        <div class="px-6 py-3 bg-[#0D1116] border-b border-gray-800 shrink-0">
           <Skeleton class="h-4 w-32 bg-gray-700/20" />
         </div>
-        <div class="grow bg-[#0D1116] h-full p-4">
+        <div class="flex-1 bg-[#0D1116] p-4">
           <Skeleton class="h-full w-full bg-gray-700/20" />
         </div>
       </div>
@@ -198,7 +206,7 @@
           </div>
         </div>
       </div>
-      <!-- Add the buttons at the top -->
+      <!-- Action buttons -->
       <div class="border-b p-4 flex justify-between bg-card">
         <Button class="gap-1.5" variant="outline" @click="copyRule">
           <Clipboard class="h-4 w-4" />
@@ -211,12 +219,12 @@
         </Button>
       </div>
 
-      <!-- Rule Definition with code editor - full height and clean styling -->
-      <div class="grow flex flex-col h-full">
-        <div class="px-6 py-3 bg-[#0D1116]  border-b border-gray-800">
+      <!-- Rule Definition with code editor -->
+      <div class="flex flex-col h-[400px]">
+        <div class="px-6 py-3 bg-[#0D1116] border-b border-gray-800 shrink-0">
           <span class="text-xs uppercase tracking-wider font-medium">YAML Definition</span>
         </div>
-        <div class="grow bg-[#0D1116] h-full">
+        <div class="flex-1 bg-[#0D1116]">
           <PrismEditor
             v-model="currentRuleContent"
             :insert-spaces="true"
@@ -240,10 +248,9 @@ import {Button} from './ui/button';
 import {Skeleton} from './ui/skeleton';
 import PrismEditor from './PrismEditor.vue';
 import {toast} from 'vue-sonner';
-import {Clipboard, Download, ExternalLink, Loader2} from "lucide-vue-next";
+import {Clipboard, Download, ExternalLink, Loader2, ShieldCheck} from "lucide-vue-next";
 import {useRouter} from "vue-router";
 import {ScrollArea} from "@/components/ui/scroll-area";
-
 
 const router = useRouter()
 
