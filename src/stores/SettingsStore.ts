@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
+export type Theme = "light" | "dark" | "system";
+
 export const useSettingsStore = defineStore(
   "settings",
   () => {
@@ -8,6 +10,7 @@ export const useSettingsStore = defineStore(
     const defaultAuthor = ref("");
     const defaultSIEM = ref("splunk");
     const defaultTemplate = ref("default");
+    const theme = ref<Theme>("system");
 
     // Actions
     function setDefaultAuthor(author: string) {
@@ -22,16 +25,22 @@ export const useSettingsStore = defineStore(
       defaultTemplate.value = template;
     }
 
+    function setTheme(newTheme: Theme) {
+      theme.value = newTheme;
+    }
+
     return {
       // State
       defaultAuthor,
       defaultSIEM,
       defaultTemplate,
+      theme,
 
       // Actions
       setDefaultAuthor,
       setDefaultSIEM,
       setDefaultTemplate,
+      setTheme,
     };
   },
   {

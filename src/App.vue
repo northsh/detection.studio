@@ -23,9 +23,12 @@ import {Card} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {useSettingsStore} from "@/stores/SettingsStore";
 import WorkspaceSelection from "@/components/WorkspaceSelection.vue";
 import ChangelogDialog from "@/components/ChangelogDialog.vue";
 import {ref} from "vue";
+import {Toaster} from "@/components/ui/sonner";
+import {useAppColorMode} from "@/composables/useAppColorMode";
 
 // This is sample data.
 const data = {
@@ -107,6 +110,11 @@ const data = {
 const workStore = useWorkspaceStore();
 const changelogDialogRef = ref<InstanceType<typeof ChangelogDialog>>();
 
+// Apply persisted theme on boot
+const settingsStore = useSettingsStore();
+const { colorMode } = useAppColorMode();
+colorMode.value = settingsStore.theme === 'system' ? 'auto' : settingsStore.theme;
+
 function openChangelog() {
     changelogDialogRef.value?.openDialog();
 }
@@ -172,13 +180,13 @@ function openChangelog() {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <router-link v-slot="{ isActive, navigate }" custom disabled to="/settings">
+                <router-link v-slot="{ isActive, navigate }" custom to="/settings">
                   <SidebarMenuButton
                     :active="isActive"
                     :class="{
                                     'text-primary bg-primary/10': isActive,
                                 }"
-                    disabled
+
                     @click="navigate"
                   >
                     <Settings2 />
@@ -266,4 +274,5 @@ function openChangelog() {
 
   <!-- Changelog Dialog with auto-show for new releases -->
   <ChangelogDialog ref="changelogDialogRef" :auto-show="true" />
+  <Toaster />
 </template>

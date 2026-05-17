@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {AlertCircleIcon, AlertTriangleIcon, CheckCircleIcon, LoaderIcon, PlusIcon, SearchIcon, XIcon} from "lucide-vue-next";
+import {AlertCircleIcon, AlertTriangleIcon, CheckCircleIcon, FlaskConicalIcon, LoaderIcon, PlusIcon, SearchIcon, XIcon} from "lucide-vue-next";
 import {Button} from "@/components/ui/button";
 
 import {Badge} from "@/components/ui/badge";
@@ -19,6 +19,23 @@ const showErrorDetails = ref(false);
 
 // Access rsigma evaluation results from the sigma store
 const searchResults = computed(() => sigma.value?.search_results ?? null);
+
+// Validation metadata from auto-loaded SigmaHQ regression test data
+const validationMetadata = computed(() => data.value?.validation_metadata ?? null);
+const validationLoading = computed(() => sigma.value?.validation_loading ?? false);
+const validationError = computed(() => sigma.value?.validation_error ?? "");
+
+// Compare actual match count vs expected match count from validation metadata
+const validationResult = computed(() => {
+    if (!validationMetadata.value || !searchResults.value) return null;
+    const expected = validationMetadata.value.expectedMatchCount;
+    const actual = searchResults.value.stats?.totalMatches ?? 0;
+    return {
+        expected,
+        actual,
+        passed: actual === expected,
+    };
+});
 
 // Extract the matched event field names so we can highlight them in the table.
 const matchedFieldNames = computed(() => {
@@ -213,6 +230,18 @@ onUnmounted(() => {
             Error Loading Data
           </Badge>
 
+          <!-- Validation data indicator (independent of loading chain) -->
+          <Badge v-if="validationMetadata" class="bg-violet-600 hover:bg-violet-700">
+            <FlaskConicalIcon class="h-3 w-3 mr-1" />
+            SigmaHQ Validated
+          </Badge>
+
+          <!-- Validation loading indicator -->
+          <Badge v-if="validationLoading" class="bg-violet-500 hover:bg-violet-600">
+            <LoaderIcon class="h-3 w-3 mr-1 animate-spin" />
+            Loading Test Data
+          </Badge>
+
           <!-- Show error message - explicit error display -->
           <div
             v-if="showErrorDetails && sigma?.data_loading_error"
@@ -325,6 +354,43 @@ onUnmounted(() => {
                   Open or create a Sigma rule in the editor to evaluate it against this dataset.
                 </p>
               </div>
+            </div>
+
+            <!-- SigmaHQ Validation Result -->
+            <div
+              v-if="validationMetadata"
+              class="p-3 rounded-md"
+              :class="validationResult?.passed
+                ? 'bg-green-500/10 border border-green-500/30'
+                : validationResult
+                  ? 'bg-red-500/10 border border-red-500/30'
+                  : 'bg-violet-500/10 border border-violet-500/30'"
+            >
+              <div class="flex items-center gap-2 mb-2" :class="validationResult?.passed ? 'text-green-500' : validationResult ? 'text-red-500' : 'text-violet-400'">
+                <FlaskConicalIcon class="h-4 w-4 shrink-0" />
+                <h3 class="text-sm font-medium">
+                  SigmaHQ Regression Test
+                  <span v-if="validationResult?.passed" class="ml-1">-- Passed</span>
+                  <span v-else-if="validationResult" class="ml-1">-- Failed</span>
+                </h3>
+              </div>
+              <p class="text-xs text-muted-foreground mb-2">
+                {{ validationMetadata.testName }}
+                <span v-if="validationMetadata.provider"> ({{ validationMetadata.provider }})</span>
+              </p>
+              <div class="grid grid-cols-2 gap-2">
+                <Card class="p-2 flex flex-col">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Expected Matches</span>
+                  <span class="text-lg font-semibold mt-0.5">{{ validationMetadata.expectedMatchCount }}</span>
+                </Card>
+                <Card class="p-2 flex flex-col">
+                  <span class="text-[10px] uppercase tracking-wider text-muted-foreground">Actual Matches</span>
+                  <span class="text-lg font-semibold mt-0.5" :class="validationResult?.passed ? 'text-green-400' : validationResult ? 'text-red-400' : ''">
+                    {{ validationResult ? validationResult.actual : '--' }}
+                  </span>
+                </Card>
+              </div>
+              <p v-if="validationError" class="text-xs text-red-400 mt-2">{{ validationError }}</p>
             </div>
 
             <!-- Field coverage warning -->

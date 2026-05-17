@@ -4,6 +4,7 @@ import { createSigmaStore } from "@/stores/CreateSigmaStore";
 import { createFileStore, type FileStore } from "@/stores/CreateFileStore";
 import { createDataStore, type DataStoreInterface } from "@/stores/CreateDataStore";
 import { useWorkspaceSharingStore } from "@/stores/ShareStore.ts";
+import { useSettingsStore } from "@/stores/SettingsStore.ts";
 import type { SigmaStore } from "@/types/SigmaStore.ts";
 
 export type Workspace = {
@@ -115,17 +116,24 @@ export const useWorkspaceStore = defineStore(
 
     function newWorkspace(name: string, plan: string): Workspace {
       const id = Math.random().toString(36).substring(7);
+      const sigmaStore = createSigmaStore(id);
       const newWorkspace: Workspace = {
         id,
         name,
         plan,
         fileStore: createFileStore(id),
-        sigmaStore: createSigmaStore(id),
+        sigmaStore,
         dataStore: createDataStore(id),
       };
 
       availableWorkspaces.value.push(newWorkspace);
       setCurrentWorkspace(newWorkspace);
+
+      // Apply the user's preferred default SIEM to the new workspace
+      const settingsStore = useSettingsStore();
+      if (settingsStore.defaultSIEM) {
+        sigmaStore().selected_siem = settingsStore.defaultSIEM;
+      }
 
       return newWorkspace;
     }

@@ -113,7 +113,7 @@ async function indexRules(repoPath: string) {
                     }
 
                     // Basic rule parsing
-                    const rule = {
+                    const rule: Record<string, any> = {
                         id: yamlContent.id || "",
                         title: yamlContent.title || "",
                         description: yamlContent.description || "",
@@ -124,6 +124,11 @@ async function indexRules(repoPath: string) {
                         path: relativePath,
                         logsource: yamlContent.logsource || {},
                     };
+
+                    // Include regression test path if present
+                    if (yamlContent.regression_tests_path) {
+                        rule.regression_tests_path = yamlContent.regression_tests_path;
+                    }
 
                     rules.push(rule);
                 } catch (error) {

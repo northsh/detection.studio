@@ -44,8 +44,6 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {useWorkspaceSharingStore} from "@/stores/ShareStore";
 import {useClipboard} from '@vueuse/core';
-import JSZip from 'jszip';
-import {supportedSiems} from "@/types/SIEMs.ts";
 import {ref} from 'vue';
 import {Badge} from "@/components/ui/badge";
 
@@ -158,94 +156,12 @@ function handleImport() {
     }
 }
 
-// Export functionality
+// Export functionality — delegated to ExportButton component
+const exportButtonRef = ref<InstanceType<typeof ExportButton> | null>(null);
 const fs = computed(() => workspaceStore.currentWorkspace?.fileStore());
-const sigma = computed(() => workspaceStore.currentWorkspace?.sigmaStore());
 
 function exportFiles() {
-    if (!fs.value || !fs.value.files.length) return;
-
-    const zip = new JSZip();
-    const rulesFolder = zip.folder("rules");
-    const configFolder = zip.folder("config");
-    const filtersFolder = zip.folder("filters");
-    const fileNameCounts = {};
-
-    fs.value.files.forEach(file => {
-        const extension = '.yaml';
-        const baseFileName = file.name;
-        fileNameCounts[baseFileName] = (fileNameCounts[baseFileName] || 0) + 1;
-        const fileName = fileNameCounts[baseFileName] > 1
-            ? `${baseFileName}_${fileNameCounts[baseFileName] - 1}${extension}`
-            : `${baseFileName}${extension}`;
-
-        if (file.type === 'sigma') {
-            rulesFolder.file(fileName, file.content);
-        } else if (file.type === 'pipeline') {
-            configFolder.file(fileName, file.content);
-        } else if (file.type === 'filter') {
-            filtersFolder.file(fileName, file.content);
-        } else {
-            zip.file(fileName, file.content);
-        }
-    });
-
-    const generateReadme = () => {
-        const selectedSiemId = sigma.value?.selected_siem;
-        const siemDetails = supportedSiems.find(siem => siem.id === selectedSiemId);
-        const backendPlugin = siemDetails?.backend || '<backend>';
-        const targetName = siemDetails?.name || '<target>';
-        const targetId = siemDetails?.id || '<target>';
-
-        return `# Detection Studio Export
-
-This archive contains Sigma rules and configurations exported from Detection Studio.
-
-## Directory Structure
-
-- \`rules/\`: Contains Sigma detection rules
-- \`config/\`: Contains Sigma pipeline configurations
-- \`filters/\`: Contains Sigma filter configurations
-
-## Usage with Sigma CLI
-
-To use these files with the Sigma CLI tool, you need to:
-
-1. Install Sigma CLI:
-   \`\`\`bash
-   pip3 install sigma-cli
-   \`\`\`
-
-2. Install the appropriate backend plugin for your SIEM:
-   \`\`\`bash
-   sigma plugin install ${backendPlugin}
-   \`\`\`
-
-   You can view all available backends with \`sigma plugin list\`.
-
-3. Convert the rules to your SIEM format:
-   \`\`\`bash
-   sigma convert \\
-       --target ${targetId} \\
-       --filter ./filters/ \\
-       --pipeline ./config/ \\
-       ./rules
-   \`\`\`
-
-Visit https://sigmahq.io for more information about Sigma and its capabilities.
-`;
-    };
-
-    zip.file("README.md", generateReadme());
-
-    zip.generateAsync({type: 'blob'})
-        .then(content => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
-            link.download = 'detection_studio_export.zip';
-            link.click();
-            URL.revokeObjectURL(link.href);
-        });
+    exportButtonRef.value?.exportFiles();
 }
 </script>
 
@@ -284,12 +200,12 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
 
           <ShareButton />
 
-          <Button class="hidden h-8 md:flex gap-2" size="sm" variant="secondary" @click="openImportDialog">
+          <Button class="hidden h-8 md:flex gap-2" size="sm" variant="secondary" @click="openImportDialog" v-if="false">
             <Upload class="h-3.5 w-3.5" />
             Import
           </Button>
 
-          <ExportButton />
+          <ExportButton ref="exportButtonRef" />
 
           <!-- Mobile dropdown menu (shown on mobile only) -->
           <DropdownMenu>

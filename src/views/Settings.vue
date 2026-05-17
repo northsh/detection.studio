@@ -1,35 +1,56 @@
 <script lang="ts" setup>
-import {ref} from 'vue';
+import {ref, watch} from 'vue';
+import {toast} from 'vue-sonner';
+import {useAppColorMode} from '@/composables/useAppColorMode';
 import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {supportedSiems} from '@/types/SIEMs';
-import {useSettingsStore} from '@/stores/SettingsStore';
+import {useSettingsStore, type Theme} from '@/stores/SettingsStore';
 
 // Access the Settings store
 const settingsStore = useSettingsStore();
+
+const { colorMode } = useAppColorMode();
 
 // Refs for form inputs
 const defaultAuthor = ref(settingsStore.defaultAuthor);
 const defaultSIEM = ref(settingsStore.defaultSIEM);
 const defaultTemplate = ref(settingsStore.defaultTemplate);
+const theme = ref<Theme>(settingsStore.theme);
 
 // Templates options
 const templateOptions = [
-    {value: 'default', label: 'Default Sigma Rule'},
-    {value: 'process_creation', label: 'Process Creation'},
-    {value: 'network_connection', label: 'Network Connection'},
-    {value: 'registry_event', label: 'Registry Event'},
-    {value: 'file_event', label: 'File Event'}
+    {value: 'process_creation', label: 'Process Creation', description: 'Detect process execution events'},
+    {value: 'network_connection', label: 'Network Connection', description: 'Detect outbound network activity'},
+    {value: 'registry_event', label: 'Registry Event', description: 'Detect registry key modifications'},
+    {value: 'file_event', label: 'File Event', description: 'Detect file creation or changes'},
 ];
+
+// Theme options
+const themeOptions: {value: Theme; label: string}[] = [
+    {value: 'system', label: 'System default'},
+    {value: 'light', label: 'Light'},
+    {value: 'dark', label: 'Dark'},
+];
+
+// Apply theme immediately when it changes
+watch(theme, (newTheme) => {
+    colorMode.value = newTheme === 'system' ? 'auto' : newTheme;
+});
 
 // Save changes
 function saveSettings() {
     settingsStore.setDefaultAuthor(defaultAuthor.value);
     settingsStore.setDefaultSIEM(defaultSIEM.value);
     settingsStore.setDefaultTemplate(defaultTemplate.value);
+    settingsStore.setTheme(theme.value);
+    colorMode.value = theme.value === 'system' ? 'auto' : theme.value;
+    toast.success('Settings saved', {
+        description: 'Your preferences have been updated.',
+    });
 }
 </script>
 
@@ -69,11 +90,13 @@ function saveSettings() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p class="text-sm text-muted-foreground">The default SIEM for rule conversion</p>
+              <p class="text-sm text-muted-foreground">
+                The default SIEM for new workspaces
+              </p>
             </div>
 
             <div class="grid gap-2">
-              <Label for="default-template">Default Template</Label>
+              <Label for="default-template">Default Sigma Rule Template</Label>
               <Select v-model="defaultTemplate">
                 <SelectTrigger id="default-template" class="w-full">
                   <SelectValue placeholder="Select a default template" />
@@ -84,11 +107,14 @@ function saveSettings() {
                     :key="template.value"
                     :value="template.value"
                   >
-                    {{ template.label }}
+                    <div class="flex flex-col">
+                      <span>{{ template.label }}</span>
+                      <span class="text-xs text-muted-foreground">{{ template.description }}</span>
+                    </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p class="text-sm text-muted-foreground">The default template for new Sigma rules</p>
+              <p class="text-sm text-muted-foreground">Used when creating new Sigma rules from the file list</p>
             </div>
           </div>
         </CardContent>
@@ -106,34 +132,17 @@ function saveSettings() {
           <div class="space-y-4">
             <div class="grid gap-2">
               <Label for="theme">Theme</Label>
-              <Select disabled>
+              <Select v-model="theme">
                 <SelectTrigger id="theme" class="w-full">
                   <SelectValue placeholder="System default" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="light">Light</SelectItem>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="system">System default</SelectItem>
+                  <SelectItem v-for="opt in themeOptions" :key="opt.value" :value="opt.value">
+                    {{ opt.label }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
-              <p class="text-sm text-muted-foreground">Coming soon: Application theme preference</p>
-            </div>
-
-            <div class="grid gap-2">
-              <Label for="code-font-size">Code Font Size</Label>
-              <Select disabled>
-                <SelectTrigger id="code-font-size" class="w-full">
-                  <SelectValue placeholder="Medium (14px)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="small">Small (12px)</SelectItem>
-                  <SelectItem value="medium">Medium (14px)</SelectItem>
-                  <SelectItem value="large">Large (16px)</SelectItem>
-                </SelectContent>
-              </Select>
-              <p class="text-sm text-muted-foreground">
-                Coming soon: Change the font size in code editors
-              </p>
+              <p class="text-sm text-muted-foreground">Application theme preference (applied immediately)</p>
             </div>
           </div>
         </CardContent>

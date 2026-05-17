@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {onMounted, onBeforeUnmount, useTemplateRef, watch} from "vue";
+import {useAppColorMode} from "@/composables/useAppColorMode";
 import type {PrismEditor} from "prism-code-editor/dist/types.d";
 import {highlightSelectionMatches, searchWidget} from "prism-code-editor/search"
 import {defaultCommands} from "prism-code-editor/commands"
@@ -27,15 +28,16 @@ import "prism-code-editor/layout.css"
 import "prism-code-editor/scrollbar.css"
 import "prism-code-editor/copy-button.css"
 import "prism-code-editor/themes/github-dark.css"
+import "prism-code-editor/themes/github-light.css"
 import "prism-code-editor/autocomplete.css"
 import "prism-code-editor/autocomplete-icons.css"
 
+const { colorMode, prefersDark } = useAppColorMode();
 
 const props = withDefaults(
     defineProps<{
         modelValue?: string;
         language?: string;
-        theme?: string;
         tabSize?: string | number;
         insertSpaces?: boolean;
         lineNumbers?: boolean;
@@ -47,7 +49,6 @@ const props = withDefaults(
     {
         modelValue: "",
         language: "javascript",
-        theme: "github-dark",
         tabSize: "2",
         insertSpaces: false,
         lineNumbers: false,
@@ -57,6 +58,13 @@ const props = withDefaults(
         enableAutocompletion: true,
     },
 );
+
+// Derive the prism theme from the current color mode
+// colorMode can be 'auto' when following system preference, so fall back to prefersDark
+function resolveTheme() {
+    const isDark = colorMode.value === 'dark' || (colorMode.value === 'auto' && prefersDark.value);
+    return isDark ? 'github-dark' : 'github-light';
+}
 
 const emit = defineEmits<{
     "update:modelValue": [value: string];
@@ -113,7 +121,7 @@ onMounted(() => {
         {
             value: props.modelValue,
             language: props.language,
-            theme: props.theme,
+            theme: resolveTheme(),
             tabSize: props.tabSize,
             insertSpaces: props.insertSpaces,
             lineNumbers: props.lineNumbers,
@@ -164,6 +172,12 @@ watch(
         editor.setOptions({language: newLanguage});
     }
 );
+
+// Switch editor theme when color mode or system preference changes
+watch([colorMode, prefersDark], () => {
+    if (!editor) return;
+    editor.setOptions({theme: resolveTheme()});
+});
 </script>
 
 <template>

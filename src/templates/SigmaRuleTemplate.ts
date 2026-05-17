@@ -1,11 +1,11 @@
 import { v4 as uuid } from "uuid";
 
-export default function sigmaTemplate() {
+export default function sigmaTemplate(author: string = "") {
   return `title: Example Sigma Rule
 id: ${uuid()}
 description: Detects suspicious activity
 status: experimental
-author: Your Name
+author: ${author || "Your Name"}
 date: 2023-10-01
 logsource:
   category: process_creation

@@ -10,6 +10,7 @@ import {ScrollArea, ScrollBar} from "@/components/ui/scroll-area";
 import {computed, type ComputedRef, ref} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
 import {breakpointsTailwind, useBreakpoints, useElementSize, useWindowSize} from '@vueuse/core'
+import {useAppColorMode} from "@/composables/useAppColorMode";
 import {Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
 import type {FileStore} from "@/stores/CreateFileStore.ts";
 import {SplitterPanel} from "reka-ui";
@@ -40,6 +41,9 @@ const isDesktop: ComputedRef<boolean> = breakpoints.greaterOrEqual('md')
 // Use separate auto-save IDs for desktop/mobile to avoid constraint conflicts
 // when persisted layout sizes violate different min/max constraints
 const autoSaveId = computed(() => isDesktop.value ? 'editor-desktop' : 'editor-mobile')
+
+const { isDark } = useAppColorMode();
+const editorBg = computed(() => isDark.value ? '#0D1116' : '#f6f8fa');
 </script>
 
 <template>
@@ -116,10 +120,10 @@ const autoSaveId = computed(() => isDesktop.value ? 'editor-desktop' : 'editor-m
         <TabsContent
           v-for="fileId in fs.openFiles"
           :key="fileId"
-          :style="{ maxHeight: editorMaxHeight }"
+          :style="{ maxHeight: editorMaxHeight, backgroundColor: editorBg }"
           :value="fileId"
           as-child
-          class="mt-0! flex-1 min-h-0 bg-[#0D1116] overflow-auto"
+          class="mt-0! flex-1 min-h-0 overflow-auto"
         >
           <PrismEditor
             v-model="fs.files.find(f => f.id === fileId)!.content"

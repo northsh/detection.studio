@@ -22,6 +22,7 @@ export interface SigmaRule {
   logsource?: SigmaLogsource;
   rawContent?: string;
   references?: string[];
+  regression_tests_path?: string;
 }
 
 export const useSigmaRulesStore = defineStore("sigmaRules", () => {

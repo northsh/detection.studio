@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Files, Folder, Plus, TextCursor, Trash,} from "lucide-vue-next";
 import sigmaTemplate from "@/templates/SigmaRuleTemplate";
+import sigmaNetworkTemplate from "@/templates/SigmaNetworkTemplate";
+import sigmaRegistryTemplate from "@/templates/SigmaRegistryTemplate";
+import sigmaFileEventTemplate from "@/templates/SigmaFileEventTemplate";
 import eventCountCorrelationTemplate from "@/templates/CorrelationRules/EventCountTemplate";
 import valueCountCorrelationTemplate from "@/templates/CorrelationRules/ValueCountTemplate";
 import temporalCorrelationTemplate from "@/templates/CorrelationRules/TemporalTemplate";
@@ -25,6 +28,7 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/compo
 import FileListItem from "./FileListItem.vue";
 import type {FileType} from "@/types/types.ts";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
+import {useSettingsStore} from "@/stores/SettingsStore";
 import SigmaLogo from '@/images/sigma.svg?component'
 import {DropdownMenuPortal} from "reka-ui";
 
@@ -33,11 +37,16 @@ import {DropdownMenuPortal} from "reka-ui";
  */
 
 const workspace = useWorkspaceStore();
+const settings = useSettingsStore();
 const fs = computed(() => workspace.currentWorkspace?.fileStore());
 const sigma = computed(() => workspace.currentWorkspace?.sigmaStore());
 
 const templates: Record<string, () => string> = {
-    sigma: sigmaTemplate,
+    sigma: () => sigmaTemplate(settings.defaultAuthor),
+    process_creation: () => sigmaTemplate(settings.defaultAuthor),
+    network_connection: () => sigmaNetworkTemplate(settings.defaultAuthor),
+    registry_event: () => sigmaRegistryTemplate(settings.defaultAuthor),
+    file_event: () => sigmaFileEventTemplate(settings.defaultAuthor),
     correlation: eventCountCorrelationTemplate,
     filter: () => sigmaFilterTemplate(fs.value.getFile(
         sigma.value.active_sigma_rule_file_id
@@ -51,9 +60,14 @@ const templates: Record<string, () => string> = {
 };
 
 const newFile = (rule_type: FileType, template: string = '') => {
+    // Use the user's default template preference when creating a sigma rule with no explicit template
+    const resolvedTemplate = (rule_type === 'sigma' && !template)
+        ? (settings.defaultTemplate !== 'default' ? settings.defaultTemplate : 'sigma')
+        : template;
+
     fs.value.addFile({
         name: `new_${rule_type}_rule`,
-        content: (templates[template] ?? templates[rule_type])() as string,
+        content: (templates[resolvedTemplate] ?? templates[rule_type] ?? templates['sigma'])() as string,
         type: rule_type,
     });
 };
@@ -93,21 +107,44 @@ const groupedFiles = computed(function () {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Rule Type</DropdownMenuLabel>
               </DropdownMenuGroup>
-              <DropdownMenuItem class="flex gap-2 items-center" @click="newFile('sigma')">
-                <SigmaLogo class="h-4 w-4" />
-                Sigma Rule
-              </DropdownMenuItem>
-              <!--                            <DropdownMenuSub>-->
-              <!--                                <DropdownMenuSubTrigger class="flex gap-2 items-center">-->
-              <!--                                    <SigmaLogo class="h-4 w-4"/>-->
-              <!--                                    <span>Sigma Rule</span>-->
-              <!--                                </DropdownMenuSubTrigger>-->
-              <!--                                <DropdownMenuPortal>-->
-              <!--                                    <DropdownMenuSubContent>-->
-              <!--                                        <DropdownMenuItem @click="newFile('sigma')">Sigma</DropdownMenuItem>-->
-              <!--                                    </DropdownMenuSubContent>-->
-              <!--                                </DropdownMenuPortal>-->
-              <!--                            </DropdownMenuSub>-->
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger class="flex gap-2 items-center">
+                  <SigmaLogo class="h-4 w-4" />
+                  <span>Sigma Rule</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('sigma', 'process_creation')"
+                    >
+                      Process Creation
+                      <p class="text-muted-foreground">Detect process execution events</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('sigma', 'network_connection')"
+                    >
+                      Network Connection
+                      <p class="text-muted-foreground">Detect outbound network activity</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('sigma', 'registry_event')"
+                    >
+                      Registry Event
+                      <p class="text-muted-foreground">Detect registry key modifications</p>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      class="flex flex-col items-start gap-1"
+                      @click="newFile('sigma', 'file_event')"
+                    >
+                      File Event
+                      <p class="text-muted-foreground">Detect file creation or changes</p>
+                    </DropdownMenuItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger class="flex gap-2 items-center">
                   <SigmaLogo class="h-4 w-4" />

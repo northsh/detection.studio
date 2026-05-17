@@ -161,6 +161,8 @@ Visit https://sigmahq.io for more information about Sigma and its capabilities.
             URL.revokeObjectURL(link.href);
         });
 };
+
+defineExpose({ exportFiles });
 </script>
 
 <template>

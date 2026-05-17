@@ -32,4 +32,8 @@ export interface SigmaStore {
   search_error: Ref<string>;
   is_data_loaded: Ref<boolean>;
   data_loading_error: Ref<string>;
+
+  // SigmaHQ validation data state
+  validation_loading: Ref<boolean>;
+  validation_error: Ref<string>;
 }

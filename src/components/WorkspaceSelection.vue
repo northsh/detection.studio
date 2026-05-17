@@ -109,7 +109,7 @@ function handleKeydown(e) {
                 size="lg"
             >
                 <div
-                    class="flex aspect-square size-8 items-center justify-center rounded-lg bg-secondary text-sidebar-primary-foreground border-2 border-primary"
+                    class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary/10 text-primary border-2 border-primary"
                 >
                     <component
                         :is="supportedSiems.find((s) => s.id === workStore.currentWorkspace.sigmaStore().selected_siem)?.icon"
