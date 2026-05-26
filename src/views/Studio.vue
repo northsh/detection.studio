@@ -65,9 +65,11 @@ const shareStore = useWorkspaceSharingStore();
 
 const hasData = computed(() => !!workspaceStore.currentWorkspace?.dataStore()?.current_data_frame);
 
-// File dialog for the upload-sample-data button (shown when no data is loaded)
+// File dialog for the upload-sample-data button (shown when no data is loaded).
+// Accepts JSON / NDJSON / JSONL and CSV — the WASM evaluator auto-detects the
+// format from the file contents, so we just pass the raw text through.
 const { open: openDataUpload, onChange: onDataFileChange } = useFileDialog({
-    accept: 'application/json,.ndjson,.jsonl',
+    accept: 'application/json,.ndjson,.jsonl,text/csv,.csv',
     directory: false,
 });
 

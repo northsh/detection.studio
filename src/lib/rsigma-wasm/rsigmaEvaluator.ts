@@ -134,10 +134,12 @@ export class RsigmaEvaluator {
   }
 
   /**
-   * Evaluate a Sigma rule (YAML) against JSON events.
+   * Evaluate a Sigma rule (YAML) against a set of events.
    *
    * @param ruleYaml       One or more Sigma rules as YAML (multi-doc supported).
-   * @param eventsJson     JSON string — a single object, an array, or NDJSON.
+   * @param eventsJson     Events text. The WASM side auto-detects the format:
+   *                       a single JSON object, a JSON array, NDJSON / JSONL,
+   *                       or CSV (header row required).
    * @param pipelineYamls  Optional array of pipeline YAML strings for field mapping.
    * @param filterYamls    Optional array of Sigma filter rule YAML strings.
    */

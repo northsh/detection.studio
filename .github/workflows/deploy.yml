@@ -12,6 +12,54 @@ permissions:
     contents: read
 
 jobs:
+    rsigma-wasm:
+        name: rsigma-wasm (Rust + JS integration)
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Set up Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Cache cargo registry & build artifacts
+              uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: rsigma-wasm
+
+            - name: Install dependencies
+              run: bun install
+
+            - name: Run rsigma-wasm Rust unit tests
+              run: bun run test:wasm
+
+            - name: Install wasm-pack
+              uses: jetli/wasm-pack-action@v0.4.0
+              with:
+                  version: "v0.13.1"
+
+            - name: Rebuild WASM
+              run: bun run build:wasm
+
+            # Guard against shipping a `.wasm` that drifts from `lib.rs`. If
+            # the rebuild produced anything different from what's committed,
+            # the contributor forgot to run `bun run build:wasm` — fail loudly
+            # with the diff so they can regenerate locally.
+            - name: Check committed pkg/ matches the rebuilt artifact
+              run: |
+                  if ! git diff --exit-code --stat -- src/lib/rsigma-wasm/pkg/; then
+                      echo ""
+                      echo "::error::src/lib/rsigma-wasm/pkg/ is out of sync with rsigma-wasm/src. Run 'bun run build:wasm' and commit the result."
+                      exit 1
+                  fi
+
+            - name: Run Vitest unit tests against the real WASM
+              run: bun run test:unit
+
     test:
         runs-on: ubuntu-latest
         strategy:
@@ -60,7 +108,7 @@ jobs:
 
     build-and-deploy:
         runs-on: ubuntu-latest
-        needs: test
+        needs: [test, rsigma-wasm]
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
         permissions:
