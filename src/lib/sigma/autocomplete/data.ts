@@ -4,9 +4,6 @@ import type { AttributeConfig } from "./types.ts";
 
 // Define Sigma modifiers
 export const sigmaModifiers = [
-  "contains",
-  "endswith",
-  "startswith",
   "all",
   "base64",
   "base64offset",
@@ -15,17 +12,18 @@ export const sigmaModifiers = [
   "endswith",
   "eq",
   "exists",
+  "expand",
   "gt",
   "gte",
   "lt",
   "lte",
-  "expand",
   "re",
-  "windash",
-  "utf16le",
-  "utf16be",
+  "startswith",
   "utf16",
+  "utf16be",
+  "utf16le",
   "wide",
+  "windash",
 ];
 
 // Level values
@@ -104,7 +102,7 @@ export const conditionPatterns = [
   "all of them",
 ];
 
-// Define top-level Sigma field structure
+// Define top-level Sigma field structure (standard rules)
 export const sigmaFields: AttributeConfig = {
   title: null,
   id: null,
@@ -125,7 +123,163 @@ export const sigmaFields: AttributeConfig = {
   level: levelValues,
   tags: null,
   scope: null,
+  // Meta rule sections (correlation / filter rules use these instead of detection)
+  correlation: null,
+  filter: null,
 };
+
+// ── Correlation rule data ──
+
+// Correlation type values
+export const correlationTypeValues = [
+  "event_count",
+  "value_count",
+  "temporal",
+  "ordered_temporal",
+];
+
+// Direct children of `correlation:`
+export const correlationFields: AttributeConfig = {
+  type: correlationTypeValues,
+  rules: null,
+  "group-by": null,
+  timespan: null,
+  condition: null,
+  aliases: null,
+  generate: ["true", "false"],
+};
+
+// Correlation condition operators (children of `condition:` inside correlation)
+export const correlationConditionOperators = [
+  "gte",
+  "gt",
+  "lte",
+  "lt",
+  "eq",
+];
+
+// Common timespan patterns
+export const timespanValues = [
+  "1m",
+  "5m",
+  "10m",
+  "15m",
+  "30m",
+  "1h",
+  "6h",
+  "12h",
+  "24h",
+  "1d",
+  "7d",
+];
+
+// ── Sigma Filter data ──
+
+// Direct children of `filter:`
+export const filterFields: AttributeConfig = {
+  rules: null,
+  selection: null,
+  condition: null,
+};
+
+// ── Processing Pipeline data ──
+
+// Top-level pipeline fields
+export const pipelineFields: AttributeConfig = {
+  name: null,
+  priority: null,
+  transformations: null,
+  vars: null,
+  finalizers: null,
+};
+
+// Transformation types
+export const transformationTypes = [
+  "field_name_mapping",
+  "field_name_prefix_mapping",
+  "field_name_prefix",
+  "field_name_suffix",
+  "drop_detection_item",
+  "add_condition",
+  "change_logsource",
+  "replace_string",
+  "set_state",
+  "value_placeholders",
+  "query_expression_placeholders",
+  "wildcard_placeholders",
+  "rule_failure",
+  "detection_item_failure",
+  "detection_item_condition",
+];
+
+// Transformation fields (common keys inside a transformation item)
+export const transformationFields: AttributeConfig = {
+  id: null,
+  type: transformationTypes,
+  // field_name_mapping
+  mapping: null,
+  // field_name_prefix / suffix
+  prefix: null,
+  suffix: null,
+  // add_condition / change_logsource
+  conditions: null,
+  category: null,
+  product: null,
+  service: null,
+  // replace_string
+  regex: null,
+  replacement: null,
+  // set_state
+  key: null,
+  val: null,
+  // value / query_expression placeholders
+  include: null,
+  expression: null,
+  // failure messages
+  message: null,
+  // condition blocks
+  rule_conditions: null,
+  rule_cond_expr: null,
+  detection_item_conditions: null,
+  field_name_conditions: null,
+  field_name_cond_not: ["true", "false"],
+  template: ["true", "false"],
+};
+
+// Rule condition types
+export const ruleConditionTypes = [
+  "logsource",
+  "contains_detection_item",
+  "processing_item_applied",
+  "processing_state",
+  "is_sigma_rule",
+  "is_sigma_correlation_rule",
+  "rule_attribute",
+  "tag",
+];
+
+// Detection item condition types
+export const detectionItemConditionTypes = [
+  "match_string",
+  "is_null",
+  "processing_item_applied",
+  "processing_state",
+];
+
+// Field name condition types
+export const fieldNameConditionTypes = [
+  "include_fields",
+  "exclude_fields",
+  "processing_item_applied",
+  "processing_state",
+];
+
+// Finalizer types
+export const finalizerTypes = [
+  "concat",
+  "json",
+  "template",
+];
 
 // Define nested Sigma field structures
 export const logsourceFields: AttributeConfig = {

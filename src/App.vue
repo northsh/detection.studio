@@ -272,7 +272,7 @@ function openChangelog() {
     </Sidebar>
     <SidebarInset class="dark:bg-muted/30 flex-1 flex flex-col overflow-hidden">
       <router-view class="flex-1 w-full overflow-hidden"></router-view>
-      <Toaster />
+      <Toaster  :position="'top-right'" />
     </SidebarInset>
   </SidebarProvider>
 

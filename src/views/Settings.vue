@@ -1,11 +1,10 @@
 <script lang="ts" setup>
 import {ref, watch} from 'vue';
-import {toast} from 'vue-sonner';
+import {onBeforeRouteLeave} from 'vue-router';
 import {useAppColorMode} from '@/composables/useAppColorMode';
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle} from '@/components/ui/card';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
-import {Button} from '@/components/ui/button';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
 import {Separator} from '@/components/ui/separator';
 import {SidebarTrigger} from '@/components/ui/sidebar';
@@ -38,22 +37,37 @@ const themeOptions: {value: Theme; label: string}[] = [
     {value: 'dark', label: 'Dark'},
 ];
 
-// Apply theme immediately when it changes
-watch(theme, (newTheme) => {
-    colorMode.value = newTheme === 'system' ? 'auto' : newTheme;
+// Debounced save for text inputs
+let authorDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushAuthor() {
+    if (authorDebounceTimer !== null) {
+        clearTimeout(authorDebounceTimer);
+        authorDebounceTimer = null;
+        settingsStore.setDefaultAuthor(defaultAuthor.value);
+    }
+}
+
+watch(defaultAuthor, (val) => {
+    if (authorDebounceTimer !== null) clearTimeout(authorDebounceTimer);
+    authorDebounceTimer = setTimeout(() => {
+        authorDebounceTimer = null;
+        settingsStore.setDefaultAuthor(val);
+    }, 600);
 });
 
-// Save changes
-function saveSettings() {
-    settingsStore.setDefaultAuthor(defaultAuthor.value);
-    settingsStore.setDefaultSIEM(defaultSIEM.value);
-    settingsStore.setDefaultTemplate(defaultTemplate.value);
-    settingsStore.setTheme(theme.value);
-    colorMode.value = theme.value === 'system' ? 'auto' : theme.value;
-    toast.success('Settings saved', {
-        description: 'Your preferences have been updated.',
-    });
-}
+// Immediate save for select inputs
+watch(defaultSIEM, (val) => settingsStore.setDefaultSIEM(val));
+watch(defaultTemplate, (val) => settingsStore.setDefaultTemplate(val));
+watch(theme, (val) => {
+    settingsStore.setTheme(val);
+    colorMode.value = val === 'system' ? 'auto' : val;
+});
+
+// Flush pending debounce before navigating away
+onBeforeRouteLeave(() => {
+    flushAuthor();
+});
 </script>
 
 <template>
@@ -128,9 +142,6 @@ function saveSettings() {
             </div>
           </div>
         </CardContent>
-        <CardFooter class="flex flex-col items-end">
-          <Button @click="saveSettings">Save Changes</Button>
-        </CardFooter>
       </Card>
 
       <Card>
@@ -156,9 +167,6 @@ function saveSettings() {
             </div>
           </div>
         </CardContent>
-        <CardFooter class="flex flex-col items-end">
-          <Button @click="saveSettings">Save Changes</Button>
-        </CardFooter>
       </Card>
       </div>
     </div>

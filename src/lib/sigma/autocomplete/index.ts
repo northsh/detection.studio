@@ -7,15 +7,27 @@ import { optionsFromKeys } from "./utils.ts";
 import {
   categoryValues,
   conditionPatterns,
+  correlationConditionOperators,
+  correlationFields,
+  correlationTypeValues,
   detectionFields,
+  detectionItemConditionTypes,
+  fieldNameConditionTypes,
+  filterFields,
+  finalizerTypes,
   levelValues,
   logsourceFields,
   mitreTactics,
+  pipelineFields,
   productValues,
+  ruleConditionTypes,
   serviceValues,
   sigmaFields,
   sigmaModifiers,
   statusValues,
+  timespanValues,
+  transformationFields,
+  transformationTypes,
   windowsEventIds,
 } from "./data.ts";
 import type { PrismEditor } from "prism-code-editor";
@@ -116,18 +128,31 @@ function getSelectionNames(fullText: string): string[] {
 interface SigmaCompletionContext {
   inLogsource: boolean;
   inDetection: boolean;
+  inCorrelation: boolean;
+  inFilter: boolean;
+  inTransformations: boolean;
+  inFinalizers: boolean;
   fieldModifier: string | null;
   selectionNames: string[];
+  /** True when doc appears to be a pipeline file (has `transformations:` at top level) */
+  isPipeline: boolean;
 }
 
 // Extract context for Sigma completions
 const sigmaContext = (context: any, editor: PrismEditor): SigmaCompletionContext => {
   const { before } = context;
+  const fullText = editor.value;
+  const isPipeline = /^transformations\s*:/m.test(fullText);
   return {
     inLogsource: isInSection(before, "logsource"),
     inDetection: isInSection(before, "detection"),
+    inCorrelation: isInSection(before, "correlation"),
+    inFilter: isInSection(before, "filter"),
+    inTransformations: isInSection(before, "transformations"),
+    inFinalizers: isInSection(before, "finalizers"),
     fieldModifier: (before.match(fieldModifierPattern) || [])[1] || null,
-    selectionNames: getSelectionNames(editor.value),
+    selectionNames: getSelectionNames(fullText),
+    isPipeline,
   };
 };
 
@@ -154,13 +179,13 @@ function getValueAfterColon(lineBefore: string, pos: number): [string, number] |
 
 // Define completion sources
 const sources: CompletionSource<SigmaCompletionContext>[] = [
-  // Top-level field completions
+  // Top-level field completions (Sigma rules / meta rules)
   (context, _) => {
-    const { before, lineBefore, explicit, inLogsource, inDetection } = context;
+    const { before, lineBefore, explicit, inLogsource, inDetection, inCorrelation, inFilter, inTransformations, inFinalizers, isPipeline } = context;
     const indent = getIndentation(before);
 
-    // Don't offer top-level fields if we're inside a section
-    if (inLogsource || inDetection) return null;
+    // Don't offer top-level fields if we're inside any section
+    if (inLogsource || inDetection || inCorrelation || inFilter || inTransformations || inFinalizers) return null;
 
     // Check if the line looks like a field name being typed (no colon yet on this line)
     if (lineBefore.includes(":")) return null;
@@ -173,9 +198,12 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
     // Only trigger if explicitly requested or at least 1 char typed
     if (!explicit && word.length === 0) return null;
 
+    // Choose field set based on document type
+    const fields = isPipeline ? pipelineFields : sigmaFields;
+
     return {
       from,
-      options: optionsFromKeys(sigmaFields, "property"),
+      options: optionsFromKeys(fields, "property"),
     };
   },
 
@@ -440,6 +468,294 @@ const sources: CompletionSource<SigmaCompletionContext>[] = [
         label: id,
         icon: "constant",
       })),
+    };
+  },
+
+  // ── Correlation section completions ──
+
+  // Correlation field names (direct children of `correlation:`)
+  (context, _) => {
+    const { lineBefore, inCorrelation, explicit } = context;
+    if (!inCorrelation) return null;
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: optionsFromKeys(correlationFields, "property"),
+    };
+  },
+
+  // Correlation type value completions
+  (context, _) => {
+    const { lineBefore, inCorrelation, explicit } = context;
+    if (!inCorrelation) return null;
+    if (!lineBefore.match(/type\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: correlationTypeValues.map((v) => ({ label: v, icon: "enum" })),
+    };
+  },
+
+  // Correlation timespan value completions
+  (context, _) => {
+    const { lineBefore, inCorrelation, explicit } = context;
+    if (!inCorrelation) return null;
+    if (!lineBefore.match(/timespan\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: timespanValues.map((v) => ({ label: v, icon: "constant" })),
+    };
+  },
+
+  // Correlation generate value completions
+  (context, _) => {
+    const { lineBefore, inCorrelation, explicit } = context;
+    if (!inCorrelation) return null;
+    if (!lineBefore.match(/generate\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: [
+        { label: "true", icon: "constant" },
+        { label: "false", icon: "constant" },
+      ],
+    };
+  },
+
+  // Correlation condition operator completions (gte, gt, lte, lt, eq)
+  (context, _) => {
+    const { before, lineBefore, inCorrelation, explicit } = context;
+    if (!inCorrelation) return null;
+
+    // Must be inside the correlation > condition sub-section
+    if (!isInSection(before, "condition")) return null;
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    const options: Completion[] = correlationConditionOperators.map((op) => ({
+      label: op,
+      icon: "keyword",
+    }));
+    // Also offer "field" for value_count conditions
+    options.push({ label: "field", icon: "property" });
+
+    return { from, options };
+  },
+
+  // ── Filter section completions ──
+
+  // Filter field names (direct children of `filter:`)
+  (context, _) => {
+    const { lineBefore, inFilter, explicit } = context;
+    if (!inFilter) return null;
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: optionsFromKeys(filterFields, "property"),
+    };
+  },
+
+  // Filter condition value completions (not selection, selection, etc.)
+  (context, _) => {
+    const { lineBefore, inFilter, explicit } = context;
+    if (!inFilter) return null;
+    if (!lineBefore.match(/condition\s*:/)) return null;
+
+    const valueInfo = lineBefore.match(/condition\s*:\s*(.*)$/);
+    if (!valueInfo) return null;
+
+    const typed = valueInfo[1];
+    const lastWordMatch = typed.match(/([a-zA-Z0-9_*]*)$/);
+    const lastWord = lastWordMatch ? lastWordMatch[1] : "";
+    const from = context.pos - lastWord.length;
+
+    if (!explicit && lastWord.length === 0) return null;
+
+    const options: Completion[] = [
+      { label: "not", icon: "keyword" },
+      { label: "selection", icon: "variable" },
+      { label: "and", icon: "keyword" },
+      { label: "or", icon: "keyword" },
+    ];
+
+    return { from, options };
+  },
+
+  // Filter rules value completions
+  (context, _) => {
+    const { lineBefore, inFilter, explicit } = context;
+    if (!inFilter) return null;
+    if (!lineBefore.match(/rules\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: [{ label: "any", icon: "keyword" }],
+    };
+  },
+
+  // ── Pipeline section completions ──
+
+  // Transformation field completions (inside transformations list items)
+  (context, _) => {
+    const { lineBefore, inTransformations, explicit } = context;
+    if (!inTransformations) return null;
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    return {
+      from,
+      options: optionsFromKeys(transformationFields, "property"),
+    };
+  },
+
+  // Transformation type value completions (only at transformation level, not inside condition sub-sections)
+  (context, _) => {
+    const { before, lineBefore, inTransformations, explicit } = context;
+    if (!inTransformations) return null;
+    if (!lineBefore.match(/type\s*:/)) return null;
+
+    // Don't offer transformation types if we're inside a condition sub-section
+    if (isInSection(before, "rule_conditions")) return null;
+    if (isInSection(before, "detection_item_conditions")) return null;
+    if (isInSection(before, "field_name_conditions")) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: transformationTypes.map((v) => ({ label: v, icon: "enum" })),
+    };
+  },
+
+  // Rule condition type completions (inside rule_conditions)
+  (context, _) => {
+    const { before, lineBefore, inTransformations, explicit } = context;
+    if (!inTransformations) return null;
+
+    // Must be on a line with "type:" inside a rule_conditions context
+    if (!lineBefore.match(/type\s*:/)) return null;
+    if (!isInSection(before, "rule_conditions")) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: ruleConditionTypes.map((v) => ({ label: v, icon: "enum" })),
+    };
+  },
+
+  // Detection item condition type completions
+  (context, _) => {
+    const { before, lineBefore, inTransformations, explicit } = context;
+    if (!inTransformations) return null;
+
+    if (!lineBefore.match(/type\s*:/)) return null;
+    if (!isInSection(before, "detection_item_conditions")) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: detectionItemConditionTypes.map((v) => ({ label: v, icon: "enum" })),
+    };
+  },
+
+  // Field name condition type completions
+  (context, _) => {
+    const { before, lineBefore, inTransformations, explicit } = context;
+    if (!inTransformations) return null;
+
+    if (!lineBefore.match(/type\s*:/)) return null;
+    if (!isInSection(before, "field_name_conditions")) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: fieldNameConditionTypes.map((v) => ({ label: v, icon: "enum" })),
+    };
+  },
+
+  // Finalizer field completions (inside finalizers list)
+  (context, _) => {
+    const { lineBefore, inFinalizers, explicit } = context;
+    if (!inFinalizers) return null;
+    if (lineBefore.includes(":")) return null;
+
+    const [word, from] = getCurrentWord(lineBefore, context.pos);
+    if (!explicit && word.length === 0) return null;
+
+    const options: Completion[] = [
+      { label: "type", icon: "property" },
+      { label: "separator", icon: "property" },
+      { label: "prefix", icon: "property" },
+      { label: "suffix", icon: "property" },
+      { label: "indent", icon: "property" },
+      { label: "template", icon: "property" },
+    ];
+
+    return { from, options };
+  },
+
+  // Finalizer type value completions
+  (context, _) => {
+    const { lineBefore, inFinalizers, explicit } = context;
+    if (!inFinalizers) return null;
+    if (!lineBefore.match(/type\s*:/)) return null;
+
+    const valueInfo = getValueAfterColon(lineBefore, context.pos);
+    if (!valueInfo) return null;
+    const [value, from] = valueInfo;
+    if (!explicit && value.length === 0) return null;
+
+    return {
+      from,
+      options: finalizerTypes.map((v) => ({ label: v, icon: "enum" })),
     };
   },
 ];
