@@ -18,7 +18,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
@@ -61,7 +61,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
@@ -84,7 +84,7 @@ jobs:
               run: echo "PLAYWRIGHT_VERSION=$(bun pm ls 2>/dev/null | grep '@playwright/test' | sed 's/.*@//')" >> $GITHUB_ENV
 
             - name: Cache playwright binaries
-              uses: actions/cache@v3
+              uses: actions/cache@v4
               id: playwright-cache
               with:
                   path: |
@@ -124,7 +124,7 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
