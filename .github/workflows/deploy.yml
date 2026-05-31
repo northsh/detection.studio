@@ -42,20 +42,12 @@ jobs:
               with:
                   version: "v0.14.0"
 
-            - name: Rebuild WASM
+            # The pkg/ output is a build artifact (not committed) because the
+            # optimized .wasm produced by wasm-opt/LTO is not byte-reproducible
+            # across host platforms. Build it fresh from source here so the
+            # tests below run against bindings generated from the current source.
+            - name: Build WASM
               run: bun run build:wasm
-
-            # Guard against shipping a `.wasm` that drifts from `lib.rs`. If
-            # the rebuild produced anything different from what's committed,
-            # the contributor forgot to run `bun run build:wasm` — fail loudly
-            # with the diff so they can regenerate locally.
-            - name: Check committed pkg/ matches the rebuilt artifact
-              run: |
-                  if ! git diff --exit-code --stat -- src/lib/rsigma-wasm/pkg/; then
-                      echo ""
-                      echo "::error::src/lib/rsigma-wasm/pkg/ is out of sync with rsigma-wasm/src. Run 'bun run build:wasm' and commit the result."
-                      exit 1
-                  fi
 
             - name: Run Vitest unit tests against the real WASM
               run: bun run test:unit
@@ -73,6 +65,19 @@ jobs:
 
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
+
+            - name: Set up Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Cache cargo registry & build artifacts
+              uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: rsigma-wasm
+
+            - name: Install wasm-pack
+              uses: jetli/wasm-pack-action@v0.4.0
+              with:
+                  version: "v0.14.0"
 
             - name: Get installed Playwright version
               id: playwright-version
@@ -103,6 +108,9 @@ jobs:
             - name: Generate Sigma rules index
               run: bun run scripts/generate-sigma-index.ts
 
+            - name: Build WASM
+              run: bun run build:wasm
+
             - name: Run Playwright tests for ${{ matrix.browser }}
               run: bun run test --project=${{ matrix.browser }}
 
@@ -121,8 +129,24 @@ jobs:
             - name: Set up Bun
               uses: oven-sh/setup-bun@v2
 
+            - name: Set up Rust toolchain
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Cache cargo registry & build artifacts
+              uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: rsigma-wasm
+
+            - name: Install wasm-pack
+              uses: jetli/wasm-pack-action@v0.4.0
+              with:
+                  version: "v0.14.0"
+
             - name: Install dependencies
               run: bun install
+
+            - name: Build WASM
+              run: bun run build:wasm
 
             - name: Build project
               run: bun -b run build

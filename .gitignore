@@ -30,6 +30,8 @@ dist-ssr
 
 # Rust / rsigma-wasm build artifacts
 rsigma-wasm/target/
+# Generated wasm-pack output; built in CI and locally via `bun run build:wasm`
+src/lib/rsigma-wasm/pkg/
 
 # Sigma Repo
 .sigma-repo/
