@@ -133,7 +133,7 @@ const selectedSiem = computed(() => {
                     :class="[siem.colorClass]"
                     class="h-4 w-4"
                 />
-              <span class="flex-1">{{ siem.name }}</span>
+              <span class="flex-1 flex items-center">{{ siem.name }} <Badge variant="outline" class="ml-1 text-[5pt] bg-cyan-500/10 text-cyan-500 border-cyan-600/40 px-1 py-0" v-if="siem.correlation">Correlation</Badge></span>
               <Check
                 v-if="siem.id === sigma?.selected_siem"
                 :size="16"

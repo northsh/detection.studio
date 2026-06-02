@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun run build:wasm && vite",
     "build": "vite-ssg build",
     "preview": "vite preview",
     "test": "playwright test",
