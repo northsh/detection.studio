@@ -36,7 +36,7 @@
     "flexsearch": "^0.8.212",
     "fs-extra": "^11.3.5",
     "fuse.js": "^7.3.0",
-    "isomorphic-git": "^1.38.3",
+    "isomorphic-git": "^1.38.4",
     "js-yaml": "^4.1.1",
     "jszip": "^3.10.1",
     "lucide-vue-next": "^1.0.0",
