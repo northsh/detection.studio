@@ -68,7 +68,7 @@
     "@types/bun": "^1.3.14",
     "@types/flexsearch": "^0.7.42",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^25.9.1",
+    "@types/node": "^25.9.2",
     "@typescript/native-preview": "^7.0.0-dev.20260527.2",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/tsconfig": "^0.9.1",
