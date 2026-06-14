@@ -1,4 +1,4 @@
-import { loadPyodide, type PyodideInterface } from "pyodide";
+import { loadPyodide, version as pyodideVersion, type PyodideInterface } from "pyodide";
 import { SIGMA_TARGETS } from "@/types/SIEMs";
 import registerPromiseWorker from "promise-worker/register";
 import type { ConversionParams, WorkerStatus } from "./workerApi";
@@ -38,19 +38,14 @@ const pyodideReadyPromise = (async () => {
     updateStatus({ ready: false, pyodideReady: false });
 
     pyodide = await loadPyodide({
-      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.4/full/",
+      indexURL: `https://cdn.jsdelivr.net/pyodide/v${pyodideVersion}/full/`,
       convertNullToNone: true,
     });
 
-    await pyodide?.loadPackage("micropip");
+    // PyYAML 6.0.3 is bundled with Pyodide 314 — load it from the
+    // built-in package set so we get the correct platform wheel.
+    await pyodide?.loadPackage(["micropip", "pyyaml"]);
     const micropip = pyodide?.pyimport("micropip");
-
-    // Install custom PyYAML 6.0.3 wheel for PySigma 2.x compatibility
-    const wheelUrl = new URL(
-      "/wheels/pyyaml-6.0.3-cp313-cp313-pyodide_2025_0_wasm32.whl",
-      self.location.origin,
-    ).href;
-    await micropip.install(wheelUrl);
 
     // Install PySigma (now compatible with PyYAML 6.0.3+)
     await micropip.install("pysigma==1.3.2");

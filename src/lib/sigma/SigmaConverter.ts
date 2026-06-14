@@ -38,13 +38,18 @@ export class SigmaConverter {
    * Handle status updates from the worker
    */
   private handleStatusUpdate(status: WorkerStatus): void {
-    this.currentStatus = status;
+    this.currentStatus = {
+      ready: status?.ready ?? false,
+      pyodideReady: status?.pyodideReady ?? false,
+      installedBackends: status?.installedBackends ?? [],
+      error: status?.error,
+    };
 
-    // Notify all status listeners
-    this.statusListeners.forEach((listener) => listener(status));
+    // Notify all status listeners with the sanitized status
+    this.statusListeners.forEach((listener) => listener(this.currentStatus));
 
     // Notify readiness listeners if readiness state has changed
-    this.readinessListeners.forEach((listener) => listener(status.ready));
+    this.readinessListeners.forEach((listener) => listener(this.currentStatus.ready));
   }
 
   /**
