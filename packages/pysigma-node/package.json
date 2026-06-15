@@ -54,6 +54,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "PYSIGMA_INTEGRATION=1 vitest run",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {

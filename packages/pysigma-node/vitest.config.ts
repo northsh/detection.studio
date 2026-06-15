@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { Plugin } from "vite";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 /**
  * Loads `.py` imports as a default-exported string, matching the esbuild
@@ -20,10 +20,25 @@ function pythonText(): Plugin {
     };
 }
 
+/**
+ * Set `PYSIGMA_INTEGRATION=1` to run the slow, network-dependent integration
+ * tests (`*.integration.test.ts`) that boot a real Pyodide instance. They are
+ * excluded from the default fast unit run.
+ */
+const RUN_INTEGRATION = process.env.PYSIGMA_INTEGRATION === "1";
+
 export default defineConfig({
     plugins: [pythonText()],
     test: {
         environment: "node",
-        include: ["src/**/*.test.ts"],
+        include: RUN_INTEGRATION
+            ? ["src/**/*.integration.test.ts"]
+            : ["src/**/*.test.ts"],
+        exclude: RUN_INTEGRATION
+            ? configDefaults.exclude
+            : [...configDefaults.exclude, "src/**/*.integration.test.ts"],
+        // Pyodide bootstrap + wheel installs are slow; allow generous timeouts.
+        testTimeout: RUN_INTEGRATION ? 180_000 : 5_000,
+        hookTimeout: RUN_INTEGRATION ? 180_000 : 10_000,
     },
 });
