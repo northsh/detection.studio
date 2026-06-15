@@ -1,6 +1,6 @@
 {
   "name": "@northsh/pysigma-node",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run the Python pySigma library in Node.js and the browser via Pyodide (WebAssembly). Convert Sigma detection rules to SIEM queries with zero native dependencies.",
   "license": "MIT",
   "author": "north.sh",
