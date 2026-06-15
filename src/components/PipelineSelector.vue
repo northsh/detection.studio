@@ -3,7 +3,6 @@ import {computed, watch, ref, onMounted} from "vue";
 
 const props = withDefaults(defineProps<{ fluid?: boolean }>(), { fluid: false });
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {getAvailablePipelines} from "@/lib/sigma/worker/workerApi";
 import {Button} from "@/components/ui/button";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {Checkbox} from "@/components/ui/checkbox";
@@ -23,8 +22,9 @@ const compatiblePipelines = ref<string[]>([]);
 const isDropdownOpen = ref(false);
 
 async function loadPipelines() {
-    const result = await getAvailablePipelines(
-        sigma.value?.selected_siem || ""
+    if (!sigma.value) return;
+    const result = await sigma.value.getAvailablePipelines(
+        sigma.value.selected_siem || ""
     );
     if (result.success && result.pipelines) {
         compatiblePipelines.value = result.pipelines;

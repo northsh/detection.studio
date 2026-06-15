@@ -1,0 +1,55 @@
+name: Publish @northsh/pysigma-node
+
+on:
+    push:
+        tags:
+            - "pysigma-node-v*"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    id-token: write # required for npm trusted publishing (OIDC) + provenance
+
+jobs:
+    publish:
+        name: Build, test & publish to npm
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+
+            # setup-node configures the npmjs registry in ~/.npmrc. No auth
+            # token is written — authentication happens via OIDC at publish time.
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  registry-url: "https://registry.npmjs.org"
+
+            # Trusted publishing (OIDC) requires npm >= 11.5.1, which is newer
+            # than the npm bundled with Node 22 / Bun.
+            - name: Upgrade npm for trusted publishing
+              run: npm install -g npm@latest
+
+            - name: Install dependencies
+              run: bun install
+
+            - name: Build package
+              run: bun run build
+              working-directory: packages/pysigma-node
+
+            - name: Run package tests
+              run: bun run test
+              working-directory: packages/pysigma-node
+
+            # No NODE_AUTH_TOKEN: npm authenticates to the registry via the
+            # workflow's OIDC identity (configure a trusted publisher for this
+            # package + workflow on npmjs.com). Provenance is emitted
+            # automatically when publishing via OIDC.
+            - name: Publish to npm (OIDC trusted publishing)
+              run: npm publish --access public
+              working-directory: packages/pysigma-node

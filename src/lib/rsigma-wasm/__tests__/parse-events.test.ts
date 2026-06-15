@@ -230,5 +230,152 @@ level: low
             expect(r.matches[0]?.event.name).toBe("a,b");
             expect(r.matches[0]?.event.description).toBe('He said "hi"');
         });
+
+        it("matches CSV with realistic Sysmon process creation fields", () => {
+            const csv = [
+                "UtcTime,ProcessId,Image,FileVersion,Description,Product,Company,CommandLine,CurrentDirectory,User,LogonId,ParentImage,ParentCommandLine",
+                '2026-05-31 10:15:23.456,4821,C:\\Windows\\System32\\whoami.exe,10.0.19041.1,Whoami,Microsoftr Windowsr Operating System,Microsoft Corporation,whoami /all,C:\\Users\\admin\\,WORKSTATION\\admin,0x3e7,C:\\Windows\\System32\\cmd.exe,cmd.exe /c whoami /all',
+                '2026-05-31 10:15:24.789,5102,C:\\Windows\\System32\\cmd.exe,10.0.19041.1,Windows Command Processor,Microsoftr Windowsr Operating System,Microsoft Corporation,cmd /c dir,C:\\Users\\admin\\,WORKSTATION\\admin,0x3e7,C:\\Windows\\explorer.exe,""',
+                '2026-05-31 10:15:25.012,5203,C:\\Windows\\System32\\powershell.exe,10.0.19041.1,Windows PowerShell,Microsoftr Windowsr Operating System,Microsoft Corporation,powershell -enc base64,C:\\Users\\admin\\,WORKSTATION\\admin,0x3e7,C:\\Windows\\System32\\cmd.exe,cmd.exe',
+            ].join("\n");
+            const r = run(WHOAMI_RULE, csv);
+            expect(r.error).toBeNull();
+            expect(r.stats.total_records).toBe(3);
+            expect(r.stats.total_matches).toBe(1);
+            expect(r.matches[0]?.event.Image).toBe("C:\\Windows\\System32\\whoami.exe");
+            expect(r.matches[0]?.event.ProcessId).toBe(4821);
+            expect(r.matches[0]?.event.User).toBe("WORKSTATION\\admin");
+        });
+
+        it("matches CSV with multiple Sigma rules and field analysis", () => {
+            const multiRule = `title: Suspicious PowerShell
+id: 44444444-4444-4444-4444-444444444444
+status: test
+logsource:
+    product: windows
+    category: process_creation
+detection:
+    selection:
+        Image|endswith: '\\powershell.exe'
+        CommandLine|contains: '-enc'
+    condition: selection
+level: high
+---
+title: Whoami execution
+id: 11111111-1111-1111-1111-111111111111
+status: test
+logsource:
+    product: windows
+    category: process_creation
+detection:
+    selection:
+        Image|endswith: 'whoami.exe'
+    condition: selection
+level: low
+`;
+            const csv = [
+                "Image,CommandLine,ParentImage",
+                "C:\\Windows\\System32\\whoami.exe,whoami /all,C:\\Windows\\System32\\cmd.exe",
+                "C:\\Windows\\System32\\powershell.exe,powershell -enc base64encoded,C:\\Windows\\System32\\cmd.exe",
+                "C:\\Windows\\System32\\notepad.exe,notepad readme.txt,C:\\Windows\\explorer.exe",
+            ].join("\n");
+            const r = run(multiRule, csv);
+            expect(r.error).toBeNull();
+            expect(r.stats.total_records).toBe(3);
+            expect(r.stats.total_matches).toBe(2);
+            expect(r.field_analysis.rule_fields).toContain("Image");
+            expect(r.field_analysis.rule_fields).toContain("CommandLine");
+            expect(r.field_analysis.missing_fields).toHaveLength(0);
+        });
+
+        it("reports missing fields when CSV lacks rule-referenced columns", () => {
+            const csv = [
+                "Image,User",
+                "C:\\Windows\\System32\\whoami.exe,admin",
+            ].join("\n");
+            const ruleWithExtra = `title: Needs CommandLine
+id: 55555555-5555-5555-5555-555555555555
+status: test
+logsource:
+    product: windows
+    category: process_creation
+detection:
+    selection:
+        Image|endswith: 'whoami.exe'
+        CommandLine|contains: 'whoami'
+        ParentImage|endswith: 'cmd.exe'
+    condition: selection
+level: low
+`;
+            const r = run(ruleWithExtra, csv);
+            expect(r.error).toBeNull();
+            expect(r.field_analysis.missing_fields).toContain("CommandLine");
+            expect(r.field_analysis.missing_fields).toContain("ParentImage");
+            expect(r.field_analysis.data_fields).toContain("Image");
+            expect(r.field_analysis.data_fields).toContain("User");
+        });
+
+        it("handles CSV rows with fewer fields than the header (flexible mode)", () => {
+            const csv = [
+                "EventID,Image,CommandLine,User",
+                "1,C:\\Windows\\System32\\whoami.exe,whoami,admin",
+                "2,C:\\Windows\\System32\\cmd.exe",
+            ].join("\n");
+            const r = run(WHOAMI_RULE, csv);
+            expect(r.error).toBeNull();
+            expect(r.stats.total_records).toBe(2);
+            expect(r.stats.total_matches).toBe(1);
+            expect(r.matches[0]?.event.User).toBe("admin");
+        });
+
+        it("handles CSV with many columns (wide export from SIEM)", () => {
+            const headers = Array.from({ length: 50 }, (_, i) => `field_${i}`);
+            headers[25] = "Image";
+            const row = headers.map((h) => (h === "Image" ? "C:\\Windows\\System32\\whoami.exe" : `value_${h}`));
+            const csv = [headers.join(","), row.join(",")].join("\n");
+            const r = run(WHOAMI_RULE, csv);
+            expect(r.error).toBeNull();
+            expect(r.stats.total_records).toBe(1);
+            expect(r.stats.total_matches).toBe(1);
+            expect(r.field_analysis.data_fields.length).toBe(50);
+        });
+    });
+
+    describe("EVTX binary rejection", () => {
+        it("returns an error when raw EVTX binary bytes are passed as text", () => {
+            // EVTX files start with the magic bytes "ElfFile\0" (0x45 0x6C 0x66 ...)
+            // Simulate what happens if someone bypasses the client-side EVTX check
+            // and raw binary gets sent to the WASM parser.
+            const fakeEvtxBytes = "ElfFile\u0000\u0001\u0002\u0003binary garbage data here";
+            const r = run(WHOAMI_RULE, fakeEvtxBytes);
+            // The parser should fail — this is not valid JSON or CSV
+            expect(r.error).toBeTruthy();
+            expect(r.stats.total_records).toBe(0);
+        });
+
+        it("returns an error for binary data that starts with non-text bytes", () => {
+            // Simulate binary data that doesn't match any supported format
+            const binaryData = "\u0000\u0001\u0002\u0003\u0004\u0005";
+            const r = run(WHOAMI_RULE, binaryData);
+            expect(r.error).toBeTruthy();
+            expect(r.stats.total_records).toBe(0);
+        });
+
+        it("accepts the EVTX error JSON payload as valid JSON events", () => {
+            // When the client-side handler creates the EVTX error payload,
+            // it's valid JSON that the WASM parser can process.
+            // Verify it parses without error (even though it won't match any rule).
+            const errorPayload = JSON.stringify([{
+                error: "EVTX binary files must be converted to JSON before uploading.",
+            }]);
+            const r = run(WHOAMI_RULE, errorPayload);
+            expect(r.error).toBeNull();
+            expect(r.stats.total_records).toBe(1);
+            expect(r.stats.total_matches).toBe(0);
+            // The error field is in the dataset fields but not in matches
+            // (since the WHOAMI rule looks for Image, not error)
+            expect(r.field_analysis.data_fields).toContain("error");
+            expect(r.field_analysis.missing_fields).toContain("Image");
+        });
     });
 });

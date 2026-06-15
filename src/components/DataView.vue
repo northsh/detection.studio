@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import {computed, onUnmounted, ref, watch} from "vue";
 import {useWorkspaceStore} from "@/stores/WorkspaceStore";
-import {AlertCircleIcon, AlertTriangleIcon, FlaskConicalIcon, LoaderIcon, SearchIcon, XIcon} from "lucide-vue-next";
+import {AlertCircleIcon, AlertTriangleIcon, FlaskConicalIcon, LoaderIcon, SearchIcon, UploadIcon, XIcon} from "lucide-vue-next";
+import {useFileDialog} from "@vueuse/core";
+import {handleDataFile} from "@/lib/dataFileHandler";
 import {Button} from "@/components/ui/button";
 
 import {Input} from "@/components/ui/input";
@@ -14,6 +16,17 @@ const activeTab = ref("summary");
 const rowsPerPage = ref(10);
 const currentPage = ref(0);
 const showErrorDetails = ref(false);
+
+const { open: openFileUpload, onChange: onFileChange } = useFileDialog({
+    accept: 'text/csv,.csv,application/x-evtx,.evtx,application/json,.ndjson,.jsonl',
+    directory: false,
+});
+
+onFileChange(async (files: FileList | null) => {
+    if (!files?.length) return;
+    const result = await handleDataFile(files[0]);
+    data.value?.setCurrentDataFrame(result.content);
+});
 
 // Access rsigma evaluation results from the sigma store
 const searchResults = computed(() => sigma.value?.search_results ?? null);
@@ -267,15 +280,26 @@ onUnmounted(() => {
           <div class="whitespace-pre-wrap text-destructive font-mono">{{ sigma.data_loading_error }}</div>
         </div>
 
-        <Button
-          class="h-6 text-[11px] gap-1"
-          size="sm"
-          variant="ghost"
-          @click="data.clearCurrentDataFrame()"
-        >
-          <XIcon class="h-3 w-3" />
-          Clear
-        </Button>
+        <div class="flex items-center gap-1">
+          <Button
+            class="h-6 text-[11px] gap-1"
+            size="sm"
+            variant="ghost"
+            @click="openFileUpload()"
+          >
+            <UploadIcon class="h-3 w-3" />
+            Upload
+          </Button>
+          <Button
+            class="h-6 text-[11px] gap-1"
+            size="sm"
+            variant="ghost"
+            @click="data.clearCurrentDataFrame()"
+          >
+            <XIcon class="h-3 w-3" />
+            Clear
+          </Button>
+        </div>
       </div>
 
       <!-- Tabs -->

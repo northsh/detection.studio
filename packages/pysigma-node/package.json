@@ -1,0 +1,72 @@
+{
+  "name": "@northsh/pysigma-node",
+  "version": "0.1.0",
+  "description": "Run the Python pySigma library in Node.js and the browser via Pyodide (WebAssembly). Convert Sigma detection rules to SIEM queries with zero native dependencies.",
+  "license": "MIT",
+  "author": "north.sh",
+  "homepage": "https://detection.studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/northsh/detection.studio.git",
+    "directory": "packages/pysigma-node"
+  },
+  "keywords": [
+    "sigma",
+    "pysigma",
+    "pyodide",
+    "wasm",
+    "webassembly",
+    "siem",
+    "detection",
+    "security",
+    "splunk",
+    "elasticsearch"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js",
+      "require": "./dist/core.cjs"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js",
+      "require": "./dist/worker.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "bun run build"
+  },
+  "peerDependencies": {
+    "pyodide": ">=0.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "pyodide": "314.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

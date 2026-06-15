@@ -4,7 +4,6 @@ import vue from "@vitejs/plugin-vue";
 import svgLoader from "vite-svg-loader";
 import path from "path";
 
-import viteStaticCopyPyodide from "./src/lib/plugins/viteStaticCopyPyodide.ts";
 import sigmaRepoPlugin from "./src/lib/plugins/sigmaRepoPlugin.ts";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -14,7 +13,6 @@ export default defineConfig({
     tailwindcss(),
     sigmaRepoPlugin(),
     svgLoader(),
-    viteStaticCopyPyodide(),
     !process.env.CI &&
     sentryVitePlugin({
       org: "northsh",
@@ -35,7 +33,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ["pyodide"],
-    include: ["flexsearch", "promise-worker", "promise-worker/register"],
+    include: ["flexsearch"],
   },
   assetsInclude: ["**/*.wasm"],
   worker: {

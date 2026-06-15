@@ -111,6 +111,12 @@ jobs:
             - name: Build WASM
               run: bun run build:wasm
 
+            # @northsh/pysigma-node is a workspace package whose dist/ is a
+            # gitignored build artifact. Build it so Vite can resolve the
+            # import from the app's source.
+            - name: Build pysigma-node
+              run: bun run build:lib
+
             - name: Run Playwright tests for ${{ matrix.browser }}
               run: bun run test --project=${{ matrix.browser }}
 
@@ -147,6 +153,9 @@ jobs:
 
             - name: Build WASM
               run: bun run build:wasm
+
+            - name: Build pysigma-node
+              run: bun run build:lib
 
             - name: Build project
               run: bun -b run build

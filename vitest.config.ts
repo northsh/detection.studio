@@ -15,7 +15,10 @@ export default defineConfig({
         environment: "node",
         // Globs for the suites we own and want green in CI. Add more as
         // existing fragile tests are stabilised.
-        include: ["src/lib/rsigma-wasm/__tests__/**/*.test.ts"],
+        include: [
+            "src/lib/rsigma-wasm/__tests__/**/*.test.ts",
+            "src/lib/__tests__/**/*.test.ts",
+        ],
         // Treat `.wasm` as a static asset — needed so `new URL('./foo.wasm',
         // import.meta.url)` resolves to a usable file:// URL under Vitest.
         server: {
