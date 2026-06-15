@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "bun run build:wasm && vite",
     "build:lib": "bun run --cwd packages/pysigma-node build",
     "prepare": "bun run build:lib",
     "build": "vite-ssg build",
