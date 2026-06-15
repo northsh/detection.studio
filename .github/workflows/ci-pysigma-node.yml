@@ -1,0 +1,45 @@
+name: CI @northsh/pysigma-node
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "packages/pysigma-node/**"
+            - ".github/workflows/ci-pysigma-node.yml"
+    pull_request:
+        paths:
+            - "packages/pysigma-node/**"
+            - ".github/workflows/ci-pysigma-node.yml"
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        name: Typecheck, build & test
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Install dependencies
+              run: bun install
+
+            - name: Typecheck
+              run: bun run typecheck
+              working-directory: packages/pysigma-node
+
+            - name: Build package
+              run: bun run build
+              working-directory: packages/pysigma-node
+
+            # Includes the Pyodide-backed integration tests, which boot a real
+            # Pyodide instance and install pySigma from PyPI at runtime.
+            - name: Run tests
+              run: bun run test
+              working-directory: packages/pysigma-node
