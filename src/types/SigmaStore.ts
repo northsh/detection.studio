@@ -18,6 +18,9 @@ export interface SigmaStore {
     pipelineYmls: string[],
     filterYml: string,
   ) => Promise<string | undefined>;
+  getAvailablePipelines: (
+    target: string,
+  ) => Promise<{ success: boolean; pipelines: string[]; error?: string }>;
   siem_query: Ref<string>;
   siem_conversion_error: Ref<string>;
   selected_siem: Ref<string>;

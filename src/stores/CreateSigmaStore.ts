@@ -1,5 +1,5 @@
 import { defineStore, type StoreDefinition } from "pinia";
-import { computed, ref, watch, onUnmounted } from "vue";
+import { computed, ref, shallowRef, watch, onUnmounted } from "vue";
 import { computedAsync } from "@vueuse/core";
 
 import type { FileItem } from "@/types/types.ts";
@@ -8,7 +8,8 @@ import type { RsigmaEvalResult } from "@/lib/rsigma-wasm/rsigmaEvaluator";
 import type { ValidationMetadata } from "@/stores/CreateDataStore";
 import { useWorkspaceStore } from "@/stores/WorkspaceStore";
 import { useSettingsStore } from "@/stores/SettingsStore";
-import { SigmaConverter } from "@/lib/sigma";
+import { SigmaConverter, type SigmaTarget } from "@northsh/pysigma-node";
+import { SIGMA_TARGETS } from "@/types/SIEMs";
 import { RsigmaEvaluator } from "@/lib/rsigma-wasm/rsigmaEvaluator";
 
 export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore> {
@@ -44,16 +45,29 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
       const selected_siem = ref(settingsStore.defaultSIEM || "splunk");
       const siem_conversion_error = ref("");
 
-      // Initialize the converter
-      const sigmaConverter = ref(new SigmaConverter());
+      // Initialize the converter (browser-only — guard against SSR/SSG).
+      // In the browser we offload Pyodide to a Web Worker to keep the main
+      // thread free. During SSG `Worker` is undefined, so we skip creation.
+      const sigmaConverter = shallowRef<SigmaConverter | null>(null);
+      if (typeof Worker !== "undefined") {
+        sigmaConverter.value = new SigmaConverter({
+          worker: new Worker(new URL("@northsh/pysigma-node/worker", import.meta.url), {
+            type: "module",
+          }),
+          // The app's SIGMA_TARGETS type marks `backend` optional, but every
+          // entry sets it; cast to the package's required-backend SigmaTarget.
+          targets: SIGMA_TARGETS as Map<string, SigmaTarget>,
+        });
+      }
 
       // Track readiness state
       const isReady = ref(false);
 
       // Set up readiness listener
-      const removeReadinessListener = sigmaConverter.value.addReadinessListener((ready) => {
-        isReady.value = ready;
-      });
+      const removeReadinessListener =
+        sigmaConverter.value?.addReadinessListener((ready) => {
+          isReady.value = ready;
+        }) ?? (() => {});
 
       // ── rsigma evaluation engine ──────────────────────────────────
       const rsigmaEvaluator = new RsigmaEvaluator();
@@ -430,7 +444,7 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
       onUnmounted(() => {
         removeReadinessListener();
         removeRsigmaReadinessListener();
-        sigmaConverter.value.dispose();
+        sigmaConverter.value?.dispose();
         rsigmaEvaluator.dispose();
         if (evalTimeout) clearTimeout(evalTimeout);
         if (validationTimeout) clearTimeout(validationTimeout);
@@ -485,6 +499,9 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         pipelineYmls: string[],
         filterYml: string,
       ): Promise<string | undefined> {
+        if (!sigmaConverter.value) {
+          return "";
+        }
         try {
           const result = await sigmaConverter.value.convert(
             rule,
@@ -508,8 +525,21 @@ export function createSigmaStore(id: string): StoreDefinition<string, SigmaStore
         }
       }
 
+      // Fetch the pipelines available for a given target via the converter.
+      // Exposed so UI components (e.g. PipelineSelector) can query pipelines
+      // through the shared converter instance instead of a standalone helper.
+      async function getAvailablePipelines(
+        target: string,
+      ): Promise<{ success: boolean; pipelines: string[]; error?: string }> {
+        if (!sigmaConverter.value) {
+          return { success: false, pipelines: [] };
+        }
+        return sigmaConverter.value.getAvailablePipelines(target);
+      }
+
       return {
         convert,
+        getAvailablePipelines,
         siem_query,
         siem_conversion_error,
         selected_siem,
