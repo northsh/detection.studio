@@ -8,6 +8,8 @@
   ],
   "scripts": {
     "dev": "vite",
+    "build:lib": "bun run --cwd packages/pysigma-node build",
+    "prepare": "bun run build:lib",
     "build": "vite-ssg build",
     "preview": "vite preview",
     "test": "playwright test",
