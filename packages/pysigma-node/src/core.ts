@@ -12,7 +12,7 @@ import type {
 } from "./types";
 
 /** Default pySigma version installed via micropip. */
-export const DEFAULT_PYSIGMA_VERSION = "1.3.2";
+export const DEFAULT_PYSIGMA_VERSION = "1.5.0";
 
 /** Default pipeline packages installed during bootstrap. */
 export const DEFAULT_PIPELINE_PACKAGES = [
@@ -110,10 +110,25 @@ export class PyodideSigmaEngine {
             await this.pyodide.loadPackage(["micropip", "pyyaml"]);
             const micropip = this.pyodide.pyimport("micropip");
 
-            await micropip.install(`pysigma==${this.pysigmaVersion}`);
+            // jq is an optional pySigma transformation dependency, but its
+            // native wheel cannot run in Pyodide. Install the supported core
+            // dependencies explicitly and skip jq's dependency resolution.
+            await micropip.install(
+                [
+                    "diskcache<6.0.0,>=5.6.3",
+                    "jinja2<4.0.0,>=3.1.6",
+                    "packaging<27.0,>=26.0",
+                    "pyparsing<4.0.0,>=3.2.5",
+                    "requests<3.0.0,>=2.32.5",
+                    "typing-extensions<5.0.0,>=4.16.0",
+                ],
+                false,
+            );
+            await micropip.uninstall("pysigma");
+            await micropip.install(`pysigma==${this.pysigmaVersion}`, false, false);
 
             if (this.pipelinePackages.length > 0) {
-                await micropip.install(this.pipelinePackages);
+                await micropip.install(this.pipelinePackages, false, false);
             }
 
             this.updateStatus({ pyodideReady: true });
@@ -153,7 +168,7 @@ export class PyodideSigmaEngine {
         try {
             this.updateStatus({ ready: false });
             const micropip = this.pyodide!.pyimport("micropip");
-            await micropip.install(targetInfo.backend);
+            await micropip.install(targetInfo.backend, false, false);
             this.installedBackends.add(target);
 
             // Re-run the module so plugin autodiscovery picks up the new backend.

@@ -68,7 +68,7 @@ jsDelivr CDN. In Node.js the locally installed `pyodide` package is used.
 | `worker`           | `Worker`                  | Offload work to a Web Worker. Omit to run in-process (Node).                |
 | `transport`        | `SigmaTransport`          | Provide a custom transport (overrides `worker`). Useful for testing.        |
 | `targets`          | `Map<string, SigmaTarget>`| Custom target → backend registry. Defaults to `DEFAULT_SIGMA_TARGETS`.       |
-| `pysigmaVersion`   | `string`                  | pySigma version to install (default pinned).                                |
+| `pysigmaVersion`   | `string`                  | pySigma version to install (defaults to `1.5.0`).                           |
 | `pipelinePackages` | `string[]`                | Pipeline packages to install at bootstrap.                                  |
 | `indexURL`         | `string`                  | Override the Pyodide `indexURL`.                                            |
 | `onStatus`         | `(status) => void`        | Status callback.                                                            |
