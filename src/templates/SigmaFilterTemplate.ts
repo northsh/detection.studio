@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { dedentString, indentString } from "@/templates/template_utils.ts";
 import type { FileItem, Sigma } from "@/types/types.ts";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 export default function sigmaFilterTemplate(file: FileItem) {
   if (!file?.content) {

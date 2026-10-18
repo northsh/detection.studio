@@ -60,11 +60,11 @@
     "pyodide": ">=314.0.7 <315"
   },
   "devDependencies": {
-    "@types/node": "^25.9.9",
+    "@types/node": "^26.6.5",
     "pyodide": "314.0.7",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "~6.0.3",
-    "vitest": "^4.1.12"
+    "vitest": "^5.0.5"
   },
   "publishConfig": {
     "access": "public"

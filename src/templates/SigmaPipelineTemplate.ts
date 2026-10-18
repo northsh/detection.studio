@@ -1,5 +1,5 @@
 import type { FileItem, Sigma } from "@/types/types";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 import { v4 as uuid } from "uuid";
 import { useWorkspaceStore } from "@/stores/WorkspaceStore.ts";

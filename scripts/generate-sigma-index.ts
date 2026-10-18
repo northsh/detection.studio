@@ -5,7 +5,7 @@
  */
 import path from "path";
 import { mkdir, writeFile, readdir, readFile } from "fs/promises";
-import yaml from "js-yaml";
+import * as yaml from "js-yaml";
 
 const REPO_PATH = path.resolve(".sigma-repo");
 

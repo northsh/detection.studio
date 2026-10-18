@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const port = process.env.PLAYWRIGHT_PORT ?? "5173";
+
 export default defineConfig({
     testDir: "./tests",
     timeout: 180 * 1000,
@@ -12,7 +14,7 @@ export default defineConfig({
     workers: process.env.CI ? 1 : undefined,
     reporter: "html",
     use: {
-        baseURL: "http://localhost:5173",
+        baseURL: `http://localhost:${port}`,
         trace: "on-first-retry",
     },
     projects: [
@@ -30,8 +32,8 @@ export default defineConfig({
         // },
     ],
     webServer: {
-        command: "npx vite --port 5173",
-        url: "http://localhost:5173",
+        command: `bunx vite --port ${port} --strictPort`,
+        url: `http://localhost:${port}`,
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,
         stdout: "pipe",

@@ -1,6 +1,6 @@
 // Function to clone or update the Sigma repository at build time
 import path from "path";
-import simpleGit from "simple-git";
+import { simpleGit } from "simple-git";
 import { mkdir, access, writeFile, readdir, readFile } from "fs/promises";
 import { constants } from "fs";
 

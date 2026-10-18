@@ -124,9 +124,18 @@ fn collect_detection_fields(detection: &CompiledDetection, fields: &mut BTreeSet
                 collect_item_field(item, fields);
             }
         }
-        CompiledDetection::AnyOf(dets) => {
+        CompiledDetection::AnyOf(dets) | CompiledDetection::And(dets) => {
             for d in dets {
                 collect_detection_fields(d, fields);
+            }
+        }
+        CompiledDetection::ArrayMatch { field, .. } => {
+            // The body is scoped to array members, not top-level event fields.
+            fields.insert(field.clone());
+        }
+        CompiledDetection::Conditional { named, .. } => {
+            for detection in named.values() {
+                collect_detection_fields(detection, fields);
             }
         }
         CompiledDetection::Keywords(_) => {} // keyword detections have no specific field
@@ -244,20 +253,23 @@ fn evaluate_inner(rule_yaml: &str, events_json: &str, pipeline_yamls: &str, filt
         if !rule_matches.is_empty() {
             let matched_rules: Vec<RuleMatch> = rule_matches
                 .iter()
-                .map(|m| RuleMatch {
-                    rule_title: m.rule_title.clone(),
-                    rule_id: m.rule_id.clone(),
-                    level: m.level.as_ref().map(|l| format!("{l:?}").to_lowercase()),
-                    tags: m.tags.clone(),
-                    matched_selections: m.matched_selections.clone(),
-                    matched_fields: m
-                        .matched_fields
-                        .iter()
-                        .map(|f| FieldMatchInfo {
-                            field: f.field.clone(),
-                            value: f.value.clone(),
-                        })
-                        .collect(),
+                .filter_map(|m| {
+                    let detection = m.as_detection()?;
+                    Some(RuleMatch {
+                        rule_title: m.header.rule_title.clone(),
+                        rule_id: m.header.rule_id.clone(),
+                        level: m.header.level.as_ref().map(|l| format!("{l:?}").to_lowercase()),
+                        tags: m.header.tags.clone(),
+                        matched_selections: detection.matched_selections.clone(),
+                        matched_fields: detection
+                            .matched_fields
+                            .iter()
+                            .map(|f| FieldMatchInfo {
+                                field: f.field.clone(),
+                                value: f.value.clone(),
+                            })
+                            .collect(),
+                    })
                 })
                 .collect();
 
@@ -631,6 +643,46 @@ mod tests {
     // ---------------- end-to-end via `evaluate` ----------------
 
     #[test]
+    fn evaluate_preserves_metadata_and_array_field_scope() {
+        let rule = r#"title: SMB connection
+id: 11111111-1111-1111-1111-111111111111
+sigma-version: 3
+logsource:
+    category: network_connection
+detection:
+    selection:
+        EventID: 1
+        connections[any]:
+            tcp:
+                protocol: TCP
+            smb:
+                port: 445
+            condition: tcp and smb
+    condition: selection
+level: high
+tags:
+    - attack.lateral_movement
+"#;
+        let events = json!([
+            {"EventID": 1, "connections": [{"protocol": "TCP", "port": 445}]},
+            {"EventID": 1, "connections": [{"protocol": "UDP", "port": 445}]}
+        ]);
+        let raw = evaluate(rule, &events.to_string(), "[]", "[]");
+        let parsed: serde_json::Value = serde_json::from_str(&raw).unwrap();
+        assert!(parsed["error"].is_null(), "evaluate returned error: {raw}");
+        assert_eq!(parsed["stats"]["total_matches"], json!(1));
+        assert_eq!(parsed["field_analysis"]["rule_fields"], json!(["EventID", "connections"]));
+        assert_eq!(parsed["field_analysis"]["missing_fields"], json!([]));
+        let matched = &parsed["matches"][0]["matched_rules"][0];
+        assert_eq!(matched["rule_title"], json!("SMB connection"));
+        assert_eq!(matched["rule_id"], json!("11111111-1111-1111-1111-111111111111"));
+        assert_eq!(matched["level"], json!("high"));
+        assert_eq!(matched["tags"], json!(["attack.lateral_movement"]));
+        assert_eq!(matched["matched_selections"], json!(["selection"]));
+        assert!(!matched["matched_fields"].as_array().unwrap().is_empty());
+    }
+
+    #[test]
     fn evaluate_runs_against_csv_input() {
         // Simple endswith on `Image` — using forward slashes to keep the
         // rule YAML and CSV input free of backslash-escaping ambiguity.
@@ -666,4 +718,3 @@ level: low
         );
     }
 }
-

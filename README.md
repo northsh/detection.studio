@@ -73,6 +73,19 @@ Contributions are welcome! For feature requests, bug reports or questions, pleas
 
 - `bun` is the preferred package manager for the project
 
+### Dependency compatibility
+
+- TypeScript stays on 6.0.3: TypeScript 7 no longer provides the compiler API
+  required by tsup's declaration build. tsup 9 also fails with the suggested
+  `@typescript/typescript6` fallback, so upgrade this pin only after declaration
+  builds work with the newer compiler.
+- The Rust lockfile retains pest 2.8.6 and its derive/generator packages. pest
+  2.9.4 pulls in a stack-management dependency that fails to link on
+  `wasm32-unknown-unknown` (`rust_psm_stack_pointer`).
+- Browser tests can run alongside a development server using
+  `CI=true PLAYWRIGHT_PORT=5174 bun run test` (after preparing the Sigma rules
+  index, as in CI).
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
