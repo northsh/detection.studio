@@ -1,4 +1,5 @@
 import { defineConfig } from "tsup";
+import { copyFile } from "node:fs/promises";
 
 export default defineConfig({
     entry: {
@@ -10,6 +11,9 @@ export default defineConfig({
     dts: true,
     clean: true,
     sourcemap: true,
+    onSuccess: async () => {
+        await copyFile("src/wheels/LICENSES.txt", "dist/JQ-LICENSES.txt");
+    },
     treeshake: true,
     // pyodide is a peer dependency and must never be bundled.
     external: ["pyodide"],
@@ -19,5 +23,6 @@ export default defineConfig({
     // the single source of truth in src/ and the string only appears in dist/.
     loader: {
         ".py": "text",
+        ".whl": "binary",
     },
 });

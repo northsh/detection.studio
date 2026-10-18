@@ -4,8 +4,7 @@
  * Unlike the unit tests (which mock the transport), these boot a *real* Pyodide
  * instance, install pySigma plus a backend from PyPI over the network, and run
  * an actual Sigma rule conversion. They are therefore slow and require network
- * access, so they live in a dedicated `*.integration.test.ts` file that is
- * excluded from the default `test` run — use `bun run test:integration`.
+ * access. They run alongside the unit tests with `bun run test`.
  *
  * In Node, the engine loads the locally installed `pyodide` package (with its
  * bundled wheels for micropip/pyyaml); pySigma and the backends are fetched
@@ -15,6 +14,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { PyodideSigmaEngine } from "./core";
 import { SigmaConverter } from "./SigmaConverter";
 import type { EngineStatus } from "./types";
+import { loadPyodide } from "pyodide";
+import { installJq } from "./native-packages";
 
 /** A minimal, valid Sigma rule that every backend should be able to convert. */
 const SIGMA_RULE = `title: Whoami Execution
@@ -32,6 +33,27 @@ detection:
 // and test plenty of headroom.
 const BOOT_TIMEOUT = 180_000;
 const CONVERT_TIMEOUT = 120_000;
+
+describe("integration: bundled jq wheel", () => {
+    it(
+        "runs jq projections and native Oniguruma regular expressions",
+        async () => {
+            const pyodide = await loadPyodide();
+            await pyodide.loadPackage("micropip");
+            await installJq(pyodide);
+            expect(
+                pyodide.runPython(`
+import jq
+from importlib.metadata import version
+assert version("jq") == "1.13.0"
+assert jq.all(".items[] | .name", {"items": [{"name": "whoami.exe"}]}) == ["whoami.exe"]
+jq.first('test("whoami[.]exe$")', "whoami.exe")
+        `),
+            ).toBe(true);
+        },
+        BOOT_TIMEOUT,
+    );
+});
 
 describe("integration: PyodideSigmaEngine", () => {
     let engine: PyodideSigmaEngine;
@@ -83,9 +105,7 @@ describe("integration: PyodideSigmaEngine", () => {
         "lists available pipelines for an installed backend",
         async () => {
             await engine.installBackend("splunk");
-            const { success, pipelines } = await engine.getAvailablePipelines(
-                "splunk",
-            );
+            const { success, pipelines } = await engine.getAvailablePipelines("splunk");
             expect(success).toBe(true);
             expect(Array.isArray(pipelines)).toBe(true);
         },
@@ -125,10 +145,7 @@ describe("integration: SigmaConverter (high-level facade)", () => {
             await converter.installBackend("splunk");
             expect(converter.isReady()).toBe(true);
 
-            const { query, error } = await converter.convert(
-                SIGMA_RULE,
-                "splunk",
-            );
+            const { query, error } = await converter.convert(SIGMA_RULE, "splunk");
 
             expect(error).toBeUndefined();
             expect(query).toContain("whoami.exe");
@@ -139,10 +156,7 @@ describe("integration: SigmaConverter (high-level facade)", () => {
     it(
         "converts the same rule to a second backend (elasticsearch / esql)",
         async () => {
-            const { query, error } = await converter.convert(
-                SIGMA_RULE,
-                "esql",
-            );
+            const { query, error } = await converter.convert(SIGMA_RULE, "esql");
 
             expect(error).toBeUndefined();
             expect(query).toContain("whoami.exe");
@@ -166,10 +180,7 @@ describe("integration: SigmaConverter (high-level facade)", () => {
                 ]),
             });
 
-            const { query, error } = await restricted.convert(
-                SIGMA_RULE,
-                "loki",
-            );
+            const { query, error } = await restricted.convert(SIGMA_RULE, "loki");
             expect(query).toBe("");
             expect(error).toBe("Unsupported target: loki");
 

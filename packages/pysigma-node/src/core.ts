@@ -1,5 +1,6 @@
 import type { PyodideInterface } from "pyodide";
 import pythonSource from "./python/sigma_converter.py";
+import { installJq } from "./native-packages";
 import { DEFAULT_SIGMA_TARGETS, backendNameFromPackage } from "./targets";
 
 /** The raw Python source executed inside Pyodide (inlined at build time). */
@@ -12,7 +13,7 @@ import type {
 } from "./types";
 
 /** Default pySigma version installed via micropip. */
-export const DEFAULT_PYSIGMA_VERSION = "1.5.0";
+export const DEFAULT_PYSIGMA_VERSION = "1.5.1";
 
 /** Default pipeline packages installed during bootstrap. */
 export const DEFAULT_PIPELINE_PACKAGES = [
@@ -108,27 +109,14 @@ export class PyodideSigmaEngine {
             // PyYAML is bundled with recent Pyodide releases; load it from the
             // built-in package set so we get the correct platform wheel.
             await this.pyodide.loadPackage(["micropip", "pyyaml"]);
+            // jq has no upstream Pyodide wheel. Bundle our cross-built wheel so
+            // both browsers and Node can install it without a separate asset host.
+            await installJq(this.pyodide);
             const micropip = this.pyodide.pyimport("micropip");
-
-            // jq is an optional pySigma transformation dependency, but its
-            // native wheel cannot run in Pyodide. Install the supported core
-            // dependencies explicitly and skip jq's dependency resolution.
-            await micropip.install(
-                [
-                    "diskcache<6.0.0,>=5.6.3",
-                    "jinja2<4.0.0,>=3.1.6",
-                    "packaging<27.0,>=26.0",
-                    "pyparsing<4.0.0,>=3.2.5",
-                    "requests<3.0.0,>=2.32.5",
-                    "typing-extensions<5.0.0,>=4.16.0",
-                ],
-                false,
-            );
-            await micropip.uninstall("pysigma");
-            await micropip.install(`pysigma==${this.pysigmaVersion}`, false, false);
+            await micropip.install(`pysigma==${this.pysigmaVersion}`);
 
             if (this.pipelinePackages.length > 0) {
-                await micropip.install(this.pipelinePackages, false, false);
+                await micropip.install(this.pipelinePackages);
             }
 
             this.updateStatus({ pyodideReady: true });
@@ -168,7 +156,7 @@ export class PyodideSigmaEngine {
         try {
             this.updateStatus({ ready: false });
             const micropip = this.pyodide!.pyimport("micropip");
-            await micropip.install(targetInfo.backend, false, false);
+            await micropip.install(targetInfo.backend);
             this.installedBackends.add(target);
 
             // Re-run the module so plugin autodiscovery picks up the new backend.

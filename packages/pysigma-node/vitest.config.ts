@@ -10,6 +10,13 @@ function pythonText(): Plugin {
     return {
         name: "python-text",
         transform(_code, id) {
+            if (id.endsWith(".whl")) {
+                const base64 = readFileSync(id).toString("base64");
+                return {
+                    code: `export default Uint8Array.from(atob(${JSON.stringify(base64)}), c => c.charCodeAt(0));`,
+                    map: null,
+                };
+            }
             if (!id.endsWith(".py")) return null;
             const source = readFileSync(id, "utf8");
             return {

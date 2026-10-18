@@ -13,7 +13,17 @@ Run the Python [pySigma](https://github.com/SigmaHQ/pySigma) library in **Node.j
 npm install @northsh/pysigma-node pyodide
 ```
 
-`pyodide` is a **peer dependency** so you control its version and how it is served.
+`pyodide` is a **peer dependency** so you control how it is served. Use
+`>=314.0.7 <315`, matching the bundled jq wheel's CPython 3.14 / Pyodide 2026.0 ABI.
+
+The default pySigma version is **1.5.1**, the latest 1.x release. pySigma 2.x is
+not enabled because the current backends and default pipeline packages require
+pySigma <2; it also adds a native RE2 dependency that Pyodide does not provide.
+
+pySigma 1.4+ requires jq. A cross-built WebAssembly jq wheel is inlined in the
+JavaScript bundle, so users do not need native system libraries or an additional
+wheel server. See [`src/wheels/README.md`](src/wheels/README.md) for its provenance
+and rebuild instructions.
 
 ## Quick start (Node.js)
 
@@ -68,7 +78,7 @@ jsDelivr CDN. In Node.js the locally installed `pyodide` package is used.
 | `worker`           | `Worker`                  | Offload work to a Web Worker. Omit to run in-process (Node).                |
 | `transport`        | `SigmaTransport`          | Provide a custom transport (overrides `worker`). Useful for testing.        |
 | `targets`          | `Map<string, SigmaTarget>`| Custom target → backend registry. Defaults to `DEFAULT_SIGMA_TARGETS`.       |
-| `pysigmaVersion`   | `string`                  | pySigma version to install (defaults to `1.5.0`).                           |
+| `pysigmaVersion`   | `string`                  | pySigma version to install (defaults to `1.5.1`).                           |
 | `pipelinePackages` | `string[]`                | Pipeline packages to install at bootstrap.                                  |
 | `indexURL`         | `string`                  | Override the Pyodide `indexURL`.                                            |
 | `onStatus`         | `(status) => void`        | Status callback.                                                            |
