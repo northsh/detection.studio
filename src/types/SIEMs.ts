@@ -13,6 +13,7 @@ export type Siem = {
     company?: string;
     colorClass?: string;
     backend?: string;
+    requirement?: string;
     correlation?: boolean;
 };
 
@@ -20,6 +21,7 @@ export type SigmaTarget = {
     id: string;
     title: string;
     backend?: string;
+    requirement?: string;
 };
 
 /**
@@ -33,6 +35,7 @@ export const supportedSiems: Array<Siem> = [
         company: "Splunk",
         colorClass: "text-[#74B036]!",
         backend: "pysigma-backend-splunk",
+        requirement: "pysigma-backend-splunk<3",
         correlation: true,
     },
     {
@@ -67,6 +70,7 @@ export const supportedSiems: Array<Siem> = [
         company: "Grafana",
         colorClass: "text-[#F49D2A]!",
         backend: "pysigma-backend-loki",
+        requirement: "pysigma-backend-loki<0.16",
         correlation: true,
     },
     {id: "carbon_black", name: "Carbon Black", icon: null, backend: "pysigma-backend-carbonblack"},
@@ -87,7 +91,14 @@ export const supportedSiems: Array<Siem> = [
     {id: "secops", name: "Google SecOps", icon: secops, backend: "pysigma-backend-secops"},
     {id: "sentinel_one", name: "Sentinel One", icon: null, backend: "pysigma-backend-sentinelone"},
     // {id: "sentinel_one_pq", name: "Sentinel One - PowerQuery", icon: null, backend: 'pysigma-backend-sentinelone'}, // Disabled due to non-operational backaned
-    {id: "sqlite", name: "SQLite", icon: null, backend: "pysigma-backend-sqlite", correlation: true},
+    {
+        id: "sqlite",
+        name: "SQLite",
+        icon: null,
+        backend: "pysigma-backend-sqlite",
+        requirement: "pysigma-backend-sqlite<2.1",
+        correlation: true,
+    },
     {id: "surreal_ql", name: "SurrealQL", icon: null, backend: "pysigma-backend-surrealql"},
     // {id: "tql", name: "Trellix TQL", icon: null, backend: 'pysigma-backend-trellix'},
     {id: "uberagent", name: "uberAgent", icon: null, backend: "pysigma-backend-uberagent"},
@@ -104,6 +115,7 @@ export const SIGMA_TARGETS: Map<string, SigmaTarget> = new Map(
             id: siem.id,
             title: siem.name,
             backend: siem.backend,
+            requirement: siem.requirement,
         },
     ]),
 );

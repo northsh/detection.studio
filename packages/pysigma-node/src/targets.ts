@@ -8,11 +8,22 @@ import type { SigmaTarget } from "./types";
  * Consumers may pass their own registry via {@link PyodideSigmaOptions.targets}.
  */
 export const DEFAULT_TARGETS: readonly SigmaTarget[] = [
-    { id: "splunk", title: "Splunk", backend: "pysigma-backend-splunk" },
+    // splunk 3.x, loki 0.16+ and sqlite 2.1+ require pySigma 2.x; the engine pins 1.x.
+    {
+        id: "splunk",
+        title: "Splunk",
+        backend: "pysigma-backend-splunk",
+        requirement: "pysigma-backend-splunk<3",
+    },
     { id: "esql", title: "ES|QL", backend: "pysigma-backend-elasticsearch" },
     { id: "lucene", title: "Lucene", backend: "pysigma-backend-elasticsearch" },
     { id: "eql", title: "EQL", backend: "pysigma-backend-elasticsearch" },
-    { id: "loki", title: "Loki", backend: "pysigma-backend-loki" },
+    {
+        id: "loki",
+        title: "Loki",
+        backend: "pysigma-backend-loki",
+        requirement: "pysigma-backend-loki<0.16",
+    },
     { id: "carbon_black", title: "Carbon Black", backend: "pysigma-backend-carbonblack" },
     { id: "log_scale", title: "CrowdStrike Logscale", backend: "pysigma-backend-crowdstrike" },
     { id: "datadog", title: "DataDog", backend: "pysigma-backend-datadog" },
@@ -22,7 +33,12 @@ export const DEFAULT_TARGETS: readonly SigmaTarget[] = [
     { id: "quickwit", title: "QuickWit", backend: "pysigma-backend-quickwit" },
     { id: "secops", title: "Google SecOps", backend: "pysigma-backend-secops" },
     { id: "sentinel_one", title: "Sentinel One", backend: "pysigma-backend-sentinelone" },
-    { id: "sqlite", title: "SQLite", backend: "pysigma-backend-sqlite" },
+    {
+        id: "sqlite",
+        title: "SQLite",
+        backend: "pysigma-backend-sqlite",
+        requirement: "pysigma-backend-sqlite<2.1",
+    },
     { id: "surreal_ql", title: "SurrealQL", backend: "pysigma-backend-surrealql" },
     { id: "uberagent", title: "uberAgent", backend: "pysigma-backend-uberagent" },
 ] as const;

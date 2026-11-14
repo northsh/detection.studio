@@ -15,10 +15,13 @@ import type {
 /** Default pySigma version installed via micropip. */
 export const DEFAULT_PYSIGMA_VERSION = "1.5.1";
 
-/** Default pipeline packages installed during bootstrap. */
+/**
+ * Default pipeline packages installed during bootstrap. Capped below 3 because
+ * pipeline releases 3.x require pySigma 2.x, which most backends don't support yet.
+ */
 export const DEFAULT_PIPELINE_PACKAGES = [
-    "pysigma-pipeline-windows",
-    "pysigma-pipeline-sysmon",
+    "pysigma-pipeline-windows<3",
+    "pysigma-pipeline-sysmon<3",
 ];
 
 /** True when running in a browser-like environment. */
@@ -156,7 +159,7 @@ export class PyodideSigmaEngine {
         try {
             this.updateStatus({ ready: false });
             const micropip = this.pyodide!.pyimport("micropip");
-            await micropip.install(targetInfo.backend);
+            await micropip.install(targetInfo.requirement ?? targetInfo.backend);
             this.installedBackends.add(target);
 
             // Re-run the module so plugin autodiscovery picks up the new backend.
