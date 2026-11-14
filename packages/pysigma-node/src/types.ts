@@ -13,6 +13,13 @@ export interface SigmaTarget {
     title: string;
     /** PyPI package name of the pySigma backend, e.g. `pysigma-backend-splunk`. */
     backend: string;
+    /**
+     * Requirement passed to micropip when installing the backend, e.g.
+     * `pysigma-backend-splunk<3`. Defaults to {@link SigmaTarget.backend}.
+     * micropip does not backtrack, so backends whose latest release needs a
+     * different pySigma major than the installed one must be constrained here.
+     */
+    requirement?: string;
 }
 
 /**
