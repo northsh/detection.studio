@@ -2,11 +2,11 @@
   "mcpServers": {
     "shadcnVue": {
       "command": "bunx",
-      "args": ["shadcn-vue@latest", "mcp"]
+      "args": ["shadcn-vue@2.4.2", "mcp"]
     },
     "playwright": {
       "command": "bunx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["@playwright/mcp@0.0.50"]
     }
   }
 }
