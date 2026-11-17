@@ -49,7 +49,7 @@
     "pinia": "^4.1.0",
     "pinia-plugin-persistedstate": "^4.7.1",
     "pinia-undo": "^0.2.4",
-    "postcss": "^8.5.30",
+    "postcss": "^8.5.31",
     "prism-code-editor": "^5.4.0",
     "pyodide": "314.0.7",
     "reka-ui": "^2.11.0",
